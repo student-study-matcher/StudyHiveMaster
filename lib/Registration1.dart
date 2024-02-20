@@ -195,7 +195,7 @@ class Registration1State extends State<Registration1> {
               child: Padding(
                 padding: EdgeInsets.all(5),
                 child: TextField(
-                  controller: TextEditingController(),
+                  controller: confirmPasswordController,
                   obscureText: false,
                   textAlign: TextAlign.start,
                   maxLines: 1,
@@ -255,10 +255,12 @@ class Registration1State extends State<Registration1> {
                     padding: EdgeInsets.fromLTRB(5, 5, 2, 5),
                     child: MaterialButton(
                       onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => Registration2()),
-                        );
+
+                        saveDetails();
+                        // Navigator.push(
+                        //   context,
+                        //   MaterialPageRoute(builder: (context) => Registration2()),
+                        // );
                       },
                       color: Color(0xffffffff),
                       elevation: 0,
@@ -324,14 +326,59 @@ class Registration1State extends State<Registration1> {
   String passwordConfirmation = confirmPasswordController.text;
 
 
-    //check length for username
-    //check password length
-    //check password includes a number
-    //check password includes a special character
-    //check passwords match
+  bool acceptUsername = false;
+  bool acceptPassword = false;
 
-    //if passwords match then the record in the database can be created and the program can move to the next page
+  if (userName == "" || password == "" || passwordConfirmation == "") {
 
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Error'),
+          content: Text('Please fill in all the required fields.'),
+        );
+      },
+    );
+    return; // Exit the function if any field is empty
+  }
+
+    String errorMessage = "";
+
+    if (userName.length > 50 || userName.length <= 0) {
+      errorMessage += 'Username length should be between 1 and 50 characters.\n';
+    }
+    //we will also need a database check for existing usernames
+
+    if (password.length <= 8 || password.length > 50) {
+      errorMessage += 'Password must be a minimum of 8 characters long and a maximum of 50 characters long.\n';
+    }
+    if (!password.contains(RegExp(r'\d')) || !password.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'))) {
+      errorMessage += 'Password must contain a number and a special character.\n';
+    }
+    if (passwordConfirmation != password) {
+      errorMessage += 'Passwords do not match.\n';
+    }
+
+    if (errorMessage != "") {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Error'),
+            content: Text(errorMessage),
+          );
+        },
+      );
+      return;
+    } else {
+      acceptPassword = true;
+      acceptUsername = true;
+
+    }
+
+
+  //database implementation goes here!
 
 
 

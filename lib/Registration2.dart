@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'Registration3.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'firebase_options.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class Registration2 extends StatefulWidget {
   @override
@@ -9,6 +12,8 @@ class Registration2 extends StatefulWidget {
 class _Registration2State extends State<Registration2> {
   String userCourse = "Computer Science";
   String userUniversity = "University of Portsmouth";
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   @override
   Widget build(BuildContext context) {
@@ -380,6 +385,36 @@ class _Registration2State extends State<Registration2> {
     );
 
   }
+//Function to save user_data
+  Future<void> saveUserData() async {
+    try {
+      // Get the current user from Firebase Authentication
+      User? user = _auth.currentUser;
 
+      // Check if the user is authenticated
+      if (user != null) {
+        // Save user data to Firestore
+        await _firestore.collection('users').doc(user.uid).set({
+          'firstName': firstNameController.text,
+          'lastName': lastNameController.text,
+          'dob': dobController.text,
+          'course': userCourse,
+          'university': userUniversity,
+        });
 
+        // Navigate to the next screen (Registration3) after saving data
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => Registration3()),
+        );
+      } else {
+        print('User not authenticated.');
+        // Handle the case where the user is not authenticated
+      }
+    } catch (e) {
+      print('Error saving user data: $e');
+      // Handle error as needed
+    }
+  }
 }
+

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'Login.dart';
 import 'Registration2.dart';
 
@@ -8,381 +9,100 @@ class Registration1 extends StatefulWidget {
 }
 
 class Registration1State extends State<Registration1> {
-
-  TextEditingController usernameController = TextEditingController();
+  final _auth = FirebaseAuth.instance;
+  TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   TextEditingController confirmPasswordController = TextEditingController();
+
+  void _registerUser() async {
+    final email = emailController.text.trim();
+    final password = passwordController.text.trim();
+    final confirmPassword = confirmPasswordController.text.trim();
+
+    if (password != confirmPassword) {
+      _showDialog('Error', 'Passwords do not match.');
+      return;
+    }
+
+    try {
+      final newUser = await _auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      if (newUser.user != null) {
+        // Registration successful, navigate to Home Screen
+        print("registration successful");
+        Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => Registration2(user: newUser.user)),
+        );
+
+      }
+    } on FirebaseAuthException catch (e) {
+      _showDialog('Registration Error', e.message ?? 'An unknown error occurred.');
+    }
+  }
+
+
+  void _showDialog(String title, String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Text(message),
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xffffffff),
       appBar: AppBar(
-        elevation: 4,
-        centerTitle: true,
-        automaticallyImplyLeading: false,
-        backgroundColor: Color(0xff3a57e8),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.zero,
-        ),
-        title: Text(
-          "Registration ",
-          style: TextStyle(
-            fontWeight: FontWeight.w500,
-            fontStyle: FontStyle.normal,
-            fontSize: 18,
-            color: Color(0xffffffff),
-          ),
-        ),
-        leading: Icon(
-          Icons.arrow_back,
-          color: Color(0xff212435),
-          size: 24,
-        ),
+        title: Text('Registration'),
       ),
-
       body: Padding(
-        padding: EdgeInsets.all(5),
+        padding: EdgeInsets.all(16.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.stretch,
-          mainAxisSize: MainAxisSize.max,
-          children: [
-            Container(
-              margin: EdgeInsets.all(0),
-              padding: EdgeInsets.all(0),
-              width: 200,
-              height: 50,
-              decoration: BoxDecoration(
-                color: Color(0x1f000000),
-                shape: BoxShape.rectangle,
-                borderRadius: BorderRadius.zero,
-                border: Border.all(color: Color(0x4d9e9e9e), width: 1),
-              ),
-
-
-              child: Padding(
-                padding: EdgeInsets.all(5),
-                child: TextField(
-                  controller: usernameController,
-                  obscureText: false,
-                  textAlign: TextAlign.start,
-                  maxLines: 1,
-                  style: TextStyle(
-                    fontWeight: FontWeight.w400,
-                    fontStyle: FontStyle.normal,
-                    fontSize: 14,
-                    color: Color(0xff000000),
-                  ),
-                  decoration: InputDecoration(
-                    disabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(4.0),
-                      borderSide:
-                      BorderSide(color: Color(0xff000000), width: 1),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(4.0),
-                      borderSide:
-                      BorderSide(color: Color(0xff000000), width: 1),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(4.0),
-                      borderSide:
-                      BorderSide(color: Color(0xff000000), width: 1),
-                    ),
-                    labelText: "Username",
-                    labelStyle: TextStyle(
-                      fontWeight: FontWeight.w400,
-                      fontStyle: FontStyle.normal,
-                      fontSize: 14,
-                      color: Color(0xff000000),
-                    ),
-                    hintText: "Enter Text",
-                    hintStyle: TextStyle(
-                      fontWeight: FontWeight.w400,
-                      fontStyle: FontStyle.normal,
-                      fontSize: 14,
-                      color: Color(0xff000000),
-                    ),
-                    filled: true,
-                    fillColor: Color(0xfff2f2f3),
-                    isDense: false,
-                    contentPadding:
-                    EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                  ),
-                ),
-              ),
+          children: <Widget>[
+            TextField(
+              controller: emailController,
+              keyboardType: TextInputType.emailAddress,
+              decoration: InputDecoration(labelText: 'Email'),
             ),
-            Container(
-              margin: EdgeInsets.all(0),
-              padding: EdgeInsets.all(0),
-              width: 200,
-              height: 50,
-              decoration: BoxDecoration(
-                color: Color(0x1f000000),
-                shape: BoxShape.rectangle,
-                borderRadius: BorderRadius.zero,
-                border: Border.all(color: Color(0x4d9e9e9e), width: 1),
-              ),
-
-
-              child: Padding(
-                padding: EdgeInsets.all(5),
-                child: TextField(
-                  controller: passwordController,
-                  obscureText: false,
-                  textAlign: TextAlign.start,
-                  maxLines: 1,
-                  style: TextStyle(
-                    fontWeight: FontWeight.w400,
-                    fontStyle: FontStyle.normal,
-                    fontSize: 14,
-                    color: Color(0xff000000),
-                  ),
-                  decoration: InputDecoration(
-                    disabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(4.0),
-                      borderSide:
-                      BorderSide(color: Color(0xff000000), width: 1),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(4.0),
-                      borderSide:
-                      BorderSide(color: Color(0xff000000), width: 1),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(4.0),
-                      borderSide:
-                      BorderSide(color: Color(0xff000000), width: 1),
-                    ),
-                    labelText: "Password",
-                    labelStyle: TextStyle(
-                      fontWeight: FontWeight.w400,
-                      fontStyle: FontStyle.normal,
-                      fontSize: 14,
-                      color: Color(0xff000000),
-                    ),
-                    hintText: "Enter Text",
-                    hintStyle: TextStyle(
-                      fontWeight: FontWeight.w400,
-                      fontStyle: FontStyle.normal,
-                      fontSize: 14,
-                      color: Color(0xff000000),
-                    ),
-                    filled: true,
-                    fillColor: Color(0xfff2f2f3),
-                    isDense: false,
-                    contentPadding:
-                    EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                  ),
-                ),
-              ),
+            SizedBox(height: 8.0),
+            TextField(
+              controller: passwordController,
+              obscureText: true,
+              decoration: InputDecoration(labelText: 'Password'),
             ),
-
-            Container(
-              margin: EdgeInsets.all(0),
-              padding: EdgeInsets.all(0),
-              width: 200,
-              height: 50,
-              decoration: BoxDecoration(
-                color: Color(0x1f000000),
-                shape: BoxShape.rectangle,
-                borderRadius: BorderRadius.zero,
-                border: Border.all(color: Color(0x4d9e9e9e), width: 1),
-              ),
-
-
-              child: Padding(
-                padding: EdgeInsets.all(5),
-                child: TextField(
-                  controller: confirmPasswordController,
-                  obscureText: false,
-                  textAlign: TextAlign.start,
-                  maxLines: 1,
-                  style: TextStyle(
-                    fontWeight: FontWeight.w400,
-                    fontStyle: FontStyle.normal,
-                    fontSize: 14,
-                    color: Color(0xff000000),
-                  ),
-                  decoration: InputDecoration(
-                    disabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(4.0),
-                      borderSide:
-                      BorderSide(color: Color(0xff000000), width: 1),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(4.0),
-                      borderSide:
-                      BorderSide(color: Color(0xff000000), width: 1),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(4.0),
-                      borderSide:
-                      BorderSide(color: Color(0xff000000), width: 1),
-                    ),
-                    labelText: "Confirm Password",
-                    labelStyle: TextStyle(
-                      fontWeight: FontWeight.w400,
-                      fontStyle: FontStyle.normal,
-                      fontSize: 14,
-                      color: Color(0xff000000),
-                    ),
-                    hintText: "Enter Text",
-                    hintStyle: TextStyle(
-                      fontWeight: FontWeight.w400,
-                      fontStyle: FontStyle.normal,
-                      fontSize: 14,
-                      color: Color(0xff000000),
-                    ),
-                    filled: true,
-                    fillColor: Color(0xfff2f2f3),
-                    isDense: false,
-                    contentPadding:
-                    EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                  ),
-                ),
-              ),
+            SizedBox(height: 8.0),
+            TextField(
+              controller: confirmPasswordController,
+              obscureText: true,
+              decoration: InputDecoration(labelText: 'Confirm Password'),
             ),
-            Padding(
-              padding: EdgeInsets.all(2),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisSize: MainAxisSize.max,
-                children: [
-                  Padding(
-                    padding: EdgeInsets.fromLTRB(5, 5, 2, 5),
-                    child: MaterialButton(
-                      onPressed: () {
-
-                        saveDetails();
-                        // Navigator.push(
-                        //   context,
-                        //   MaterialPageRoute(builder: (context) => Registration2()),
-                        // );
-                      },
-                      color: Color(0xffffffff),
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.zero,
-                        side: BorderSide(color: Color(0xff808080), width: 1),
-                      ),
-                      padding: EdgeInsets.all(16),
-                      child: Text(
-                        "Register",
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w400,
-                          fontStyle: FontStyle.normal,
-                        ),
-                      ),
-                      textColor: Color(0xff000000),
-                      height: 80,
-                      minWidth: 200,
-                    ),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.fromLTRB(2, 5, 5, 5),
-                    child: MaterialButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => Login()),
-                        );
-                      },
-                      color: Color(0xffffffff),
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.zero,
-                        side: BorderSide(color: Color(0xff808080), width: 1),
-                      ),
-                      padding: EdgeInsets.all(16),
-                      child: Text(
-                        "Already Have an Account? \nLogin",
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w400,
-                          fontStyle: FontStyle.normal,
-                        ),
-                      ),
-                      textColor: Color(0xff000000),
-                      height: 80,
-                      minWidth: 200,
-                    ),
-                  ),
-                ],
-              ),
+            SizedBox(height: 24.0),
+            ElevatedButton(
+              onPressed: _registerUser,
+              child: Text('Register'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => Login()),
+                );
+              },
+              child: Text('Already have an account? Login'),
             ),
           ],
         ),
       ),
     );
-
-  }
-  void saveDetails() {
-  String userName = usernameController.text;
-  String password = passwordController.text;
-  String passwordConfirmation = confirmPasswordController.text;
-
-
-  bool acceptUsername = false;
-  bool acceptPassword = false;
-
-  if (userName == "" || password == "" || passwordConfirmation == "") {
-
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Error'),
-          content: Text('Please fill in all the required fields.'),
-        );
-      },
-    );
-    return; // Exit the function if any field is empty
-  }
-
-    String errorMessage = "";
-
-    if (userName.length > 50 || userName.length <= 0) {
-      errorMessage += 'Username length should be between 1 and 50 characters.\n';
-    }
-    //we will also need a database check for existing usernames
-
-    if (password.length <= 8 || password.length > 50) {
-      errorMessage += 'Password must be a minimum of 8 characters long and a maximum of 50 characters long.\n';
-    }
-    if (!password.contains(RegExp(r'\d')) || !password.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'))) {
-      errorMessage += 'Password must contain a number and a special character.\n';
-    }
-    if (passwordConfirmation != password) {
-      errorMessage += 'Passwords do not match.\n';
-    }
-
-    if (errorMessage != "") {
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text('Error'),
-            content: Text(errorMessage),
-          );
-        },
-      );
-      return;
-    } else {
-      acceptPassword = true;
-      acceptUsername = true;
-
-    }
-
-
-  //database implementation goes here!
-
-
-
-
-
   }
 }

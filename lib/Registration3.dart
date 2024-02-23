@@ -1,8 +1,16 @@
 import 'package:flutter/material.dart';
-
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'firebase_options.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 
 class Registration3 extends StatelessWidget {
+
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  TextEditingController bioController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -64,5 +72,29 @@ class Registration3 extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<void> saveBio() async {
+    try {
+      // Get the current user from Firebase Authentication
+      User? user = _auth.currentUser;
+
+      // Check if the user is authenticated
+      if (user != null) {
+
+        await _firestore.collection('users').doc(user.uid).set({
+          'bio': bioController.text
+
+        });
+
+        //Navigate to new page here
+      } else {
+        print('User not authenticated.');
+        // Handle the case where the user is not authenticated
+      }
+    } catch (e) {
+      print('Error saving user data: $e');
+      // Handle error as needed
+    }
   }
 }

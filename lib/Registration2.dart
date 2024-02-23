@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
 import 'Registration3.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'firebase_options.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 
 class Registration2 extends StatefulWidget {
+  final User? user;
+
+  Registration2({Key? key, this.user}) : super(key: key);
   @override
   _Registration2State createState() => _Registration2State();
 }
@@ -9,6 +16,13 @@ class Registration2 extends StatefulWidget {
 class _Registration2State extends State<Registration2> {
   String userCourse = "Computer Science";
   String userUniversity = "University of Portsmouth";
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseDatabase _database = FirebaseDatabase.instance;
+
+
+  TextEditingController firstNameController = TextEditingController();
+  TextEditingController lastNameController = TextEditingController();
+  TextEditingController dobController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -59,7 +73,7 @@ class _Registration2State extends State<Registration2> {
               child: Padding(
                 padding: EdgeInsets.all(5),
                 child: TextField(
-                  controller: TextEditingController(),
+                  controller: firstNameController,
                   obscureText: false,
                   textAlign: TextAlign.start,
                   maxLines: 1,
@@ -120,7 +134,7 @@ class _Registration2State extends State<Registration2> {
               child: Padding(
                 padding: EdgeInsets.all(5),
                 child: TextField(
-                  controller: TextEditingController(),
+                  controller: lastNameController,
                   obscureText: false,
                   textAlign: TextAlign.start,
                   maxLines: 1,
@@ -181,7 +195,7 @@ class _Registration2State extends State<Registration2> {
               child: Padding(
                 padding: EdgeInsets.all(5),
                 child: TextField(
-                  controller: TextEditingController(),
+                  controller: dobController,
                   obscureText: false,
                   textAlign: TextAlign.start,
                   maxLines: 1,
@@ -211,18 +225,16 @@ class _Registration2State extends State<Registration2> {
                       fontSize: 14,
                       color: Color(0xff000000),
                     ),
-                    hintText: "Enter your DoB in the format DD/MM/YYYY",
-                    hintStyle: TextStyle(
-                      fontWeight: FontWeight.w400,
-                      fontStyle: FontStyle.normal,
-                      fontSize: 14,
-                      color: Color(0xff000000),
-                    ),
+
                     filled: true,
                     fillColor: Color(0xfff2f2f3),
                     isDense: false,
                     contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
                   ),
+                  onTap: () {
+                    _selectDate();
+                  },
+                  readOnly: true,
                 ),
               ),
             ),
@@ -349,10 +361,8 @@ class _Registration2State extends State<Registration2> {
               ),
               child: MaterialButton(
                 onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => Registration3()),
-                  );
+                  saveUserData();
+
                 },
                 color: Color(0xff48ff54),
                 elevation: 0,
@@ -381,5 +391,113 @@ class _Registration2State extends State<Registration2> {
 
   }
 
+  Future<void> _selectDate() async {
+    DateTime? _picked = await showDatePicker(context: context,
+        initialDate: DateTime.now(),
+        firstDate: DateTime(2000),
+        lastDate: DateTime(2100));
 
+    if (_picked != null) {
+      setState(() {
+        dobController.text = _picked.toString().split(" ")[0];
+      });
+    }
+  }
+
+//Function to save user_data
+  Future<void> saveUserData() async {
+
+   //assign the user entries to variables
+    String userFirstName = firstNameController.text;
+    String userLastName = lastNameController.text;
+    String userDOBString = dobController.text;
+
+    if (userFirstName == "" || userLastName == "" || userDOBString == "") {
+
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Error'),
+            content: Text('Please fill in all the required fields.'),
+          );
+        },
+      );
+      return; // Exit the function if any field is empty
+    }
+
+
+    DateTime userDOB = DateTime.parse(userDOBString);
+
+   DateTime now = DateTime.now();
+    int age = now.year - userDOB.year;
+
+    if (age < 18) {  //check that the user is old enough to use the app
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Error'),
+            content: Text("Users must be 18 or over"),
+          );
+        },
+      );
+      return;
+    }
+
+    if (userFirstName.length > 50 || userLastName.length > 50) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Error'),
+            content: Text("Input too Long!"),
+          );
+        },
+      );
+      return;
+    }
+
+
+
+
+
+    try {
+      // Get the current user from Firebase Authentication
+      User? user = _auth.currentUser;
+      print('Current user: $user');
+
+      print("saving data");
+
+      // Check if the user is authenticated
+      if (user != null) {
+        // Save user data to Realtime Database
+        await _database
+            .reference()
+            .child('users')
+            .child(user.uid)
+            .set({
+          'firstName': userFirstName,
+          'lastName': userLastName,
+          'DOB': userDOB.toIso8601String(), // Convert DateTime to string
+          'course': userCourse,
+          'university': userUniversity,
+        });
+        print('User data saved successfully!');
+
+        // Navigate to the next screen (Registration3) after saving data
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => Registration3()),
+        );
+      } else {
+        print('User not authenticated.');
+        // Handle the case where the user is not authenticated
+      }
+    } catch (e) {
+      print('Error saving user data: $e');
+      // Handle error as needed
+    }
+  }
 }
+

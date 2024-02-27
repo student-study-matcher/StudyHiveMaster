@@ -459,9 +459,6 @@ class _Registration2State extends State<Registration2> {
     }
 
 
-
-
-
     try {
       // Get the current user from Firebase Authentication
       User? user = _auth.currentUser;

@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'Forums.dart';
+import 'Setting.dart';
+import 'UserProfile.dart';
 
 class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xffffffff),
+      backgroundColor: Colors.white,
       appBar: AppBar(
         elevation: 4,
         centerTitle: false,
@@ -13,332 +16,120 @@ class HomeScreen extends StatelessWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.zero,
         ),
-        title: GestureDetector(                                          // press the app logo to go back to the home screen
-          onTap: () {
-            Navigator.of(context).pushReplacementNamed('/home');
-          },
+        title: GestureDetector(
+          onTap: () => Navigator.of(context).pushReplacementNamed('/home'),
           child: Row(
             children: [
               Image.asset(
                 'assets/logo.png',
                 width: 24,
               ),
-              SizedBox(width: 8), // Add some spacing if needed
+              SizedBox(width: 8),
               Text(
                 "Study Hive",
                 style: TextStyle(
                   fontWeight: FontWeight.w400,
-                  fontStyle: FontStyle.normal,
                   fontSize: 14,
-                  color: Color(0xffffffff),
+                  color: Colors.white,
                 ),
               ),
             ],
           ),
         ),
-
         actions: [
-          Icon(Icons.search, color: Color(0xffffffff), size: 24),
+          Icon(Icons.search, color: Colors.white, size: 24),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
         items: [
-          BottomNavigationBarItem(
-              icon: Icon(Icons.home),
-              label: "Home"
-          ),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.article),
-              label: "Forums"
-
-          ),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.message),
-              label: "Messages"
-          ),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.account_box),
-              label: "Profile"
-          ),
-
+          bottomNavItem(Icons.article, "Forums"),
+          bottomNavItem(Icons.message, "Messages"),
+          bottomNavItem(Icons.account_box, "Profile"),
         ],
         backgroundColor: Color(0xffae32ff),
         elevation: 8,
         iconSize: 22,
-        selectedItemColor: Color(0xffffffff),
-        unselectedItemColor: Color(0xffffffff),
+        selectedItemColor: Colors.white,
+        unselectedItemColor: Colors.white,
         selectedFontSize: 12,
         unselectedFontSize: 12,
         showSelectedLabels: true,
         showUnselectedLabels: true,
         type: BottomNavigationBarType.fixed,
-        onTap: (value) {},
-
+        onTap: (value) {
+          if (value == 0) {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => Forums()));
+          } else if (value == 2) {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => UserProfile()));
+          }
+        },
       ),
       body: Padding(
         padding: EdgeInsets.all(2),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          mainAxisSize: MainAxisSize.max,
           children: [
-            Text(
-              "Top Forums For You",
-              textAlign: TextAlign.center,
-              overflow: TextOverflow.clip,
-              style: TextStyle(
-                fontWeight: FontWeight.w500,
-                fontStyle: FontStyle.normal,
-                fontSize: 17,
-                color: Color(0xff000000),
-              ),
-            ),
-            ListView(
-              scrollDirection: Axis.vertical,
-              padding: EdgeInsets.all(0),
-              shrinkWrap: true,
-              physics: ScrollPhysics(),
-              children: [
-                ListTile(
-                  tileColor: Color(0x1f000000),
-                  title: Text(
-                    "Software Engineering",
-                    style: TextStyle(
-                      fontWeight: FontWeight.w400,
-                      fontStyle: FontStyle.normal,
-                      fontSize: 14,
-                      color: Color(0xff000000),
-                    ),
-                    textAlign: TextAlign.start,
-                  ),
-                  subtitle: Text(
-                    "Computer Science",
-                    style: TextStyle(
-                      fontWeight: FontWeight.w400,
-                      fontStyle: FontStyle.normal,
-                      fontSize: 14,
-                      color: Color(0xff000000),
-                    ),
-                    textAlign: TextAlign.start,
-                  ),
-                  dense: false,
-                  contentPadding:
-                  EdgeInsets.symmetric(vertical: 0, horizontal: 16),
-                  selected: false,
-                  selectedTileColor: Color(0x42000000),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.zero,
-                    side: BorderSide(color: Color(0x4d000000), width: 1),
-                  ),
-                  leading:
-                  Icon(Icons.article, color: Color(0xff212435), size: 24),
-                  trailing: Icon(Icons.arrow_forward,
-                      color: Color(0xff212435), size: 24),
-                ),
-                ListTile(
-                  tileColor: Color(0x1f000000),
-                  title: Text(
-                    "BIDMAS",
-                    style: TextStyle(
-                      fontWeight: FontWeight.w400,
-                      fontStyle: FontStyle.normal,
-                      fontSize: 14,
-                      color: Color(0xff000000),
-                    ),
-                    textAlign: TextAlign.start,
-                  ),
-                  subtitle: Text(
-                    "Maths",
-                    style: TextStyle(
-                      fontWeight: FontWeight.w400,
-                      fontStyle: FontStyle.normal,
-                      fontSize: 14,
-                      color: Color(0xff000000),
-                    ),
-                    textAlign: TextAlign.start,
-                  ),
-                  dense: false,
-                  contentPadding:
-                  EdgeInsets.symmetric(vertical: 0, horizontal: 16),
-                  selected: false,
-                  selectedTileColor: Color(0x42000000),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.zero,
-                    side: BorderSide(color: Color(0x4d000000), width: 1),
-                  ),
-                  leading:
-                  Icon(Icons.article, color: Color(0xff212435), size: 24),
-                  trailing: Icon(Icons.arrow_forward,
-                      color: Color(0xff212435), size: 24),
-                ),
-                ListTile(
-                  tileColor: Color(0x1f000000),
-                  title: Text(
-                    "Bones",
-                    style: TextStyle(
-                      fontWeight: FontWeight.w400,
-                      fontStyle: FontStyle.normal,
-                      fontSize: 14,
-                      color: Color(0xff000000),
-                    ),
-                    textAlign: TextAlign.start,
-                  ),
-                  subtitle: Text(
-                    "Science",
-                    style: TextStyle(
-                      fontWeight: FontWeight.w400,
-                      fontStyle: FontStyle.normal,
-                      fontSize: 14,
-                      color: Color(0xff000000),
-                    ),
-                    textAlign: TextAlign.start,
-                  ),
-                  dense: false,
-                  contentPadding:
-                  EdgeInsets.symmetric(vertical: 0, horizontal: 16),
-                  selected: false,
-                  selectedTileColor: Color(0x42000000),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.zero,
-                    side: BorderSide(color: Color(0x4d000000), width: 1),
-                  ),
-                  leading:
-                  Icon(Icons.article, color: Color(0xff212435), size: 24),
-                  trailing: Icon(Icons.arrow_forward,
-                      color: Color(0xff212435), size: 24),
-                ),
-              ],
-            ),
-            Text(
-              "Your Friends Most Recent Posts",
-              textAlign: TextAlign.center,
-              overflow: TextOverflow.clip,
-              style: TextStyle(
-                fontWeight: FontWeight.w500,
-                fontStyle: FontStyle.normal,
-                fontSize: 17,
-                color: Color(0xff000000),
-              ),
-            ),
-            ListView(
-              scrollDirection: Axis.vertical,
-              padding: EdgeInsets.all(0),
-              shrinkWrap: true,
-              physics: ScrollPhysics(),
-              children: [
-                ListTile(
-                  tileColor: Color(0x1f000000),
-                  title: Text(
-                    "Big Data",
-                    style: TextStyle(
-                      fontWeight: FontWeight.w400,
-                      fontStyle: FontStyle.normal,
-                      fontSize: 14,
-                      color: Color(0xff000000),
-                    ),
-                    textAlign: TextAlign.start,
-                  ),
-                  subtitle: Text(
-                    "Computer Science",
-                    style: TextStyle(
-                      fontWeight: FontWeight.w400,
-                      fontStyle: FontStyle.normal,
-                      fontSize: 14,
-                      color: Color(0xff000000),
-                    ),
-                    textAlign: TextAlign.start,
-                  ),
-                  dense: false,
-                  contentPadding:
-                  EdgeInsets.symmetric(vertical: 0, horizontal: 16),
-                  selected: false,
-                  selectedTileColor: Color(0x42000000),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.zero,
-                    side: BorderSide(color: Color(0x4d000000), width: 1),
-                  ),
-                  leading:
-                  Icon(Icons.article, color: Color(0xff212435), size: 24),
-                  trailing: Icon(Icons.arrow_forward,
-                      color: Color(0xff212435), size: 24),
-                ),
-                ListTile(
-                  tileColor: Color(0x1f000000),
-                  title: Text(
-                    "UI Design",
-                    style: TextStyle(
-                      fontWeight: FontWeight.w400,
-                      fontStyle: FontStyle.normal,
-                      fontSize: 14,
-                      color: Color(0xff000000),
-                    ),
-                    textAlign: TextAlign.start,
-                  ),
-                  subtitle: Text(
-                    "Computer Science",
-                    style: TextStyle(
-                      fontWeight: FontWeight.w400,
-                      fontStyle: FontStyle.normal,
-                      fontSize: 14,
-                      color: Color(0xff000000),
-                    ),
-                    textAlign: TextAlign.start,
-                  ),
-                  dense: false,
-                  contentPadding:
-                  EdgeInsets.symmetric(vertical: 0, horizontal: 16),
-                  selected: false,
-                  selectedTileColor: Color(0x42000000),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.zero,
-                    side: BorderSide(color: Color(0x4d000000), width: 1),
-                  ),
-                  leading:
-                  Icon(Icons.article, color: Color(0xff212435), size: 24),
-                  trailing: Icon(Icons.arrow_forward,
-                      color: Color(0xff212435), size: 24),
-                ),
-                ListTile(
-                  tileColor: Color(0x1f000000),
-                  title: Text(
-                    "Databases",
-                    style: TextStyle(
-                      fontWeight: FontWeight.w400,
-                      fontStyle: FontStyle.normal,
-                      fontSize: 14,
-                      color: Color(0xff000000),
-                    ),
-                    textAlign: TextAlign.start,
-                  ),
-                  subtitle: Text(
-                    "Computer Science",
-                    style: TextStyle(
-                      fontWeight: FontWeight.w400,
-                      fontStyle: FontStyle.normal,
-                      fontSize: 14,
-                      color: Color(0xff000000),
-                    ),
-                    textAlign: TextAlign.start,
-                  ),
-                  dense: false,
-                  contentPadding:
-                  EdgeInsets.symmetric(vertical: 0, horizontal: 16),
-                  selected: false,
-                  selectedTileColor: Color(0x42000000),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.zero,
-                    side: BorderSide(color: Color(0x4d000000), width: 1),
-                  ),
-                  leading:
-                  Icon(Icons.article, color: Color(0xff212435), size: 24),
-                  trailing: Icon(Icons.arrow_forward,
-                      color: Color(0xff212435), size: 24),
-                ),
-              ],
-            ),
+            sectionTitle("Top Forums For You"),
+            sectionListTile("Software Engineering", "Computer Science"),
+            sectionListTile("BIDMAS", "Maths"),
+            sectionListTile("Bones", "Science"),
+            sectionTitle("Your Friends Most Recent Posts"),
+            sectionListTile("Big Data", "Computer Science"),
+            sectionListTile("UI Design", "Computer Science"),
+            sectionListTile("Databases", "Computer Science"),
           ],
         ),
       ),
+    );
+  }
+
+  BottomNavigationBarItem bottomNavItem(IconData icon, String label) {
+    return BottomNavigationBarItem(
+      icon: Icon(icon),
+      label: label,
+    );
+  }
+
+  Widget sectionTitle(String title) {
+    return Text(
+      title,
+      textAlign: TextAlign.center,
+      style: TextStyle(
+        fontWeight: FontWeight.w500,
+        fontSize: 17,
+        color: Colors.black,
+      ),
+    );
+  }
+
+  Widget sectionListTile(String title, String subtitle) {
+    return ListTile(
+      tileColor: Color(0x1f000000),
+      title: Text(
+        title,
+        style: TextStyle(
+          fontWeight: FontWeight.w400,
+          fontSize: 14,
+          color: Colors.black,
+        ),
+      ),
+      subtitle: Text(
+        subtitle,
+        style: TextStyle(
+          fontWeight: FontWeight.w400,
+          fontSize: 14,
+          color: Colors.black,
+        ),
+      ),
+      dense: false,
+      contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+      selected: false,
+      selectedTileColor: Color(0x42000000),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.zero,
+        side: BorderSide(color: Color(0x4d000000), width: 1),
+      ),
+      leading: Icon(Icons.article, color: Color(0xff212435), size: 24),
+      trailing: Icon(Icons.arrow_forward, color: Color(0xff212435), size: 24),
     );
   }
 }

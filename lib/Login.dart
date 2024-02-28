@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
+import 'package:firebase_database/firebase_database.dart';
 import 'Registration1.dart';
+import 'HomeScreen.dart';
 
 class Login extends StatefulWidget {
   @override
@@ -10,19 +11,52 @@ class Login extends StatefulWidget {
 
 class _LoginState extends State<Login> {
   final _auth = FirebaseAuth.instance;
-  final _emailController = TextEditingController();
+  final _emailOrUsernameController = TextEditingController();
   final _passwordController = TextEditingController();
   String _errorMessage = '';
+  bool _passwordVisible = false;
 
   void _signIn() async {
+    String email = '';
+    final input = _emailOrUsernameController.text.trim();
+
+    if (input.contains('@')) {
+      email = input;
+    } else {
+      
+    }
+
     try {
-      final userCredential = await _auth.signInWithEmailAndPassword(
-        email: _emailController.text,
+      await _auth.signInWithEmailAndPassword(
+        email: email,
         password: _passwordController.text,
       );
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => HomeScreen()),
+            (Route<dynamic> route) => false,
+      );
+    } on FirebaseAuthException catch (e) {
+      setState(() {
+        _errorMessage = e.message ?? 'An unknown error occurred';
+      });
+    }
+  }
 
+  void _resetPassword() async {
+    final email = _emailOrUsernameController.text.trim();
+    if (email.isEmpty || !email.contains('@')) {
+      setState(() {
+        _errorMessage = 'Please enter a valid email address for password reset.';
+      });
+      return;
+    }
 
-      print("login successful");
+    try {
+      await _auth.sendPasswordResetEmail(email: email);
+      setState(() {
+        _errorMessage = 'Password reset link sent to $email';
+      });
     } on FirebaseAuthException catch (e) {
       setState(() {
         _errorMessage = e.message ?? 'An unknown error occurred';
@@ -63,10 +97,9 @@ class _LoginState extends State<Login> {
             mainAxisSize: MainAxisSize.max,
             children: [
               TextField(
-                controller: _emailController,
-                obscureText: false,
+                controller: _emailOrUsernameController,
                 decoration: InputDecoration(
-                  labelText: "Enter Email",
+                  labelText: "Enter Email or Username",
                   fillColor: Color(0xfff2f2f3),
                   filled: true,
                 ),
@@ -74,11 +107,28 @@ class _LoginState extends State<Login> {
               SizedBox(height: 10),
               TextField(
                 controller: _passwordController,
-                obscureText: true,
+                obscureText: !_passwordVisible,
                 decoration: InputDecoration(
                   labelText: "Enter Password",
                   fillColor: Color(0xfff2f2f3),
                   filled: true,
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _passwordVisible ? Icons.visibility : Icons.visibility_off,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _passwordVisible = !_passwordVisible;
+                      });
+                    },
+                  ),
+                ),
+              ),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  onPressed: _resetPassword,
+                  child: Text('Forgot Password?'),
                 ),
               ),
               SizedBox(height: 20),

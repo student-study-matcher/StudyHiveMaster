@@ -14,15 +14,53 @@ class Registration2 extends StatefulWidget {
 }
 
 class _Registration2State extends State<Registration2> {
-  String userCourse = "Computer Science";
-  String userUniversity = "University of Portsmouth";
+  String? userCourse;
+  String? userUniversity;
+  List<String> courses = [];
+  List<String> universities = [];
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseDatabase _database = FirebaseDatabase.instance;
-
 
   TextEditingController firstNameController = TextEditingController();
   TextEditingController lastNameController = TextEditingController();
   TextEditingController dobController = TextEditingController();
+  TextEditingController usernameController = TextEditingController();
+  String? usernameError;
+
+
+  @override
+  void initState() {
+    super.initState();
+    fetchUniversities();
+    fetchCourses();
+  }
+
+  Future<void> fetchUniversities() async {
+    DatabaseEvent event = await _database.ref()
+        .child('Universities')
+        .once();
+    if (event.snapshot.value != null) {
+      Map<dynamic, dynamic> universitiesMap = Map<dynamic, dynamic>.from(
+          event.snapshot.value as Map);
+      setState(() {
+        universities = universitiesMap.values.toList().cast<String>();
+        userUniversity = universities.isNotEmpty ? universities.first : null;
+      });
+    }
+  }
+
+  Future<void> fetchCourses() async {
+    DatabaseEvent event = await _database.ref().child('Subjects').once();
+    if (event.snapshot.value != null) {
+      Map<dynamic, dynamic> coursesMap = Map<dynamic, dynamic>.from(
+          event.snapshot.value as Map);
+      setState(() {
+        courses = coursesMap.values.toList().cast<String>();
+        userCourse = courses.isNotEmpty ? courses.first : null;
+      });
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -86,15 +124,18 @@ class _Registration2State extends State<Registration2> {
                   decoration: InputDecoration(
                     disabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(4.0),
-                      borderSide: BorderSide(color: Color(0xff000000), width: 1),
+                      borderSide: BorderSide(
+                          color: Color(0xff000000), width: 1),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(4.0),
-                      borderSide: BorderSide(color: Color(0xff000000), width: 1),
+                      borderSide: BorderSide(
+                          color: Color(0xff000000), width: 1),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(4.0),
-                      borderSide: BorderSide(color: Color(0xff000000), width: 1),
+                      borderSide: BorderSide(
+                          color: Color(0xff000000), width: 1),
                     ),
                     labelText: "First Name",
                     labelStyle: TextStyle(
@@ -113,7 +154,8 @@ class _Registration2State extends State<Registration2> {
                     filled: true,
                     fillColor: Color(0xfff2f2f3),
                     isDense: false,
-                    contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                    contentPadding: EdgeInsets.symmetric(
+                        vertical: 8, horizontal: 12),
                   ),
                 ),
               ),
@@ -147,15 +189,18 @@ class _Registration2State extends State<Registration2> {
                   decoration: InputDecoration(
                     disabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(4.0),
-                      borderSide: BorderSide(color: Color(0xff000000), width: 1),
+                      borderSide: BorderSide(
+                          color: Color(0xff000000), width: 1),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(4.0),
-                      borderSide: BorderSide(color: Color(0xff000000), width: 1),
+                      borderSide: BorderSide(
+                          color: Color(0xff000000), width: 1),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(4.0),
-                      borderSide: BorderSide(color: Color(0xff000000), width: 1),
+                      borderSide: BorderSide(
+                          color: Color(0xff000000), width: 1),
                     ),
                     labelText: "Last Name",
                     labelStyle: TextStyle(
@@ -174,7 +219,8 @@ class _Registration2State extends State<Registration2> {
                     filled: true,
                     fillColor: Color(0xfff2f2f3),
                     isDense: false,
-                    contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                    contentPadding: EdgeInsets.symmetric(
+                        vertical: 8, horizontal: 12),
                   ),
                 ),
               ),
@@ -208,15 +254,18 @@ class _Registration2State extends State<Registration2> {
                   decoration: InputDecoration(
                     disabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(4.0),
-                      borderSide: BorderSide(color: Color(0xff000000), width: 1),
+                      borderSide: BorderSide(
+                          color: Color(0xff000000), width: 1),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(4.0),
-                      borderSide: BorderSide(color: Color(0xff000000), width: 1),
+                      borderSide: BorderSide(
+                          color: Color(0xff000000), width: 1),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(4.0),
-                      borderSide: BorderSide(color: Color(0xff000000), width: 1),
+                      borderSide: BorderSide(
+                          color: Color(0xff000000), width: 1),
                     ),
                     labelText: "Date Of Birth",
                     labelStyle: TextStyle(
@@ -229,7 +278,8 @@ class _Registration2State extends State<Registration2> {
                     filled: true,
                     fillColor: Color(0xfff2f2f3),
                     isDense: false,
-                    contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                    contentPadding: EdgeInsets.symmetric(
+                        vertical: 8, horizontal: 12),
                   ),
                   onTap: () {
                     _selectDate();
@@ -263,14 +313,8 @@ class _Registration2State extends State<Registration2> {
                   ),
                   child: DropdownButton<String>(
                     value: userCourse,
-                    items: [
-                      "Computer Science",
-                      "Maths",
-                      "English",
-                      "Aerospace Engineering",
-                      "Criminology",
-                      "Business"
-                    ].map<DropdownMenuItem<String>>((String value) {
+                    items: courses.map<DropdownMenuItem<String>>((
+                        String value) {
                       return DropdownMenuItem<String>(
                         value: value,
                         child: Text(value),
@@ -294,7 +338,7 @@ class _Registration2State extends State<Registration2> {
               ),
             ),
 
-            // University Dropdown
+// University Dropdown
             Container(
               margin: EdgeInsets.all(0),
               padding: EdgeInsets.all(0),
@@ -318,12 +362,8 @@ class _Registration2State extends State<Registration2> {
                   ),
                   child: DropdownButton<String>(
                     value: userUniversity,
-                    items: [
-                      "University of Portsmouth",
-                      "University of Exeter",
-                      "University of Southampton",
-                      "University of Swansea"
-                    ].map<DropdownMenuItem<String>>((String value) {
+                    items: universities.map<DropdownMenuItem<String>>((
+                        String value) {
                       return DropdownMenuItem<String>(
                         value: value,
                         child: Text(value),
@@ -346,6 +386,19 @@ class _Registration2State extends State<Registration2> {
                 ),
               ),
             ),
+            TextField(
+              controller: usernameController,
+              decoration: InputDecoration(
+                labelText: 'Username',
+                hintText: 'Choose a username',
+                errorText: usernameError, // Display the error message if not null
+              ),
+              onChanged: (value) {
+                validateUsername(value); // Call validateUsername on each input change
+              },
+            ),
+
+
 
             // Confirm Details Button
             Container(
@@ -362,7 +415,6 @@ class _Registration2State extends State<Registration2> {
               child: MaterialButton(
                 onPressed: () {
                   saveUserData();
-
                 },
                 color: Color(0xff48ff54),
                 elevation: 0,
@@ -388,7 +440,6 @@ class _Registration2State extends State<Registration2> {
         ),
       ),
     );
-
   }
 
   Future<void> _selectDate() async {
@@ -404,97 +455,106 @@ class _Registration2State extends State<Registration2> {
     }
   }
 
-//Function to save user_data
+  Future<bool> isUsernameUnique(String username) async {
+    final event = await _database.ref().child('Usernames').child(username).once();
+    final snapshot = event.snapshot;
+    return snapshot.value == null;
+  }
+
+
+
+//Function to save user data
   Future<void> saveUserData() async {
+    String userFirstName = firstNameController.text.trim();
+    String userLastName = lastNameController.text.trim();
+    String userDOBString = dobController.text.trim();
+    String username = usernameController.text.trim();
 
-   //assign the user entries to variables
-    String userFirstName = firstNameController.text;
-    String userLastName = lastNameController.text;
-    String userDOBString = dobController.text;
-
-    if (userFirstName == "" || userLastName == "" || userDOBString == "") {
-
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text('Error'),
-            content: Text('Please fill in all the required fields.'),
-          );
-        },
-      );
-      return; // Exit the function if any field is empty
+    if (userFirstName.isEmpty || userLastName.isEmpty ||
+        userDOBString.isEmpty || username.isEmpty) {
+      _showDialog('Error', 'Please fill in all the required fields.');
+      return;
     }
-
 
     DateTime userDOB = DateTime.parse(userDOBString);
-
-   DateTime now = DateTime.now();
+    DateTime now = DateTime.now();
     int age = now.year - userDOB.year;
 
-    if (age < 18) {  //check that the user is old enough to use the app
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text('Error'),
-            content: Text("Users must be 18 or over"),
-          );
-        },
-      );
+    if (age < 18) { // Check that the user is old enough to use the app
+      _showDialog('Error', "Users must be 18 or over");
       return;
     }
 
-    if (userFirstName.length > 50 || userLastName.length > 50) {
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text('Error'),
-            content: Text("Input too Long!"),
-          );
-        },
-      );
+    if (userFirstName.length > 50 || userLastName.length > 50 ||
+        username.length > 15) {
+      _showDialog('Error', "Input too long!");
       return;
     }
 
+    //username unique or not
+    bool uniqueUsername = await isUsernameUnique(username);
+    if (!uniqueUsername) {
+      _showDialog(
+          'Error', 'Username is already taken. Please choose another one.');
+      return;
+    }
 
     try {
-      // Get the current user from Firebase Authentication
       User? user = _auth.currentUser;
-      print('Current user: $user');
-
-      print("saving data");
-
-      // Check if the user is authenticated
       if (user != null) {
-        // Save user data to Realtime Database
-        await _database
-            .reference()
-            .child('users')
-            .child(user.uid)
-            .set({
+        //updates user tbl
+        await _database.ref().child('Users').child(user.uid).update({
           'firstName': userFirstName,
           'lastName': userLastName,
-          'DOB': userDOB.toIso8601String(), // Convert DateTime to string
+          'DOB': userDOB.toIso8601String(),
           'course': userCourse,
           'university': userUniversity,
+          'username': username,
         });
-        print('User data saved successfully!');
+        // Update the Usernames table with the new username for quick lookup
+        await _database.ref().child('Usernames').child(username).set(
+            user.uid);
 
-        // Navigate to the next screen (Registration3) after saving data
+        print('User data updated successfully!');
+
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => Registration3()),
         );
       } else {
         print('User not authenticated.');
-        // Handle the case where the user is not authenticated
       }
     } catch (e) {
-      print('Error saving user data: $e');
-      // Handle error as needed
+      print('Error updating user data: $e');
+      _showDialog('Error', 'Failed to update user data.');
     }
+  }
+
+  //validate username
+  void validateUsername(String value) {
+    setState(() {
+      if (value.isEmpty) {
+        usernameError = 'Username cannot be empty';
+      } else if (value.length < 3 || value.length > 15) {
+        usernameError = 'Username must be between 3 and 15 characters';
+      } else if (!RegExp(r'^[a-zA-Z0-9_-]+$').hasMatch(value)) {
+        usernameError = 'Only letters, numbers, hyphens, and underscores are allowed';
+      } else {
+        usernameError = null;
+      }
+    });
+  }
+
+  void _showDialog(String title, String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Text(message),
+        );
+      },
+    );
   }
 }
 

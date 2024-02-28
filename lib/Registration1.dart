@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'Login.dart';
 import 'Registration2.dart';
+import 'package:firebase_database/firebase_database.dart';
 
 class Registration1 extends StatefulWidget {
   @override
@@ -10,6 +11,8 @@ class Registration1 extends StatefulWidget {
 
 class Registration1State extends State<Registration1> {
   final _auth = FirebaseAuth.instance;
+  final _database = FirebaseDatabase.instance.reference();
+
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   TextEditingController confirmPasswordController = TextEditingController();
@@ -31,19 +34,22 @@ class Registration1State extends State<Registration1> {
       );
 
       if (newUser.user != null) {
-        // Registration successful, navigate to Home Screen
+
+        _database.child('Users').child(newUser.user!.uid).set({
+          'email': email,
+
+        });
+
         print("registration successful");
         Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => Registration2(user: newUser.user)),
+          context,
+          MaterialPageRoute(builder: (context) => Registration2(user: newUser.user)),
         );
-
       }
     } on FirebaseAuthException catch (e) {
       _showDialog('Registration Error', e.message ?? 'An unknown error occurred.');
     }
   }
-
 
   void _showDialog(String title, String message) {
     showDialog(

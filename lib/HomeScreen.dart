@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'Forums.dart';
-import 'Setting.dart';
+import 'Settings.dart';
 import 'UserProfile.dart';
 
 class HomeScreen extends StatelessWidget {

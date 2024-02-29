@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'Registration1.dart';
 import 'HomeScreen.dart';
 
@@ -10,59 +8,11 @@ class Login extends StatefulWidget {
 }
 
 class _LoginState extends State<Login> {
-  final _auth = FirebaseAuth.instance;
-  final _emailOrUsernameController = TextEditingController();
-  final _passwordController = TextEditingController();
-  String _errorMessage = '';
-  bool _passwordVisible = false;
+  bool _isSecurePassword = true;
+  TextEditingController _usernameController = TextEditingController();
+  TextEditingController _passwordController = TextEditingController();
 
-  void _signIn() async {
-    String email = '';
-    final input = _emailOrUsernameController.text.trim();
 
-    if (input.contains('@')) {
-      email = input;
-    } else {
-      
-    }
-
-    try {
-      await _auth.signInWithEmailAndPassword(
-        email: email,
-        password: _passwordController.text,
-      );
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (context) => HomeScreen()),
-            (Route<dynamic> route) => false,
-      );
-    } on FirebaseAuthException catch (e) {
-      setState(() {
-        _errorMessage = e.message ?? 'An unknown error occurred';
-      });
-    }
-  }
-
-  void _resetPassword() async {
-    final email = _emailOrUsernameController.text.trim();
-    if (email.isEmpty || !email.contains('@')) {
-      setState(() {
-        _errorMessage = 'Please enter a valid email address for password reset.';
-      });
-      return;
-    }
-
-    try {
-      await _auth.sendPasswordResetEmail(email: email);
-      setState(() {
-        _errorMessage = 'Password reset link sent to $email';
-      });
-    } on FirebaseAuthException catch (e) {
-      setState(() {
-        _errorMessage = e.message ?? 'An unknown error occurred';
-      });
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -72,20 +22,30 @@ class _LoginState extends State<Login> {
         elevation: 4,
         centerTitle: false,
         automaticallyImplyLeading: false,
-        backgroundColor: Color(0xff3f93f2),
-        title: Text(
-          "Login Page",
-          style: TextStyle(
-            fontWeight: FontWeight.w600,
-            fontSize: 17,
-            color: Color(0xffffffff),
-          ),
+        backgroundColor: Color(0xffad32fe),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.zero,
         ),
-        leading: Icon(
-          Icons.arrow_back,
-          color: Color(0xffffffff),
-          size: 24,
+        title: Row(
+          children: [
+            Image.asset(
+              'assets/logo.png',
+              width: 24,
+            ),
+            SizedBox(width: 8),
+            Text(
+              "Study Hive",
+              style: TextStyle(
+                fontWeight: FontWeight.w400,
+                fontStyle: FontStyle.normal,
+                fontSize: 14,
+                color: Color(0xffffffff),
+              ),
+            ),
+          ],
         ),
+
+
       ),
       body: Align(
         alignment: Alignment.center,
@@ -96,70 +56,214 @@ class _LoginState extends State<Login> {
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisSize: MainAxisSize.max,
             children: [
-              TextField(
-                controller: _emailOrUsernameController,
-                decoration: InputDecoration(
-                  labelText: "Enter Email or Username",
-                  fillColor: Color(0xfff2f2f3),
-                  filled: true,
-                ),
-              ),
-              SizedBox(height: 10),
-              TextField(
-                controller: _passwordController,
-                obscureText: !_passwordVisible,
-                decoration: InputDecoration(
-                  labelText: "Enter Password",
-                  fillColor: Color(0xfff2f2f3),
-                  filled: true,
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _passwordVisible ? Icons.visibility : Icons.visibility_off,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        _passwordVisible = !_passwordVisible;
-                      });
-                    },
+              Padding(
+                padding: EdgeInsets.all(10),
+                child: Text(
+                  "Username:",
+                  textAlign: TextAlign.start,
+                  overflow: TextOverflow.clip,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w400,
+                    fontStyle: FontStyle.normal,
+                    fontSize: 14,
+                    color: Color(0xff000000),
                   ),
                 ),
               ),
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: _resetPassword,
-                  child: Text('Forgot Password?'),
+              Padding(
+                padding: EdgeInsets.all(10),
+                child: TextField(
+                  controller: _usernameController,
+                  obscureText: false,
+                  textAlign: TextAlign.start,
+                  maxLines: 1,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w400,
+                    fontStyle: FontStyle.normal,
+                    fontSize: 14,
+                    color: Color(0xff000000),
+                  ),
+                  decoration: InputDecoration(
+                    disabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(4.0),
+                      borderSide:
+                      BorderSide(color: Color(0xff000000), width: 1),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(4.0),
+                      borderSide:
+                      BorderSide(color: Color(0xff000000), width: 1),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(4.0),
+                      borderSide:
+                      BorderSide(color: Color(0xff000000), width: 1),
+                    ),
+                    labelText: "Enter Username",
+                    labelStyle: TextStyle(
+                      fontWeight: FontWeight.w400,
+                      fontStyle: FontStyle.normal,
+                      fontSize: 14,
+                      color: Color(0xff000000),
+                    ),
+                    hintText: "Enter Text",
+                    hintStyle: TextStyle(
+                      fontWeight: FontWeight.w400,
+                      fontStyle: FontStyle.normal,
+                      fontSize: 14,
+                      color: Color(0xff000000),
+                    ),
+                    filled: true,
+                    fillColor: Color(0xfff2f2f3),
+                    isDense: false,
+                    contentPadding:
+                    EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                  ),
                 ),
               ),
-              SizedBox(height: 20),
-              MaterialButton(
-                onPressed: _signIn,
-                color: Color(0xfffed140),
+              Padding(
+                padding: EdgeInsets.all(10),
                 child: Text(
-                  "Login",
-                  style: TextStyle(fontSize: 14),
+                  "Password",
+                  textAlign: TextAlign.start,
+                  overflow: TextOverflow.clip,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w400,
+                    fontStyle: FontStyle.normal,
+                    fontSize: 14,
+                    color: Color(0xff000000),
+                  ),
                 ),
-                textColor: Color(0xff000000),
               ),
-              MaterialButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => Registration1()),
-                  );
-                },
-                color: Color(0xfffed141),
-                child: Text(
-                  "Register",
-                  style: TextStyle(fontSize: 14),
+              Padding(
+                padding: EdgeInsets.all(10),
+                child: TextField(
+                  controller: _passwordController,
+                  obscureText: _isSecurePassword,
+                  textAlign: TextAlign.start,
+                  maxLines: 1,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w400,
+                    fontStyle: FontStyle.normal,
+                    fontSize: 14,
+                    color: Color(0xff000000),
+                  ),
+                  decoration: InputDecoration(
+                    disabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(4.0),
+                      borderSide:
+                      BorderSide(color: Color(0xff000000), width: 1),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(4.0),
+                      borderSide:
+                      BorderSide(color: Color(0xff000000), width: 1),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(4.0),
+                      borderSide:
+                      BorderSide(color: Color(0xff000000), width: 1),
+                    ),
+                    labelText: "Enter password",
+                    labelStyle: TextStyle(
+                      fontWeight: FontWeight.w400,
+                      fontStyle: FontStyle.normal,
+                      fontSize: 14,
+                      color: Color(0xff000000),
+                    ),
+                    hintText: "Enter Text",
+                    hintStyle: TextStyle(
+                      fontWeight: FontWeight.w400,
+                      fontStyle: FontStyle.normal,
+                      fontSize: 14,
+                      color: Color(0xff000000),
+                    ),
+                    filled: true,
+                    fillColor: Color(0xfff2f2f3),
+                    isDense: false,
+                    contentPadding:
+                    EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                    suffixIcon: IconButton(
+                      icon: Icon(_isSecurePassword ? Icons.visibility : Icons.visibility_off),
+                      onPressed: () {
+                        setState(() {
+                          _isSecurePassword = !_isSecurePassword;
+                        });
+                      },
+                    ),
+                  ),
                 ),
-                textColor: Color(0xff000000),
               ),
-              SizedBox(height: 16.0),
-              Text(
-                _errorMessage,
-                style: TextStyle(color: Colors.red),
-                textAlign: TextAlign.center,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisSize: MainAxisSize.max,
+                children: [
+                  Expanded(
+                    flex: 1,
+                    child: Padding(
+                      padding: EdgeInsets.all(5),
+                      child: MaterialButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => HomeScreen()),
+                          );
+                        },
+                        color: Color(0xfffed140),
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.zero,
+                          side: BorderSide(color: Color(0xff808080), width: 1),
+                        ),
+                        padding: EdgeInsets.all(16),
+                        child: Text(
+                          "Login",
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400,
+                            fontStyle: FontStyle.normal,
+                          ),
+                        ),
+                        textColor: Color(0xff000000),
+                        height: 40,
+                        minWidth: 100,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    flex: 1,
+                    child: Padding(
+                      padding: EdgeInsets.all(5),
+                      child: MaterialButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => Registration1()),
+                          );
+                        },
+                        color: Color(0xfffed141),
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.zero,
+                          side: BorderSide(color: Color(0xff808080), width: 1),
+                        ),
+                        padding: EdgeInsets.all(16),
+                        child: Text(
+                          "Register",
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400,
+                            fontStyle: FontStyle.normal,
+                          ),
+                        ),
+                        textColor: Color(0xff000000),
+                        height: 40,
+                        minWidth: 100,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

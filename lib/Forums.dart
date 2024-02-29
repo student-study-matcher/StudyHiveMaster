@@ -41,7 +41,13 @@ class _ForumsState extends State<Forums> {
     return Scaffold(
       backgroundColor: Color(0xffffffff),
       appBar: AppBar(
+        elevation: 4,
+        centerTitle: false,
+        automaticallyImplyLeading: false,
         backgroundColor: Color(0xffad32fe),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.zero,
+        ),
         title: GestureDetector(
           onTap: () {
             Navigator.push(
@@ -69,6 +75,9 @@ class _ForumsState extends State<Forums> {
           ),
         ),
 
+        actions: [
+          Icon(Icons.search, color: Color(0xffffffff), size: 24),
+        ],
       ),
       bottomNavigationBar: BottomNavigationBar(
         items: [

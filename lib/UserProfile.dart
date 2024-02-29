@@ -1,9 +1,20 @@
 import 'package:flutter/material.dart';
-import 'HomeScreen.dart';
-import 'Setting.dart';
-import 'Forums.dart';
+import 'index.dart';
 
-class UserProfile extends StatelessWidget {
+
+class UserProfile extends StatefulWidget {
+  @override
+  _UserProfileState createState() => _UserProfileState();
+}
+
+class _UserProfileState extends State<UserProfile> {
+  List<String> friends = [
+    "Friend 1", "Friend 2", "Friend 3", "Friend 4", "Friend 5",
+    "Friend 6", "Friend 7", "Friend 8", "Friend 9", "Friend 10"
+  ];
+  bool isDropdownOpen = false;
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -55,41 +66,68 @@ class UserProfile extends StatelessWidget {
         showUnselectedLabels: true,
         type: BottomNavigationBarType.fixed,
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            SizedBox(height: 20),
-            GestureDetector(
-              onTap: () {
-                // select photo
-              },
-              child: CircleAvatar(
-                radius: 60,
-                backgroundImage: AssetImage("assets/profilePicture1.png"),
-              ),
-            ),
-            SizedBox(height: 10),
-            Text("Angelina", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
-            Text("Hudhra", style: TextStyle(fontSize: 18)),
-            SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                ProfileInfoBox(title: "Big Data"),
-                ProfileInfoBox(title: "120 Friends"),
-                ProfileInfoBox(title: "University of Portsmouth"),
+                SizedBox(height: 20),
+                GestureDetector(
+                  onTap: () {
+                    // select photo
+                  },
+                  child: CircleAvatar(
+                    radius: 60,
+                    backgroundImage: AssetImage("assets/profilePicture1.png"),
+                  ),
+                ),
+                SizedBox(height: 10),
+                Text("Angelina", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
+                Text("Hudhra", style: TextStyle(fontSize: 18)),
+                SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ProfileInfoBox(title: "Big Data"),
+                    ProfileFriendsButton(
+                      onPressed: () {
+                        setState(() {
+                          isDropdownOpen = !isDropdownOpen;
+                        });
+                      },
+                    ),
+                    ProfileInfoBox(title: "University of Portsmouth"),
+                  ],
+                ),
+                SizedBox(height: 20),
+                ProfileBioBox(
+                  initialBio: "I like football",
+                  onBioChanged: (newBio) {
+                    //  bio
+                  },
+                ),
               ],
             ),
-            SizedBox(height: 20),
-            ProfileBioBox(
-              initialBio: "I like football",
-              onBioChanged: (newBio) {
-                //  bio
-              },
+          ),
+          if (isDropdownOpen)
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: FriendsPopup(
+                friends: friends,
+                onFriendSelected: (friend) {
+                  setState(() {
+                    isDropdownOpen = false;
+                  });
+                },
+                onClose: () => setState(() {
+                  isDropdownOpen = false;
+                }),
+              ),
             ),
-          ],
-        ),
+        ],
       ),
     );
   }
@@ -122,6 +160,35 @@ class ProfileInfoBox extends StatelessWidget {
           Text("", style: TextStyle(fontSize: 14)),
         ],
       ),
+    );
+  }
+}
+
+class ProfileFriendsButton extends StatelessWidget {
+  final VoidCallback onPressed;
+
+  ProfileFriendsButton({required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        GestureDetector(
+          onTap: onPressed,
+          child: Container(
+            padding: EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Column(
+              children: [
+                Text("Friends", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -187,11 +254,5 @@ class _ProfileBioBoxState extends State<ProfileBioBox> {
         ],
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
   }
 }

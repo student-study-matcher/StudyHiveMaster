@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'Forums.dart';
-import 'Setting.dart';
-import 'UserProfile.dart';
+import 'index.dart';
 
 class HomeScreen extends StatelessWidget {
   @override
@@ -59,6 +57,8 @@ class HomeScreen extends StatelessWidget {
         onTap: (value) {
           if (value == 0) {
             Navigator.push(context, MaterialPageRoute(builder: (_) => Forums()));
+          } else if (value == 1) {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => ChatPage()));
           } else if (value == 2) {
             Navigator.push(context, MaterialPageRoute(builder: (_) => UserProfile()));
           }

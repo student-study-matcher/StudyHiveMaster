@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'HomeScreen.dart';
-import 'UserProfile.dart';
+import 'index.dart';
 
 class Forums extends StatefulWidget {
   @override
@@ -25,10 +24,11 @@ class _ForumsState extends State<Forums> {
       "title": "Functional Programming",
       "subtitle": "Computer Science",
     },
-
   ];
 
   List<Map<String, dynamic>> filteredList = [];
+
+  String dropdownValue = 'My Forums';
 
   @override
   void initState() {
@@ -41,13 +41,7 @@ class _ForumsState extends State<Forums> {
     return Scaffold(
       backgroundColor: Color(0xffffffff),
       appBar: AppBar(
-        elevation: 4,
-        centerTitle: false,
-        automaticallyImplyLeading: false,
         backgroundColor: Color(0xffad32fe),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.zero,
-        ),
         title: GestureDetector(
           onTap: () {
             Navigator.push(
@@ -74,10 +68,6 @@ class _ForumsState extends State<Forums> {
             ],
           ),
         ),
-
-        actions: [
-          Icon(Icons.search, color: Color(0xffffffff), size: 24),
-        ],
       ),
       bottomNavigationBar: BottomNavigationBar(
         items: [
@@ -102,7 +92,7 @@ class _ForumsState extends State<Forums> {
               MaterialPageRoute(builder: (context) => Forums()),
             );
           } else if (index == 1) {
-
+            // Handle Messages navigation
           } else if (index == 2) {
             Navigator.push(
               context,
@@ -122,26 +112,74 @@ class _ForumsState extends State<Forums> {
         type: BottomNavigationBarType.fixed,
       ),
       body: Padding(
-        padding: EdgeInsets.all(2),
+        padding: EdgeInsets.all(8),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.stretch,
-          mainAxisSize: MainAxisSize.max,
           children: [
-            Padding(
-              padding: EdgeInsets.all(8),
-              child: TextField(
-                onChanged: (value) {
-                  filterForums(value);
-                },
-                decoration: InputDecoration(
-                  hintText: 'Search forums...',
-                  prefixIcon: Icon(Icons.search),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10.0),
-                  ),
+            TextField(
+              onChanged: (value) {
+                filterForums(value);
+              },
+              decoration: InputDecoration(
+                hintText: 'Search forums...',
+                prefixIcon: Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10.0),
                 ),
               ),
+            ),
+            SizedBox(height: 8), // Add spacing between search bar and buttons
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                ElevatedButton(
+                  onPressed: () {
+                    // Implement filter button functionality here
+                  },
+                  child: Text(
+                    'Filter',
+                    style: TextStyle(fontSize: 12),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  ),
+                ),
+                PopupMenuButton<String>(
+                  onSelected: (String result) {
+                    setState(() {
+                      dropdownValue = result;
+                    });
+                  },
+                  itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                    PopupMenuItem<String>(
+                      value: 'My Forums',
+                      child: Text('My Forums'),
+                    ),
+                    PopupMenuItem<String>(
+                      value: 'Most Recent',
+                      child: Text('Most Recent'),
+                    ),
+                    PopupMenuItem<String>(
+                      value: 'Friends',
+                      child: Text('Friends'),
+                    ),
+                  ],
+                ),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    // Navigate to AddForum page when button is pressed
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => AddForum()),
+                    );
+                  },
+                  icon: Icon(Icons.add),
+                  label: Text('Add New Forum'),
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  ),
+                ),
+              ],
             ),
             Expanded(
               child: ListView.builder(
@@ -151,17 +189,17 @@ class _ForumsState extends State<Forums> {
                     title: Text(filteredList[index]["title"]),
                     subtitle: Text(filteredList[index]["subtitle"]),
                     leading: Icon(
-                        Icons.article,
-                        color: Color(0xff212435),
-                        size: 24),
+                      Icons.article,
+                      color: Color(0xff212435),
+                      size: 24,
+                    ),
                     trailing: Icon(
-                        Icons.arrow_forward,
-                        color: Color(0xff212435),
-                        size: 24),
-                    // Add other properties as needed
+                      Icons.arrow_forward,
+                      color: Color(0xff212435),
+                      size: 24,
+                    ),
                     onTap: () {
                       // Handle forum item tap
-                      // Navigate to the forum page or perform any other action
                     },
                   );
                 },

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'Registration1.dart';
-import 'HomeScreen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'index.dart';
 
 class Login extends StatefulWidget {
   @override
@@ -8,265 +8,155 @@ class Login extends StatefulWidget {
 }
 
 class _LoginState extends State<Login> {
+  final _auth = FirebaseAuth.instance;
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  String _errorMessage = '';
   bool _isSecurePassword = true;
-  TextEditingController _usernameController = TextEditingController();
-  TextEditingController _passwordController = TextEditingController();
 
+  void _signIn() async {
+    try {
+      final userCredential = await _auth.signInWithEmailAndPassword(
+        email: _emailController.text,
+        password: _passwordController.text,
+      );
 
+      print("Login successful");
+    } on FirebaseAuthException catch (e) {
+      setState(() {
+        _errorMessage = e.message ?? 'An unknown error occurred';
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xffffffff),
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        elevation: 4,
-        centerTitle: false,
-        automaticallyImplyLeading: false,
+        title: Text("Login"),
         backgroundColor: Color(0xffad32fe),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.zero,
-        ),
-        title: Row(
+      ),
+      body: Padding(
+        padding: EdgeInsets.all(10),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Image.asset(
-              'assets/logo.png',
-              width: 24,
-            ),
-            SizedBox(width: 8),
+            buildTextField("Username", _emailController),
+            buildPasswordTextField("Password", _passwordController),
+            buildLoginButtons(),
+            SizedBox(height: 16.0),
             Text(
-              "Study Hive",
-              style: TextStyle(
-                fontWeight: FontWeight.w400,
-                fontStyle: FontStyle.normal,
-                fontSize: 14,
-                color: Color(0xffffffff),
-              ),
+              _errorMessage,
+              style: TextStyle(color: Colors.red),
+              textAlign: TextAlign.center,
             ),
           ],
         ),
-
-
       ),
-      body: Align(
-        alignment: Alignment.center,
-        child: Padding(
-          padding: EdgeInsets.all(10),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisSize: MainAxisSize.max,
-            children: [
-              Padding(
-                padding: EdgeInsets.all(10),
-                child: Text(
-                  "Username:",
-                  textAlign: TextAlign.start,
-                  overflow: TextOverflow.clip,
-                  style: TextStyle(
-                    fontWeight: FontWeight.w400,
-                    fontStyle: FontStyle.normal,
-                    fontSize: 14,
-                    color: Color(0xff000000),
-                  ),
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.all(10),
-                child: TextField(
-                  controller: _usernameController,
-                  obscureText: false,
-                  textAlign: TextAlign.start,
-                  maxLines: 1,
-                  style: TextStyle(
-                    fontWeight: FontWeight.w400,
-                    fontStyle: FontStyle.normal,
-                    fontSize: 14,
-                    color: Color(0xff000000),
-                  ),
-                  decoration: InputDecoration(
-                    disabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(4.0),
-                      borderSide:
-                      BorderSide(color: Color(0xff000000), width: 1),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(4.0),
-                      borderSide:
-                      BorderSide(color: Color(0xff000000), width: 1),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(4.0),
-                      borderSide:
-                      BorderSide(color: Color(0xff000000), width: 1),
-                    ),
-                    labelText: "Enter Username",
-                    labelStyle: TextStyle(
-                      fontWeight: FontWeight.w400,
-                      fontStyle: FontStyle.normal,
-                      fontSize: 14,
-                      color: Color(0xff000000),
-                    ),
-                    hintText: "Enter Text",
-                    hintStyle: TextStyle(
-                      fontWeight: FontWeight.w400,
-                      fontStyle: FontStyle.normal,
-                      fontSize: 14,
-                      color: Color(0xff000000),
-                    ),
-                    filled: true,
-                    fillColor: Color(0xfff2f2f3),
-                    isDense: false,
-                    contentPadding:
-                    EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                  ),
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.all(10),
-                child: Text(
-                  "Password",
-                  textAlign: TextAlign.start,
-                  overflow: TextOverflow.clip,
-                  style: TextStyle(
-                    fontWeight: FontWeight.w400,
-                    fontStyle: FontStyle.normal,
-                    fontSize: 14,
-                    color: Color(0xff000000),
-                  ),
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.all(10),
-                child: TextField(
-                  controller: _passwordController,
-                  obscureText: _isSecurePassword,
-                  textAlign: TextAlign.start,
-                  maxLines: 1,
-                  style: TextStyle(
-                    fontWeight: FontWeight.w400,
-                    fontStyle: FontStyle.normal,
-                    fontSize: 14,
-                    color: Color(0xff000000),
-                  ),
-                  decoration: InputDecoration(
-                    disabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(4.0),
-                      borderSide:
-                      BorderSide(color: Color(0xff000000), width: 1),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(4.0),
-                      borderSide:
-                      BorderSide(color: Color(0xff000000), width: 1),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(4.0),
-                      borderSide:
-                      BorderSide(color: Color(0xff000000), width: 1),
-                    ),
-                    labelText: "Enter password",
-                    labelStyle: TextStyle(
-                      fontWeight: FontWeight.w400,
-                      fontStyle: FontStyle.normal,
-                      fontSize: 14,
-                      color: Color(0xff000000),
-                    ),
-                    hintText: "Enter Text",
-                    hintStyle: TextStyle(
-                      fontWeight: FontWeight.w400,
-                      fontStyle: FontStyle.normal,
-                      fontSize: 14,
-                      color: Color(0xff000000),
-                    ),
-                    filled: true,
-                    fillColor: Color(0xfff2f2f3),
-                    isDense: false,
-                    contentPadding:
-                    EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                    suffixIcon: IconButton(
-                      icon: Icon(_isSecurePassword ? Icons.visibility : Icons.visibility_off),
-                      onPressed: () {
-                        setState(() {
-                          _isSecurePassword = !_isSecurePassword;
-                        });
-                      },
-                    ),
-                  ),
-                ),
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisSize: MainAxisSize.max,
-                children: [
-                  Expanded(
-                    flex: 1,
-                    child: Padding(
-                      padding: EdgeInsets.all(5),
-                      child: MaterialButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => HomeScreen()),
-                          );
-                        },
-                        color: Color(0xfffed140),
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.zero,
-                          side: BorderSide(color: Color(0xff808080), width: 1),
-                        ),
-                        padding: EdgeInsets.all(16),
-                        child: Text(
-                          "Login",
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w400,
-                            fontStyle: FontStyle.normal,
-                          ),
-                        ),
-                        textColor: Color(0xff000000),
-                        height: 40,
-                        minWidth: 100,
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    flex: 1,
-                    child: Padding(
-                      padding: EdgeInsets.all(5),
-                      child: MaterialButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => Registration1()),
-                          );
-                        },
-                        color: Color(0xfffed141),
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.zero,
-                          side: BorderSide(color: Color(0xff808080), width: 1),
-                        ),
-                        padding: EdgeInsets.all(16),
-                        child: Text(
-                          "Register",
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w400,
-                            fontStyle: FontStyle.normal,
-                          ),
-                        ),
-                        textColor: Color(0xff000000),
-                        height: 40,
-                        minWidth: 100,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
+    );
+  }
+
+  Widget buildTextField(String label, TextEditingController controller) {
+    return Padding(
+      padding: EdgeInsets.all(10),
+      child: TextField(
+        controller: controller,
+        obscureText: false,
+        textAlign: TextAlign.start,
+        style: TextStyle(
+          fontWeight: FontWeight.w400,
+          fontSize: 14,
+          color: Color(0xff000000),
+        ),
+        decoration: InputDecoration(
+          labelText: "Enter $label",
+          labelStyle: TextStyle(
+            fontWeight: FontWeight.w400,
+            fontSize: 14,
+            color: Color(0xff000000),
           ),
+          filled: true,
+          fillColor: Color(0xfff2f2f3),
+        ),
+      ),
+    );
+  }
+
+  Widget buildPasswordTextField(String label, TextEditingController controller) {
+    return Padding(
+      padding: EdgeInsets.all(10),
+      child: TextField(
+        controller: controller,
+        obscureText: _isSecurePassword,
+        textAlign: TextAlign.start,
+        style: TextStyle(
+          fontWeight: FontWeight.w400,
+          fontSize: 14,
+          color: Color(0xff000000),
+        ),
+        decoration: InputDecoration(
+          labelText: "Enter $label",
+          labelStyle: TextStyle(
+            fontWeight: FontWeight.w400,
+            fontSize: 14,
+            color: Color(0xff000000),
+          ),
+          filled: true,
+          fillColor: Color(0xfff2f2f3),
+          suffixIcon: IconButton(
+            icon: Icon(_isSecurePassword ? Icons.visibility : Icons.visibility_off),
+            onPressed: () {
+              setState(() {
+                _isSecurePassword = !_isSecurePassword;
+              });
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget buildLoginButtons() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      children: [
+        buildMaterialButton("Login", _signIn, Color(0xfffed140)),
+        buildMaterialButton("Register", () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => Registration1()),
+          );
+        }, Color(0xfffed141)),
+      ],
+    );
+  }
+
+  Widget buildMaterialButton(String text, void Function() onPressed, Color color) {
+    return Expanded(
+      child: Padding(
+        padding: EdgeInsets.all(5),
+        child: MaterialButton(
+          onPressed: onPressed,
+          color: color,
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.zero,
+            side: BorderSide(color: Color(0xff808080), width: 1),
+          ),
+          padding: EdgeInsets.all(16),
+          child: Text(
+            text,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w400,
+              fontStyle: FontStyle.normal,
+            ),
+          ),
+          textColor: Color(0xff000000),
+          height: 40,
+          minWidth: 100,
         ),
       ),
     );

@@ -1,48 +1,20 @@
 import 'package:flutter/material.dart';
 import 'index.dart';
+import 'Forums.dart';
+import 'ChatPage.dart';
+import 'UserProfile.dart';
 
 class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        elevation: 4,
-        centerTitle: false,
-        automaticallyImplyLeading: false,
-        backgroundColor: Color(0xffad32fe),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.zero,
-        ),
-        title: GestureDetector(
-          onTap: () => Navigator.of(context).pushReplacementNamed('/home'),
-          child: Row(
-            children: [
-              Image.asset(
-                'assets/logo.png',
-                width: 24,
-              ),
-              SizedBox(width: 8),
-              Text(
-                "Study Hive",
-                style: TextStyle(
-                  fontWeight: FontWeight.w400,
-                  fontSize: 14,
-                  color: Colors.white,
-                ),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          Icon(Icons.search, color: Colors.white, size: 24),
-        ],
-      ),
+      appBar: CustomAppBar(),
       bottomNavigationBar: BottomNavigationBar(
         items: [
-          bottomNavItem(Icons.article, "Forums"),
-          bottomNavItem(Icons.message, "Messages"),
-          bottomNavItem(Icons.account_box, "Profile"),
+          BottomNavigationBarItem(icon: Icon(Icons.article), label: "Forums"),
+          BottomNavigationBarItem(icon: Icon(Icons.message), label: "Messages"),
+          BottomNavigationBarItem(icon: Icon(Icons.account_box), label: "Profile"),
         ],
         backgroundColor: Color(0xffae32ff),
         elevation: 8,
@@ -90,13 +62,16 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget sectionTitle(String title) {
-    return Text(
-      title,
-      textAlign: TextAlign.center,
-      style: TextStyle(
-        fontWeight: FontWeight.w500,
-        fontSize: 17,
-        color: Colors.black,
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Text(
+        title,
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          fontWeight: FontWeight.w500,
+          fontSize: 17,
+          color: Colors.black,
+        ),
       ),
     );
   }
@@ -122,12 +97,6 @@ class HomeScreen extends StatelessWidget {
       ),
       dense: false,
       contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 16),
-      selected: false,
-      selectedTileColor: Color(0x42000000),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.zero,
-        side: BorderSide(color: Color(0x4d000000), width: 1),
-      ),
       leading: Icon(Icons.article, color: Color(0xff212435), size: 24),
       trailing: Icon(Icons.arrow_forward, color: Color(0xff212435), size: 24),
     );

@@ -1,5 +1,3 @@
-// import all lib files
-
 export 'ChangePassword.dart';
 export 'EditProfile.dart';
 export 'firebase_options.dart';
@@ -22,4 +20,4 @@ export 'ChatPage.dart';
 export 'ChatSample.dart';
 export 'OpenForum.dart';
 export 'FriendsPopup.dart';
-
+export 'CustomAppBar.dart';

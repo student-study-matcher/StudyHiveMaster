@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'index.dart';
 
 class CustomAppBar extends StatefulWidget implements PreferredSizeWidget {
@@ -14,7 +13,6 @@ class _CustomAppBarState extends State<CustomAppBar> {
   final TextEditingController _searchController = TextEditingController();
   bool _isSearching = false;
   List<dynamic> _searchResults = [];
-  final DatabaseReference _databaseReference = FirebaseDatabase.instance.ref();
 
   @override
   void initState() {
@@ -38,19 +36,7 @@ class _CustomAppBarState extends State<CustomAppBar> {
   }
 
   _performSearch(String query) async {
-    Query searchQuery = _databaseReference.child('Users').orderByChild('name').startAt(query).endAt('$query\uf8ff');
-
-    final snapshot = await searchQuery.get();
-    if (snapshot.exists) {
-      List<dynamic> results = [];
-      snapshot.children.forEach((result) {
-        results.add(result.value);
-      });
-
-      setState(() => _searchResults = results);
-    } else {
-      setState(() => _searchResults.clear());
-    }
+    // Your search implementation
   }
 
   @override
@@ -65,9 +51,19 @@ class _CustomAppBarState extends State<CustomAppBar> {
         onTap: () => Navigator.of(context).pushReplacementNamed('/home'),
         child: Row(
           children: [
+            IconButton(
+              icon: Icon(Icons.menu, color: Colors.white),
+              onPressed: () {
+                Scaffold.of(context).openDrawer();
+              },
+            ),
             Image.asset('assets/logo.png', width: 24),
             SizedBox(width: 8),
-            Text("Study Hive", style: TextStyle(fontWeight: FontWeight.w400, fontSize: 14, color: Colors.white)),
+            Text("Study Hive",
+                style: TextStyle(
+                    fontWeight: FontWeight.w400,
+                    fontSize: 14,
+                    color: Colors.white)),
           ],
         ),
       )
@@ -90,12 +86,6 @@ class _CustomAppBarState extends State<CustomAppBar> {
               });
             },
           ),
-        IconButton(
-          icon: Icon(Icons.settings, color: Colors.white),
-          onPressed: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => Setting()));
-          },
-        ),
         if (_isSearching)
           IconButton(
             icon: Icon(Icons.close, color: Colors.white),

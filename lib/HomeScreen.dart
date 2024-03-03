@@ -1,41 +1,14 @@
 import 'package:flutter/material.dart';
 import 'index.dart';
-import 'Forums.dart';
-import 'ChatPage.dart';
-import 'UserProfile.dart';
 
 class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+      drawer: OpenDrawer(),
       appBar: CustomAppBar(),
-      bottomNavigationBar: BottomNavigationBar(
-        items: [
-          BottomNavigationBarItem(icon: Icon(Icons.article), label: "Forums"),
-          BottomNavigationBarItem(icon: Icon(Icons.message), label: "Messages"),
-          BottomNavigationBarItem(icon: Icon(Icons.account_box), label: "Profile"),
-        ],
-        backgroundColor: Color(0xffae32ff),
-        elevation: 8,
-        iconSize: 22,
-        selectedItemColor: Colors.white,
-        unselectedItemColor: Colors.white,
-        selectedFontSize: 12,
-        unselectedFontSize: 12,
-        showSelectedLabels: true,
-        showUnselectedLabels: true,
-        type: BottomNavigationBarType.fixed,
-        onTap: (value) {
-          if (value == 0) {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => Forums()));
-          } else if (value == 1) {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => ChatPage()));
-          } else if (value == 2) {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => UserProfile()));
-          }
-        },
-      ),
+
       body: Padding(
         padding: EdgeInsets.all(2),
         child: Column(
@@ -54,24 +27,15 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  BottomNavigationBarItem bottomNavItem(IconData icon, String label) {
-    return BottomNavigationBarItem(
-      icon: Icon(icon),
-      label: label,
-    );
-  }
 
   Widget sectionTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Text(
-        title,
-        textAlign: TextAlign.center,
-        style: TextStyle(
-          fontWeight: FontWeight.w500,
-          fontSize: 17,
-          color: Colors.black,
-        ),
+    return Text(
+      title,
+      textAlign: TextAlign.center,
+      style: TextStyle(
+        fontWeight: FontWeight.w500,
+        fontSize: 17,
+        color: Colors.black,
       ),
     );
   }
@@ -97,6 +61,12 @@ class HomeScreen extends StatelessWidget {
       ),
       dense: false,
       contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+      selected: false,
+      selectedTileColor: Color(0x42000000),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.zero,
+        side: BorderSide(color: Color(0x4d000000), width: 1),
+      ),
       leading: Icon(Icons.article, color: Color(0xff212435), size: 24),
       trailing: Icon(Icons.arrow_forward, color: Color(0xff212435), size: 24),
     );

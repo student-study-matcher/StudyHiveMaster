@@ -2,7 +2,6 @@ import 'dart:typed_data';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:image_picker_web/image_picker_web.dart';
-import 'index.dart';
 
 class EditProfile extends StatefulWidget {
   @override
@@ -27,8 +26,30 @@ class _EditProfileState extends State<EditProfile> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Color(0xffffffff),
-      drawer: OpenDrawer(),
-      appBar: CustomAppBar(),
+      appBar: AppBar(
+        elevation: 0,
+        centerTitle: true,
+        automaticallyImplyLeading: false,
+        backgroundColor: Color(0xffae32ff),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.zero,
+        ),
+        title: Text(
+          "Edit Profile",
+          style: TextStyle(
+            fontWeight: FontWeight.w400,
+            fontStyle: FontStyle.normal,
+            fontSize: 20,
+            color: Color(0xfffdfdfd),
+          ),
+        ),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+      ),
       body: Center(
         child: Padding(
           padding: EdgeInsets.all(16),

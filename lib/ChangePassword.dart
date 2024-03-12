@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'index.dart';
+
 
 class ChangePassword extends StatefulWidget {
   @override
@@ -15,8 +15,30 @@ class _ChangePasswordState extends State<ChangePassword> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Color(0xfff9f6f6),
-      drawer: OpenDrawer(),
-      appBar: CustomAppBar(),
+      appBar: AppBar(
+        elevation: 0,
+        centerTitle: true,
+        automaticallyImplyLeading: false,
+        backgroundColor: Color(0xffae32ff),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.zero,
+        ),
+        title: Text(
+          "Change Password",
+          style: TextStyle(
+            fontWeight: FontWeight.w400,
+            fontStyle: FontStyle.normal,
+            fontSize: 20,
+            color: Color(0xfffdfdfd),
+          ),
+        ),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+      ),
       body: Padding(
         padding: EdgeInsets.all(16),
         child: SingleChildScrollView(

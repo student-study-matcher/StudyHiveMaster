@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-import 'index.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'OpenForum.dart';
+import 'AddForum.dart';
 
 class Forums extends StatefulWidget {
   @override
@@ -7,33 +10,29 @@ class Forums extends StatefulWidget {
 }
 
 class _ForumsState extends State<Forums> {
-  List<Map<String, dynamic>> forumList = [
-    {
-      "title": "Software Engineering",
-      "subtitle": "Computer Science",
-    },
-    {
-      "title": "BIDMAS",
-      "subtitle": "Maths",
-    },
-    {
-      "title": "Bones",
-      "subtitle": "Science",
-    },
-    {
-      "title": "Functional Programming",
-      "subtitle": "Computer Science",
-    },
-  ];
-
-  List<Map<String, dynamic>> filteredList = [];
-
-  String dropdownValue = 'My Forums';
-
+  List<Map<String, dynamic>> forumList = [];
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final DatabaseReference _databaseReference = FirebaseDatabase.instance.ref();
   @override
   void initState() {
     super.initState();
-    filteredList.addAll(forumList);
+    fetchForums();
+  }
+  void fetchForums() {
+    _databaseReference.child('Forums').onValue.listen((event) {
+      final forumsData = event.snapshot.value as Map<dynamic, dynamic>?;
+      if (forumsData != null) {
+        List<Map<String, dynamic>> forums = [];
+        forumsData.forEach((key, value) {
+          final forum = Map<String, dynamic>.from(value);
+          forum['forumId'] = key;
+          forums.add(forum);
+        });
+        setState(() {
+          forumList = forums;
+        });
+      }
+    });
   }
 
   @override
@@ -42,181 +41,28 @@ class _ForumsState extends State<Forums> {
       backgroundColor: Color(0xffffffff),
       appBar: AppBar(
         backgroundColor: Color(0xffad32fe),
-        title: GestureDetector(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => HomeScreen()),
-            );
-          },
-          child: Row(
-            children: [
-              Image.asset(
-                'assets/logo.png',
-                width: 28,
-              ),
-              SizedBox(width: 28),
-              Text(
-                "Study Hive",
-                style: TextStyle(
-                  fontWeight: FontWeight.w400,
-                  fontStyle: FontStyle.normal,
-                  fontSize: 16,
-                  color: Color(0xffffffff),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.article),
-            label: "Forums",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.message),
-            label: "Messages",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.account_box),
-            label: "Profile",
+        title: Text("Forums"),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.add),
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => AddForum())),
           ),
         ],
-        onTap: (int index) {
-          // Handle bottom navigation item taps
-          if (index == 0) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => Forums()),
-            );
-          } else if (index == 1) {
-            // Handle Messages navigation
-          } else if (index == 2) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => UserProfile()),
-            );
-          }
-        },
-        backgroundColor: Color(0xffae32ff),
-        elevation: 8,
-        iconSize: 22,
-        selectedItemColor: Color(0xffffffff),
-        unselectedItemColor: Color(0xffffffff),
-        selectedFontSize: 12,
-        unselectedFontSize: 12,
-        showSelectedLabels: true,
-        showUnselectedLabels: true,
-        type: BottomNavigationBarType.fixed,
       ),
-      body: Padding(
-        padding: EdgeInsets.all(8),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            TextField(
-              onChanged: (value) {
-                filterForums(value);
-              },
-              decoration: InputDecoration(
-                hintText: 'Search forums...',
-                prefixIcon: Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10.0),
-                ),
-              ),
+      body: ListView.builder(
+        itemCount: forumList.length,
+        itemBuilder: (context, index) {
+          final forum = forumList[index];
+          return ListTile(
+            title: Text(forum["title"] ?? 'No Title'),
+            subtitle: Text(forum["content"] ?? 'No Content'),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => OpenForum(forumId: forum['forumId'])),
             ),
-            SizedBox(height: 8), // Add spacing between search bar and buttons
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                ElevatedButton(
-                  onPressed: () {
-                    // Implement filter button functionality here
-                  },
-                  child: Text(
-                    'Filter',
-                    style: TextStyle(fontSize: 12),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  ),
-                ),
-                PopupMenuButton<String>(
-                  onSelected: (String result) {
-                    setState(() {
-                      dropdownValue = result;
-                    });
-                  },
-                  itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                    PopupMenuItem<String>(
-                      value: 'My Forums',
-                      child: Text('My Forums'),
-                    ),
-                    PopupMenuItem<String>(
-                      value: 'Most Recent',
-                      child: Text('Most Recent'),
-                    ),
-                    PopupMenuItem<String>(
-                      value: 'Friends',
-                      child: Text('Friends'),
-                    ),
-                  ],
-                ),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    // Navigate to AddForum page when button is pressed
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => AddForum()),
-                    );
-                  },
-                  icon: Icon(Icons.add),
-                  label: Text('Add New Forum'),
-                  style: ElevatedButton.styleFrom(
-                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  ),
-                ),
-              ],
-            ),
-            Expanded(
-              child: ListView.builder(
-                itemCount: filteredList.length,
-                itemBuilder: (context, index) {
-                  return ListTile(
-                    title: Text(filteredList[index]["title"]),
-                    subtitle: Text(filteredList[index]["subtitle"]),
-                    leading: Icon(
-                      Icons.article,
-                      color: Color(0xff212435),
-                      size: 24,
-                    ),
-                    trailing: Icon(
-                      Icons.arrow_forward,
-                      color: Color(0xff212435),
-                      size: 24,
-                    ),
-                    onTap: () {
-                      // Handle forum item tap
-                    },
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
+          );
+        },
       ),
     );
-  }
-
-  void filterForums(String query) {
-    setState(() {
-      filteredList = forumList
-          .where((forum) =>
-          forum["title"].toLowerCase().contains(query.toLowerCase()))
-          .toList();
-    });
   }
 }

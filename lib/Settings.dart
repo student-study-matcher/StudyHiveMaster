@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'index.dart';
+import 'Privacy.dart';
 
 class Setting extends StatelessWidget {
   @override
@@ -80,7 +81,7 @@ class Setting extends StatelessWidget {
             buildSettingItem(
               title: "Edit Profile",
               icon: Icons.account_circle,
-              onTap: () => navigateToPage(context, EditProfile()),
+              onTap: () => navigateToPage(context, Privacy()),
             ),
             buildSettingItem(
               title: "Change Password",

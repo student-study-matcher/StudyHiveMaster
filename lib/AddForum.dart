@@ -1,7 +1,6 @@
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'dart:io';
-import 'index.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 
 class AddForum extends StatefulWidget {
   @override
@@ -9,39 +8,46 @@ class AddForum extends StatefulWidget {
 }
 
 class _AddForumState extends State<AddForum> {
-  PlatformFile? pickedFile;
-  String selectedSubject = '';
+  final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _contentController = TextEditingController();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final DatabaseReference _databaseReference = FirebaseDatabase.instance.ref();
+  String selectedSubject = 'General'; 
 
-  Future uploadFile() async {
-    final file = File(pickedFile!.path!);
-    // Implement file upload logic here
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _contentController.dispose();
+    super.dispose();
   }
 
-  Future selectFile() async {
-    final result = await FilePicker.platform.pickFiles();
-    if (result == null) return;
+  void _submitForum() async {
+    final String title = _titleController.text.trim();
+    final String content = _contentController.text.trim();
+    final String userId = _auth.currentUser?.uid ?? '';
 
-    setState(() {
-      pickedFile = result.files.first;
-    });
-  }
+    if (title.isNotEmpty && content.isNotEmpty && userId.isNotEmpty) {
+      final forum = {
+        'title': title,
+        'content': content,
+        'authorID': userId,
+        'subject': selectedSubject,
+        'timestamp': ServerValue.timestamp,
+        'responses': {},
+      };
+      
+      await _databaseReference.child('Forums').push().set(forum);
+      
+      _titleController.clear();
+      _contentController.clear();
 
-  void selectSubject(String subject) {
-    setState(() {
-      selectedSubject = subject;
-    });
-  }
-
-  ElevatedButton buildSubjectButton(String subject) {
-    return ElevatedButton(
-      onPressed: () {
-        selectSubject(subject);
-      },
-      style: ElevatedButton.styleFrom(
-        backgroundColor: selectedSubject == subject ? Colors.blue : null,
-      ),
-      child: Text(subject),
-    );
+      
+      Navigator.pop(context);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Title and content cannot be empty')),
+      );
+    }
   }
 
   @override
@@ -50,147 +56,49 @@ class _AddForumState extends State<AddForum> {
       backgroundColor: Color(0xffffffff),
       appBar: AppBar(
         backgroundColor: Color(0xffad32fe),
-        title: GestureDetector(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => HomeScreen()),
-            );
-          },
-          child: Row(
-            children: [
-              Image.asset(
-                'assets/logo.png',
-                width: 28,
-              ),
-              SizedBox(width: 28),
-              Text(
-                "Study Hive",
-                style: TextStyle(
-                  fontWeight: FontWeight.w400,
-                  fontStyle: FontStyle.normal,
-                  fontSize: 16,
-                  color: Color(0xffffffff),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.article),
-            label: "Forums",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.message),
-            label: "Messages",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.account_box),
-            label: "Profile",
-          ),
-        ],
-        onTap: (int index) {
-          if (index == 0) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => Forums()),
-            );
-          } else if (index == 1) {
-            // Handle Messages navigation
-          } else if (index == 2) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => UserProfile()),
-            );
-          }
-        },
-        backgroundColor: Color(0xffae32ff),
-        elevation: 8,
-        iconSize: 22,
-        selectedItemColor: Color(0xffffffff),
-        unselectedItemColor: Color(0xffffffff),
-        selectedFontSize: 12,
-        unselectedFontSize: 12,
-        showSelectedLabels: true,
-        showUnselectedLabels: true,
-        type: BottomNavigationBarType.fixed,
+        title: Text("Add Forum"),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Forum title',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 8),
             TextField(
+              controller: _titleController,
               decoration: InputDecoration(
-                hintText: 'Type here',
+                hintText: 'Forum Title',
                 border: OutlineInputBorder(),
               ),
             ),
             SizedBox(height: 16),
-            Text(
-              'Subject',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 8),
-            Row(
-              children: [
-                buildSubjectButton('Computing'),
-                SizedBox(width: 8),
-                buildSubjectButton('Big Data'),
-                SizedBox(width: 8),
-                buildSubjectButton('Cyber security'),
-                SizedBox(width: 8),
-                buildSubjectButton('Maths'),
-              ],
+            TextField(
+              controller: _contentController,
+              maxLines: 6,
+              decoration: InputDecoration(
+                hintText: 'Content',
+                border: OutlineInputBorder(),
+              ),
             ),
             SizedBox(height: 16),
-            Text(
-              'Discussion',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 8),
-            Expanded(
-              child: TextField(
-                maxLines: null,
-                decoration: InputDecoration(
-                  hintText: 'Type here',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-            ),
-            if (pickedFile != null)
-              Expanded(
-                child: Container(
-                  color: Colors.blue[100],
-                  child: Center(
-                    child: Text(pickedFile!.name),
-                  ),
-                ),
-              ),
-            const SizedBox(height: 32),
-            ElevatedButton(
-              onPressed: selectFile,
-              child: const Text('Select File'),
-            ),
-            const SizedBox(height: 32),
-            ElevatedButton(
-              onPressed: uploadFile,
-              child: const Text('Upload File'),
-            ),
-            SizedBox(height: 8),
-            ElevatedButton(
-              onPressed: () {
-                // Implement submit button functionality
+            DropdownButton<String>(
+              value: selectedSubject,
+              onChanged: (String? newValue) {
+                setState(() {
+                  selectedSubject = newValue!;
+                });
               },
-              child: Text('Submit'),
+              items: <String>['General', 'Computing', 'Maths', 'Science']
+                  .map<DropdownMenuItem<String>>((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
+            ),
+            SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _submitForum,
+              child: Text('Submit Forum'),
             ),
           ],
         ),

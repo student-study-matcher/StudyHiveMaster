@@ -17,6 +17,7 @@ class _UserProfileState extends State<UserProfile> {
   String bio = '';
   String university = '';
   String course = '';
+  int profilePic = 0;
   List<Map<String, String>> friendsDetails = [];
 
   @override
@@ -37,6 +38,7 @@ class _UserProfileState extends State<UserProfile> {
           bio = userData['bio'] ?? '';
           university = userData['university'] ?? '';
           course = userData['course'] ?? '';
+          profilePic = userData['profilePic'] ?? '';
 
           if (userData.containsKey('friends')) {
             fetchFriendsDetails(userData['friends'] as Map<dynamic, dynamic>);
@@ -113,7 +115,7 @@ class _UserProfileState extends State<UserProfile> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             SizedBox(height: 20),
-            CircleAvatar(radius: 60, backgroundImage: AssetImage("assets/profilePicture1.png")),
+            CircleAvatar(radius: 60, backgroundImage: AssetImage(getProfilePicturePath(profilePic))),
             SizedBox(height: 10),
             Text("$firstName $lastName", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
             Text(username, style: TextStyle(fontSize: 18)),
@@ -164,6 +166,24 @@ class _UserProfileState extends State<UserProfile> {
       ),
     );
   }
+  String getProfilePicturePath(int profilePic) {
+
+    if (profilePic == 1) {
+      return "assets/purple.png";
+    } else if (profilePic == 2) {
+      return "assets/blue.png";
+    } else if (profilePic == 3) {
+      return "assets/blue-purple.png";
+    } else if (profilePic == 4) {
+      return "assets/orange.png";
+    } else if (profilePic == 5) {
+      return "assets/pink.png";
+    } else if (profilePic == 6) {
+      return "assets/turquoise.png";
+    }
+
+    return "assets/blue.png";
+  }
 }
 class ProfileInfoBox extends StatelessWidget {
   final String title;
@@ -197,5 +217,7 @@ class ProfileInfoBox extends StatelessWidget {
         ],
       ),
     );
+
   }
+
 }

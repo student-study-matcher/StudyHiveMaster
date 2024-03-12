@@ -24,4 +24,5 @@ export 'OpenForum.dart';
 export 'FriendsPopup.dart';
 export 'CustomAppBar.dart';
 export 'OpenDrawer.dart';
+export 'LogHomeScreen.dart';
 

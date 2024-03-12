@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'index.dart';
+import 'ReportPage.dart';
+import 'Privacy.dart';
 
 class Setting extends StatelessWidget {
   @override
@@ -78,9 +80,9 @@ class Setting extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             buildSettingItem(
-              title: "Edit Profile",
-              icon: Icons.account_circle,
-              onTap: () => navigateToPage(context, EditProfile()),
+              title: "Privacy",
+              icon: Icons.lock_outline,
+              onTap: () => navigateToPage(context, Privacy()),
             ),
             buildSettingItem(
               title: "Change Password",

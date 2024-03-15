@@ -28,7 +28,26 @@ class _EditProfileState extends State<EditProfile> {
     return Scaffold(
       backgroundColor: Color(0xffffffff),
       drawer: OpenDrawer(),
-      appBar: CustomAppBar(),
+      appBar: AppBar(
+        elevation: 0,
+        backgroundColor: Color(0xffae32ff),
+        title: Text(
+          "Edit Profile",
+          style: TextStyle(
+            fontWeight: FontWeight.w400,
+            fontStyle: FontStyle.normal,
+            fontSize: 20,
+            color: Color(0xffffffff),
+          ),
+        ),
+        centerTitle: true,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+      ),
       body: Center(
         child: Padding(
           padding: EdgeInsets.all(16),
@@ -55,7 +74,7 @@ class _EditProfileState extends State<EditProfile> {
                         fit: BoxFit.cover,
                       )
                           : Container(
-                        color: Colors.grey, // Placeholder color
+                        color: Colors.grey,
                         child: Icon(
                           Icons.add_a_photo_outlined,
                           color: Colors.white,
@@ -82,161 +101,145 @@ class _EditProfileState extends State<EditProfile> {
                 ),
               ),
               Padding(
-                padding:EdgeInsets.fromLTRB(0, 30, 0, 0),
-                child:ListTile(
-                  tileColor:Color(0x00ffffff),
-                  title:Text("Name",
-                    style:TextStyle(
-                      fontWeight:FontWeight.w400,
-                      fontStyle:FontStyle.normal,
-                      fontSize:14,
-                      color:Color(0xff424141),
+                padding: EdgeInsets.fromLTRB(0, 30, 0, 0),
+                child: ListTile(
+                  tileColor: Color(0x00ffffff),
+                  title: Text(
+                    "Name",
+                    style: TextStyle(
+                      fontWeight: FontWeight.w400,
+                      fontStyle: FontStyle.normal,
+                      fontSize: 14,
+                      color: Color(0xff424141),
                     ),
-                    textAlign:TextAlign.start,
+                    textAlign: TextAlign.start,
                   ),
-                  dense:true,
-                  contentPadding:EdgeInsets.all(0),
-                  selected:false,
-                  selectedTileColor:Color(0x42000000),
-                  shape:RoundedRectangleBorder(
-                    borderRadius:BorderRadius.zero,
+                  dense: true,
+                  contentPadding: EdgeInsets.all(0),
+                  selected: false,
+                  selectedTileColor: Color(0x42000000),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.zero,
                   ),
-                  leading:Icon(Icons.person,color:Color(0xff3a57e8),size:24),
-                  trailing:Icon(Icons.edit,color:Color(0xff79797c),size:22),
+                  leading: Icon(Icons.person, color: Color(0xff3a57e8), size: 24),
+                  trailing: Icon(Icons.edit, color: Color(0xff79797c), size: 22),
                 ),
               ),
               TextField(
-                controller:TextEditingController(),
-                obscureText:false,
-                textAlign:TextAlign.start,
-                maxLines:1,
-                style:TextStyle(
-                  fontWeight:FontWeight.w400,
-                  fontStyle:FontStyle.normal,
-                  fontSize:14,
-                  color:Color(0xff000000),
+                controller: TextEditingController(),
+                obscureText: false,
+                textAlign: TextAlign.start,
+                maxLines: 1,
+                style: TextStyle(
+                  fontWeight: FontWeight.w400,
+                  fontStyle: FontStyle.normal,
+                  fontSize: 14,
+                  color: Color(0xff000000),
                 ),
-                decoration:InputDecoration(
-                  disabledBorder:OutlineInputBorder(
-                    borderRadius:BorderRadius.circular(4.0),
-                    borderSide:BorderSide(
-                        color:Color(0xff000000),
-                        width:1
-                    ),
+                decoration: InputDecoration(
+                  disabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(4.0),
+                    borderSide: BorderSide(color: Color(0xff000000), width: 1),
                   ),
-                  focusedBorder:OutlineInputBorder(
-                    borderRadius:BorderRadius.circular(4.0),
-                    borderSide:BorderSide(
-                        color:Color(0xff000000),
-                        width:1
-                    ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(4.0),
+                    borderSide: BorderSide(color: Color(0xff000000), width: 1),
                   ),
-                  enabledBorder:OutlineInputBorder(
-                    borderRadius:BorderRadius.circular(4.0),
-                    borderSide:BorderSide(
-                        color:Color(0xff000000),
-                        width:1
-                    ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(4.0),
+                    borderSide: BorderSide(color: Color(0xff000000), width: 1),
                   ),
-                  hintText:"Enter name...",
-                  hintStyle:TextStyle(
-                    fontWeight:FontWeight.w400,
-                    fontStyle:FontStyle.normal,
-                    fontSize:14,
-                    color:Color(0xff7a7979),
+                  hintText: "Enter name...",
+                  hintStyle: TextStyle(
+                    fontWeight: FontWeight.w400,
+                    fontStyle: FontStyle.normal,
+                    fontSize: 14,
+                    color: Color(0xff7a7979),
                   ),
-                  filled:true,
-                  fillColor:Color(0xfff2f2f3),
-                  isDense:false,
-                  contentPadding:EdgeInsets.symmetric(vertical: 8,horizontal:12),
+                  filled: true,
+                  fillColor: Color(0xfff2f2f3),
+                  isDense: false,
+                  contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
                 ),
               ),
               Padding(
-                padding:EdgeInsets.fromLTRB(50, 0, 0, 0),
-                child:Text(
+                padding: EdgeInsets.fromLTRB(50, 0, 0, 0),
+                child: Text(
                   "This is not your username or ID. This name will be visible to other users.",
                   textAlign: TextAlign.left,
-                  overflow:TextOverflow.clip,
-                  style:TextStyle(
-                    fontWeight:FontWeight.w400,
-                    fontStyle:FontStyle.normal,
-                    fontSize:12,
-                    color:Color(0xff000000),
+                  overflow: TextOverflow.clip,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w400,
+                    fontStyle: FontStyle.normal,
+                    fontSize: 12,
+                    color: Color(0xff000000),
                   ),
                 ),
               ),
               Divider(
-                color:Color(0xffdddddd),
-                height:30,
-                thickness:0,
-                indent:50,
-                endIndent:0,
+                color: Color(0xffdddddd),
+                height: 30,
+                thickness: 0,
+                indent: 50,
+                endIndent: 0,
               ),
               ListTile(
-                tileColor:Color(0x00ffffff),
-                title:Text("Bio",
-                  style:TextStyle(
-                    fontWeight:FontWeight.w400,
-                    fontStyle:FontStyle.normal,
-                    fontSize:14,
-                    color:Color(0xff000000),
+                tileColor: Color(0x00ffffff),
+                title: Text(
+                  "Bio",
+                  style: TextStyle(
+                    fontWeight: FontWeight.w400,
+                    fontStyle: FontStyle.normal,
+                    fontSize: 14,
+                    color: Color(0xff000000),
                   ),
-                  textAlign:TextAlign.start,
+                  textAlign: TextAlign.start,
                 ),
-                dense:true,
-                contentPadding:EdgeInsets.all(0),
-                selected:false,
-                selectedTileColor:Color(0x42000000),
-                shape:RoundedRectangleBorder(
-                  borderRadius:BorderRadius.zero,
+                dense: true,
+                contentPadding: EdgeInsets.all(0),
+                selected: false,
+                selectedTileColor: Color(0x42000000),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.zero,
                 ),
-                leading:Icon(Icons.info_outline,color:Color(0xff3a57e8),size:24),
-                trailing:Icon(Icons.edit,color:Color(0xff79797c),size:22),
+                leading: Icon(Icons.info_outline, color: Color(0xff3a57e8), size: 24),
+                trailing: Icon(Icons.edit, color: Color(0xff79797c), size: 22),
               ),
               TextField(
-                controller:TextEditingController(),
-                obscureText:false,
-                textAlign:TextAlign.start,
-                maxLines:1,
-                style:TextStyle(
-                  fontWeight:FontWeight.w400,
-                  fontStyle:FontStyle.normal,
-                  fontSize:14,
-                  color:Color(0xff000000),
+                controller: TextEditingController(),
+                obscureText: false,
+                textAlign: TextAlign.start,
+                maxLines: 1,
+                style: TextStyle(
+                  fontWeight: FontWeight.w400,
+                  fontStyle: FontStyle.normal,
+                  fontSize: 14,
+                  color: Color(0xff000000),
                 ),
-                decoration:InputDecoration(
-                  disabledBorder:OutlineInputBorder(
-                    borderRadius:BorderRadius.circular(4.0),
-                    borderSide:BorderSide(
-                        color:Color(0xff000000),
-                        width:1
-                    ),
+                decoration: InputDecoration(
+                  disabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(4.0),
+                    borderSide: BorderSide(color: Color(0xff000000), width: 1),
                   ),
-                  focusedBorder:OutlineInputBorder(
-                    borderRadius:BorderRadius.circular(4.0),
-                    borderSide:BorderSide(
-                        color:Color(0xff000000),
-                        width:1
-                    ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(4.0),
+                    borderSide: BorderSide(color: Color(0xff000000), width: 1),
                   ),
-                  enabledBorder:OutlineInputBorder(
-                    borderRadius:BorderRadius.circular(4.0),
-                    borderSide:BorderSide(
-                        color:Color(0xff000000),
-                        width:1
-                    ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(4.0),
+                    borderSide: BorderSide(color: Color(0xff000000), width: 1),
                   ),
-                  hintText:"Tell us about yourself...",
-                  hintStyle:TextStyle(
-                    fontWeight:FontWeight.w400,
-                    fontStyle:FontStyle.normal,
-                    fontSize:14,
-                    color:Color(0xff7c7979),
+                  hintText: "Tell us about yourself...",
+                  hintStyle: TextStyle(
+                    fontWeight: FontWeight.w400,
+                    fontStyle: FontStyle.normal,
+                    fontSize: 14,
+                    color: Color(0xff7c7979),
                   ),
-                  filled:true,
-                  fillColor:Color(0xfff2f2f3),
-                  isDense:false,
-                  contentPadding:EdgeInsets.symmetric(vertical: 8,horizontal:12),
+                  filled: true,
+                  fillColor: Color(0xfff2f2f3),
+                  isDense: false,
+                  contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
                 ),
               ),
               Padding(
@@ -264,15 +267,17 @@ class _EditProfileState extends State<EditProfile> {
                   ),
                 ),
               ),
-
               Divider(
-                color:Color(0xffdddddd),
-                height:20,
-                thickness:0,
-                indent:50,
-                endIndent:0,
+                color: Color(0xffdddddd),
+                height: 20,
+                thickness: 0,
+                indent: 50,
+                endIndent: 0,
               ),
-            ],),),),
-    )
-    ;}
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }

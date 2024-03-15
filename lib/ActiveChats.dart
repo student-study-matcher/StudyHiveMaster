@@ -29,7 +29,7 @@ class ActiveChats extends StatelessWidget {
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(35),
-                    child:Image.asset("images/avatar.jpg",
+                    child:Image.asset("images/avatar.png",
                     ),
                   ),
                 ),

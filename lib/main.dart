@@ -25,7 +25,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       initialRoute: "/",
       routes: {
-        "/": (context) => LogHomeScreen(),
+        "/": (context) => HomeScreen(),
         "chatPage": (context) => ChatPage(),
       },
     );

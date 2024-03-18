@@ -47,18 +47,6 @@ class _ForumsState extends State<Forums> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            TextField(
-              onChanged: (value) {
-                filterForums(value);
-              },
-              decoration: InputDecoration(
-                hintText: 'Search forums...',
-                prefixIcon: Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10.0),
-                ),
-              ),
-            ),
             SizedBox(height: 8), // Add spacing between search bar and buttons
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,

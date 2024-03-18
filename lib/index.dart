@@ -16,7 +16,6 @@ export 'Settings.dart';
 export 'Notifications.dart';
 export 'ActiveChats.dart';
 export 'AddForum.dart';
-export 'ChangePassword.dart';
 export 'ChatBottomSheet.dart';
 export 'ChatPage.dart';
 export 'ChatSample.dart';
@@ -25,4 +24,10 @@ export 'FriendsPopup.dart';
 export 'CustomAppBar.dart';
 export 'OpenDrawer.dart';
 export 'LogHomeScreen.dart';
+export 'EditChat.dart';
+export 'AddGroupChat.dart';
+export 'GroupChatHome.dart';
+export 'NewNotifications.dart';
+
+
 

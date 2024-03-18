@@ -24,8 +24,8 @@ class OpenDrawer extends StatelessWidget {
               onTap: () {
                 // Handle the profile tap action
                 Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => Forums()),
+                  context,
+                  MaterialPageRoute(builder: (context) => Forums()),
                 );// Close the drawer
               },
             ),
@@ -35,7 +35,7 @@ class OpenDrawer extends StatelessWidget {
                 // Handle the profile tap action
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => Forums()),
+                  MaterialPageRoute(builder: (context) => GroupChatHome()),
                 );// // Close the drawer
               },
             ),
@@ -56,6 +56,16 @@ class OpenDrawer extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => UserProfile()),
+                );// // Close the drawer
+              },
+            ),
+            ListTile(
+              title: const Text('Notifications'),
+              onTap: () {
+                // Handle the profile tap action
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => NewNotifications()),
                 );// // Close the drawer
               },
             ),

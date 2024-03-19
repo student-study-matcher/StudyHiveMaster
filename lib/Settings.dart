@@ -7,33 +7,8 @@ class Setting extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Color(0xffad32fe),
-        title: GestureDetector(
-          onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => HomeScreen()),
-          ),
-          child: Row(
-            children: [
-              Image.asset(
-                'assets/logo.png',
-                width: 28,
-              ),
-              SizedBox(width: 28),
-              Text(
-                "Study Hive",
-                style: TextStyle(
-                  fontWeight: FontWeight.w400,
-                  fontStyle: FontStyle.normal,
-                  fontSize: 16,
-                  color: Colors.white,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+      drawer: OpenDrawer(),
+      appBar: CustomAppBar(),
       bottomNavigationBar: BottomNavigationBar(
         items: [
           BottomNavigationBarItem(

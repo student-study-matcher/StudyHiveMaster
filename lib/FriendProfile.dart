@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:login_and_registration/CustomAppBar.dart';
+import 'UserProfile.dart';
+import 'ChatPage.dart';
+import 'Forums.dart';
 
 class FriendProfile extends StatefulWidget {
   final String friendId;
@@ -28,7 +32,8 @@ class _FriendProfileState extends State<FriendProfile> {
   }
 
   Future<void> fetchFriendData() async {
-    final friendSnapshot = await databaseReference.child('Users/${widget.friendId}').get();
+    final friendSnapshot = await databaseReference.child(
+        'Users/${widget.friendId}').get();
     if (friendSnapshot.exists) {
       final friendData = friendSnapshot.value as Map<dynamic, dynamic>;
       setState(() {
@@ -38,7 +43,9 @@ class _FriendProfileState extends State<FriendProfile> {
         bio = friendData['bio'] ?? '';
         university = friendData['university'] ?? '';
         course = friendData['course'] ?? '';
-        friendCount = friendData['friends'] != null ? (friendData['friends'] as Map).length : 0;
+        friendCount = friendData['friends'] != null
+            ? (friendData['friends'] as Map).length
+            : 0;
       });
     }
   }
@@ -46,17 +53,48 @@ class _FriendProfileState extends State<FriendProfile> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("$firstName $lastName's Profile"),
+      appBar: CustomAppBar(),
+      bottomNavigationBar: BottomNavigationBar(
+        items: [
+          BottomNavigationBarItem(icon: Icon(Icons.article), label: "Forums"),
+          BottomNavigationBarItem(icon: Icon(Icons.message), label: "Messages"),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.account_box), label: "Profile"),
+        ],
+        backgroundColor: Color(0xffae32ff),
+        elevation: 8,
+        iconSize: 22,
+        selectedItemColor: Colors.white,
+        unselectedItemColor: Colors.white,
+        selectedFontSize: 12,
+        unselectedFontSize: 12,
+        showSelectedLabels: true,
+        showUnselectedLabels: true,
+        type: BottomNavigationBarType.fixed,
+        onTap: (value) {
+          if (value == 0) {
+            Navigator.push(
+                context, MaterialPageRoute(builder: (_) => Forums()));
+          } else if (value == 1) {
+            Navigator.push(
+                context, MaterialPageRoute(builder: (_) => ChatPage()));
+          } else if (value == 2) {
+            Navigator.push(
+                context, MaterialPageRoute(builder: (_) => UserProfile()));
+          }
+        },
       ),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             SizedBox(height: 20),
-            CircleAvatar(radius: 60, backgroundImage: AssetImage("assets/profilePicture1.png")), // Placeholder image
+            CircleAvatar(radius: 60,
+                backgroundImage: AssetImage("assets/profilePicture1.png")),
+            // Placeholder image
             SizedBox(height: 10),
-            Text("$firstName $lastName", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
+            Text("$firstName $lastName",
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
             Text(username, style: TextStyle(fontSize: 18)),
             SizedBox(height: 20),
             Row(
@@ -71,11 +109,13 @@ class _FriendProfileState extends State<FriendProfile> {
             Container(
               padding: EdgeInsets.all(20),
               margin: EdgeInsets.symmetric(horizontal: 20),
-              decoration: BoxDecoration(border: Border.all(color: Colors.grey), borderRadius: BorderRadius.circular(10)),
+              decoration: BoxDecoration(border: Border.all(color: Colors.grey),
+                  borderRadius: BorderRadius.circular(10)),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Bio", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                  Text("Bio", style: TextStyle(
+                      fontWeight: FontWeight.bold, fontSize: 18)),
                   SizedBox(height: 10),
                   Text(bio),
                 ],
@@ -84,60 +124,8 @@ class _FriendProfileState extends State<FriendProfile> {
           ],
         ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.article), label: "Forums"),
-          BottomNavigationBarItem(icon: Icon(Icons.message), label: "Messages"),
-          BottomNavigationBarItem(icon: Icon(Icons.account_box), label: "Profile"),
-        ],
-        onTap: (int index) {
-          // Handle bottom navigation item taps
-        },
-        backgroundColor: Color(0xffae32ff),
-        selectedItemColor: Color(0xffffffff),
-        unselectedItemColor: Color(0xffffffff),
-        selectedFontSize: 12,
-        unselectedFontSize: 12,
-        showSelectedLabels: true,
-        showUnselectedLabels: true,
-        type: BottomNavigationBarType.fixed,
-      ),
     );
   }
 }
 
-class ProfileInfoBox extends StatelessWidget {
-  final String title;
-  final String subtitle;
 
-  ProfileInfoBox({required this.title, required this.subtitle});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Column(
-        children: [
-          Text(
-            title,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-            ),
-          ),
-          SizedBox(height: 5),
-          Text(
-            subtitle,
-            style: TextStyle(
-              fontSize: 14,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}

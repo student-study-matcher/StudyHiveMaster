@@ -20,3 +20,4 @@ export 'ChatSample.dart';
 export 'OpenForum.dart';
 export 'FriendsPopup.dart';
 export 'CustomAppBar.dart';
+export 'OpenDrawer.dart';

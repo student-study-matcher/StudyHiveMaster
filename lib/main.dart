@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:login_and_registration/FriendProfile.dart';
 import 'Login.dart';
 import 'Registration1.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'FriendProfile.dart';
 
 
 void main() async {

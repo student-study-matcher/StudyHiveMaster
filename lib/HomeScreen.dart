@@ -3,39 +3,17 @@ import 'index.dart';
 import 'Forums.dart';
 import 'ChatPage.dart';
 import 'UserProfile.dart';
+import 'CustomAppBar.dart';
+
 
 class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+      drawer: OpenDrawer(),
       appBar: CustomAppBar(),
-      bottomNavigationBar: BottomNavigationBar(
-        items: [
-          BottomNavigationBarItem(icon: Icon(Icons.article), label: "Forums"),
-          BottomNavigationBarItem(icon: Icon(Icons.message), label: "Messages"),
-          BottomNavigationBarItem(icon: Icon(Icons.account_box), label: "Profile"),
-        ],
-        backgroundColor: Color(0xffae32ff),
-        elevation: 8,
-        iconSize: 22,
-        selectedItemColor: Colors.white,
-        unselectedItemColor: Colors.white,
-        selectedFontSize: 12,
-        unselectedFontSize: 12,
-        showSelectedLabels: true,
-        showUnselectedLabels: true,
-        type: BottomNavigationBarType.fixed,
-        onTap: (value) {
-          if (value == 0) {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => Forums()));
-          } else if (value == 1) {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => ChatPage()));
-          } else if (value == 2) {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => UserProfile()));
-          }
-        },
-      ),
+
       body: Padding(
         padding: EdgeInsets.all(2),
         child: Column(

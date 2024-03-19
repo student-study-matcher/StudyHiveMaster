@@ -5,9 +5,8 @@ class Privacy extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Rgrrgqg'),
-      ),
+      drawer: OpenDrawer(),
+      appBar: CustomAppBar(),
       body: Center(
         child: Text('Reporqgrqggqere'),
         // Add your reporting form or functionality here

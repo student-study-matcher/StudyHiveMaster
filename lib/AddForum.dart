@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:login_and_registration/CustomAppBar.dart';
+import 'package:login_and_registration/index.dart';
 
 class AddForum extends StatefulWidget {
   @override
@@ -54,10 +56,9 @@ class _AddForumState extends State<AddForum> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Color(0xffffffff),
-      appBar: AppBar(
-        backgroundColor: Color(0xffad32fe),
-        title: Text("Add Forum"),
-      ),
+      drawer: OpenDrawer(),
+      appBar: CustomAppBar(),
+
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(

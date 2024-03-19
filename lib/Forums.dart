@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:login_and_registration/index.dart';
 import 'OpenForum.dart';
 import 'AddForum.dart';
 
@@ -39,6 +40,7 @@ class _ForumsState extends State<Forums> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Color(0xffffffff),
+      drawer: OpenDrawer(),
       appBar: AppBar(
         backgroundColor: Color(0xffad32fe),
         title: Text("Forums"),

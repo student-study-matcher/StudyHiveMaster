@@ -4,6 +4,7 @@ class ChatBottomSheet extends StatelessWidget{
   @override
   Widget build(BuildContext context) {
     return Container(
+
       height: 65,
       decoration: BoxDecoration(color: Colors.white, boxShadow: [
         BoxShadow(

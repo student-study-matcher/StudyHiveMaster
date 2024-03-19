@@ -1,34 +1,14 @@
 import 'package:flutter/material.dart';
+import 'CustomAppBar.dart';
+import 'OpenDrawer.dart';
 
 class ReportBug extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Color(0xffffffff),
-      appBar: AppBar(
-          elevation: 4,
-          centerTitle: true,
-          automaticallyImplyLeading: false,
-          backgroundColor: Color(0xffae32ff),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.zero,
-          ),
-          title: Text(
-            "Report Bug",
-            style: TextStyle(
-              fontWeight: FontWeight.w400,
-              fontStyle: FontStyle.normal,
-              fontSize: 18,
-              color: Color(0xffffffff),
-            ),
-          ),
-          leading: IconButton(
-            icon: Icon(Icons.arrow_back),
-            onPressed: () {
-              Navigator.pop(context);
-            },
-          )
-      ),
+      drawer: OpenDrawer(),
+      appBar: CustomAppBar(),
       body: Align(
         alignment: Alignment(-0.6, 0.0),
         child: SizedBox(

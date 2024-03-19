@@ -85,55 +85,9 @@ class _UserProfileState extends State<UserProfile> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Color(0xffffffff),
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        backgroundColor: Color(0xffad32fe),
-        title: GestureDetector(
-          onTap: () => Navigator.push(context,
-              MaterialPageRoute(builder: (context) => HomeScreen())),
-          child: Row(
-            children: [
-              Image.asset('assets/logo.png', width: 28),
-              SizedBox(width: 28),
-              Text("Study Hive", style: TextStyle(fontWeight: FontWeight.w400,
-                  fontStyle: FontStyle.normal,
-                  fontSize: 16,
-                  color: Color(0xffffffff))),
-            ],
-          ),
-        ),
-        actions: [
-          GestureDetector(
-            onTap: () => Navigator.push(
-                context, MaterialPageRoute(builder: (_) => Setting())),
-            child: Padding(
-              padding: EdgeInsets.all(8),
-              child: Icon(Icons.settings),
-            ),
-          ),
-        ],
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.article), label: "Forums"),
-          BottomNavigationBarItem(icon: Icon(Icons.message), label: "Messages"),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.account_box), label: "Profile"),
-        ],
-        onTap: (int index) {
-          if (index == 0) {
-            Navigator.push(
-                context, MaterialPageRoute(builder: (context) => Forums()));
-          } else if (index == 1) {
-            // Handle Messages navigation
-          } else if (index == 2) {
-            // Handle Profile navigation
-          }
-        },
-        backgroundColor: Color(0xffae32ff),
-        selectedItemColor: Color(0xffffffff),
-        unselectedItemColor: Color(0xffffffff),
-      ),
+      drawer: OpenDrawer(),
+      appBar: CustomAppBar(),
+
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,

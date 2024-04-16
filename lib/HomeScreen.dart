@@ -1,104 +1,190 @@
 import 'package:flutter/material.dart';
 import 'index.dart';
-import 'Forums.dart';
-import 'ChatPage.dart';
-import 'UserProfile.dart';
+import 'CustomAppBar.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: CustomAppBar(),
-      bottomNavigationBar: BottomNavigationBar(
-        items: [
-          BottomNavigationBarItem(icon: Icon(Icons.article), label: "Forums"),
-          BottomNavigationBarItem(icon: Icon(Icons.message), label: "Messages"),
-          BottomNavigationBarItem(icon: Icon(Icons.account_box), label: "Profile"),
-        ],
-        backgroundColor: Color(0xffae32ff),
-        elevation: 8,
-        iconSize: 22,
-        selectedItemColor: Colors.white,
-        unselectedItemColor: Colors.white,
-        selectedFontSize: 12,
-        unselectedFontSize: 12,
-        showSelectedLabels: true,
-        showUnselectedLabels: true,
-        type: BottomNavigationBarType.fixed,
-        onTap: (value) {
-          if (value == 0) {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => Forums()));
-          } else if (value == 1) {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => ChatPage()));
-          } else if (value == 2) {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => UserProfile()));
-          }
-        },
-      ),
-      body: Padding(
-        padding: EdgeInsets.all(2),
-        child: Column(
-          children: [
-            sectionTitle("Top Forums For You"),
-            sectionListTile("Software Engineering", "Computer Science"),
-            sectionListTile("BIDMAS", "Maths"),
-            sectionListTile("Bones", "Science"),
-            sectionTitle("Your Friends Most Recent Posts"),
-            sectionListTile("Big Data", "Computer Science"),
-            sectionListTile("UI Design", "Computer Science"),
-            sectionListTile("Databases", "Computer Science"),
-          ],
-        ),
-      ),
-    );
-  }
+  _HomeScreenState createState() => _HomeScreenState();
 
-  BottomNavigationBarItem bottomNavItem(IconData icon, String label) {
-    return BottomNavigationBarItem(
-      icon: Icon(icon),
-      label: label,
-    );
-  }
-
-  Widget sectionTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Text(
-        title,
-        textAlign: TextAlign.center,
-        style: TextStyle(
-          fontWeight: FontWeight.w500,
-          fontSize: 17,
-          color: Colors.black,
-        ),
-      ),
-    );
-  }
-
-  Widget sectionListTile(String title, String subtitle) {
-    return ListTile(
-      tileColor: Color(0x1f000000),
-      title: Text(
-        title,
-        style: TextStyle(
-          fontWeight: FontWeight.w400,
-          fontSize: 14,
-          color: Colors.black,
-        ),
-      ),
-      subtitle: Text(
-        subtitle,
-        style: TextStyle(
-          fontWeight: FontWeight.w400,
-          fontSize: 14,
-          color: Colors.black,
-        ),
-      ),
-      dense: false,
-      contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 16),
-      leading: Icon(Icons.article, color: Color(0xff212435), size: 24),
-      trailing: Icon(Icons.arrow_forward, color: Color(0xff212435), size: 24),
-    );
-  }
 }
+
+class _HomeScreenState extends State<HomeScreen> {
+  List<dynamic> appForums = [];
+  List<dynamic> forYouForums = [];
+  List<dynamic> friendsForums = [];
+  List userFriends = [];
+  String course = '';
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final databaseReference = FirebaseDatabase.instance.ref();
+
+  @override
+  void initState() {
+    super.initState();
+    getForums();
+  }
+
+  Future<void> getForums() async {
+    User? user = _auth.currentUser;
+    if (user != null) {
+      final userSnapshot = await databaseReference.child('Users/${user.uid}')
+          .get();
+      if (userSnapshot.exists) {
+        setState(() {
+          final userData = userSnapshot.value as Map<dynamic, dynamic>;
+          Map<dynamic, dynamic>? friendsMap = userData['friends'];
+          course = userData['course'] ?? '';
+          if (friendsMap != null) {
+            // Extracting friend IDs from the friendsMap
+            userFriends = friendsMap.keys.map((key) => key.toString()).toList();
+          }
+        });
+      }
+    }
+    final DatabaseReference forumsRef = FirebaseDatabase.instance.ref();
+    Query forumsQuery = forumsRef.child('Forums');
+    final forumSnapshot = await forumsQuery.get();
+
+    if (forumSnapshot.exists) {
+      final dynamic snapshotValue = forumSnapshot.value;
+      snapshotValue.forEach((key, value) {
+        final forum = Map<String, dynamic>.from(value);
+        setState(() {
+          appForums.add(forum);
+        });
+      });
+    }
+
+    for (int i = appForums.length - 1; i >= 0; i--) {
+      Map<String, dynamic> currentForum = appForums[i];
+      if (currentForum.containsKey("subject")) {
+        String subject = currentForum["subject"];
+        if (subject == course) {
+          forYouForums.add(currentForum);
+        }
+      }
+    }
+    for (int i = appForums.length - 1; i >= 0; i--) {
+      Map<String, dynamic> currentForum = appForums[i];
+      if (currentForum.containsKey("authorID")) {
+        String author = currentForum["authorID"];
+        if (userFriends.contains(author)) {
+          friendsForums.add(currentForum);
+        }
+      }
+    }
+  }
+    @override
+    Widget build(BuildContext context) {
+      return Scaffold(
+        backgroundColor: Colors.white,
+        drawer: OpenDrawer(),
+        appBar: CustomAppBar(),
+
+        body: Padding(
+          padding: EdgeInsets.all(2.0),
+          child: Column(
+            children: [
+              const Text(
+                "Top Forums for You",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontWeight: FontWeight.w500,
+                  fontSize: 17,
+                  color: Colors.black,
+                ),
+              ),
+              Expanded(
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: forYouForums.length == 0 ? 1 : forYouForums.length,
+                  itemBuilder: (context, index) {
+                    if (forYouForums.isEmpty) {
+                      return ListTile(
+                        title: Text(
+                          'No forums available',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w400,
+                            fontSize: 14,
+                            color: Colors.black,
+                          ),
+                        ),
+                      );
+                    } else {
+                      final item = forYouForums[index];
+                      return ListTile(
+                        tileColor: Color(0x1f000000),
+                        title: Text(
+                          item["title"] ?? 'No Title',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w400,
+                            fontSize: 14,
+                            color: Colors.black,
+                          ),
+                        ),
+                        subtitle: Text(item["content"] ?? 'No Content'),
+                        leading: Icon(Icons.article, color: Color(0xff212435),
+                            size: 24),
+                        trailing: Icon(Icons.arrow_forward, color: Color(
+                            0xff212435), size: 24),
+                      );
+                    }
+                  },
+                ),
+              ),
+              const Text(
+                "Recent Posts from Friends",
+                style: TextStyle(
+                  fontWeight: FontWeight.w500,
+                  fontSize: 17,
+                  color: Colors.black,
+                ),
+              ),
+              Expanded(
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: friendsForums.length == 0 ? 1 : friendsForums
+                      .length,
+                  itemBuilder: (context, index) {
+                    if (friendsForums.isEmpty) {
+                      return ListTile(
+                        title: Text(
+                          'You have no friends, check out groupchats to find some',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w400,
+                            fontSize: 14,
+                            color: Colors.black,
+                          ),
+                        ),
+                      );
+
+                    } else {
+                      final item = friendsForums[index];
+                      return ListTile(
+                        tileColor: Color(0x1f000000),
+                        title: Text(
+                          item["title"] ?? 'No Title',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w400,
+                            fontSize: 14,
+                            color: Colors.black,
+                          ),
+                        ),
+                        subtitle: Text(item["content"] ?? 'No Content'),
+                        leading: Icon(Icons.article, color: Color(0xff212435),
+                            size: 24),
+                        trailing: Icon(Icons.arrow_forward, color: Color(
+                            0xff212435), size: 24),
+                      );
+                    }
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+
+      );
+    }
+  }

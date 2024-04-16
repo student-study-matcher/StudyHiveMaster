@@ -78,7 +78,6 @@ class _ChangePasswordState extends State<ChangePassword> {
               SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () {
-                  // Implement your logic here
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Color(0xffae32ff),

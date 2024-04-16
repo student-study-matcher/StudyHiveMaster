@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'ReportPage.dart';
+
+enum CommentFilter { mostLiked, mostRecent, oldest }
 
 class OpenForum extends StatefulWidget {
   final String forumId;
@@ -15,10 +16,11 @@ class OpenForum extends StatefulWidget {
 class _OpenForumState extends State<OpenForum> {
   final DatabaseReference _databaseReference = FirebaseDatabase.instance.ref();
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  Map<String, dynamic> forumData = {};
-  List<Map<String, dynamic>> comments = [];
   bool isLoading = true;
+  Map<String, dynamic>? forumData;
+  List<Map<String, dynamic>> comments = [];
   TextEditingController commentController = TextEditingController();
+  CommentFilter currentFilter = CommentFilter.mostRecent;
 
   @override
   void initState() {
@@ -27,32 +29,21 @@ class _OpenForumState extends State<OpenForum> {
   }
 
   fetchForumData() async {
-    setState(() {
-      isLoading = true;
-    });
-
-
+    setState(() => isLoading = true);
     final forumSnapshot = await _databaseReference.child('Forums/${widget.forumId}').get();
     if (forumSnapshot.exists && forumSnapshot.value != null) {
-      final forumDetails = Map<String, dynamic>.from(forumSnapshot.value as Map);
-
-      final commentsSnapshot = await _databaseReference.child('Forums/${widget.forumId}/responses').get();
-      final List<Map<String, dynamic>> commentsList = [];
-      if (commentsSnapshot.exists && commentsSnapshot.value != null) {
-        Map<String, dynamic>.from(commentsSnapshot.value as Map).forEach((key, value) {
-          commentsList.add({
-            "id": key,
-            ...value,
-          });
-        });
-      }
-
+      final commentsList = (forumSnapshot.child('responses').value as Map<dynamic, dynamic>?)
+          ?.entries
+          .map((e) => Map<String, dynamic>.from(e.value)..['id'] = e.key)
+          .toList() ?? [];
+      sortComments(commentsList);
       setState(() {
-        forumData = forumDetails;
-        forumData['content'] = forumDetails['originalPost']['content'];  // Store the fetched content in forumData
+        forumData = Map<String, dynamic>.from(forumSnapshot.value as Map<dynamic, dynamic>);
         comments = commentsList;
         isLoading = false;
       });
+    } else {
+      setState(() => isLoading = false);
     }
   }
 
@@ -60,8 +51,7 @@ class _OpenForumState extends State<OpenForum> {
     final String userId = _auth.currentUser!.uid;
     final String comment = commentController.text.trim();
     if (comment.isNotEmpty) {
-      final newCommentRef = _databaseReference.child('Forums/${widget.forumId}/responses').push();
-      await newCommentRef.set({
+      await _databaseReference.child('Forums/${widget.forumId}/responses').push().set({
         'content': comment,
         'authorID': userId,
         'thumbsUp': 0,
@@ -72,99 +62,76 @@ class _OpenForumState extends State<OpenForum> {
       fetchForumData();
     }
   }
+
   Future<void> incrementThumbsUp(String commentId) async {
-    final commentRef = _databaseReference.child('Forums/${widget.forumId}/responses/$commentId');
-    final dataSnapshot = await commentRef.child('thumbsUp').get();
-    final currentCount = dataSnapshot.exists ? int.tryParse(dataSnapshot.value.toString()) ?? 0 : 0;
-    await commentRef.child('thumbsUp').set(currentCount + 1);
-    fetchForumData();
+    DatabaseReference thumbsUpRef = _databaseReference.child('Forums/${widget.forumId}/responses/$commentId/thumbsUp');
+    DataSnapshot snapshot = await thumbsUpRef.get();
+    int currentLikes = (snapshot.value ?? 0) as int;
+    await thumbsUpRef.set(currentLikes + 1);
   }
 
   Future<void> incrementThumbsDown(String commentId) async {
-    final commentRef = _databaseReference.child('Forums/${widget.forumId}/responses/$commentId');
-    final dataSnapshot = await commentRef.child('thumbsDown').get();
-    final currentCount = dataSnapshot.exists ? int.tryParse(dataSnapshot.value.toString()) ?? 0 : 0;
-    await commentRef.child('thumbsDown').set(currentCount + 1);
-    fetchForumData();
+    DatabaseReference thumbsDownRef = _databaseReference.child('Forums/${widget.forumId}/responses/$commentId/thumbsDown');
+    DataSnapshot snapshot = await thumbsDownRef.get();
+    int currentDislikes = (snapshot.value ?? 0) as int;
+    await thumbsDownRef.set(currentDislikes + 1);
   }
 
 
-  navigateToReportPage() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => ReportPage()),
-    );
+
+  void sortComments(List<Map<String, dynamic>> commentsList) {
+    switch (currentFilter) {
+      case CommentFilter.mostLiked:
+        commentsList.sort((a, b) => (b['thumbsUp'] ?? 0).compareTo(a['thumbsUp'] ?? 0));
+        break;
+      case CommentFilter.mostRecent:
+        commentsList.sort((a, b) => (b['timestamp'] ?? 0).compareTo(a['timestamp'] ?? 0));
+        break;
+      case CommentFilter.oldest:
+        commentsList.sort((a, b) => (a['timestamp'] ?? 0).compareTo(b['timestamp'] ?? 0));
+        break;
+    }
+    comments = commentsList;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(forumData['title'] ?? 'Forum'),
+        title: Text(forumData?['title'] ?? 'Forum'),
         backgroundColor: Color(0xffad32fe),
       ),
       body: isLoading
           ? Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
-        child: Column(
-          children: [
-            Padding(
-              padding: EdgeInsets.all(8.0),
-              child: Text(
-                forumData['title'] ?? 'No Title',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 8.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Text(
-                      forumData['content'] ?? 'No Content',
-                      style: TextStyle(fontSize: 18),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(forumData?['title'] ?? 'No Title', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+              SizedBox(height: 10),
+              Text(forumData?['content'] ?? 'No Content', style: TextStyle(fontSize: 18)),
+              Divider(),
+              Text('Comments:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              ...comments.map((comment) => ListTile(
+                title: Text(comment['content']),
+                subtitle: Row(
+                  children: [
+                    IconButton(
+                      icon: Icon(Icons.thumb_up),
+                      onPressed: () => incrementThumbsUp(comment['id']),
                     ),
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.report),
-                    onPressed: navigateToReportPage,
-                  ),
-                ],
-              ),
-            ),
-            ListView.builder(
-              shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
-              itemCount: comments.length,
-              itemBuilder: (context, index) {
-                final comment = comments[index];
-                return ListTile(
-                  title: Text(comment['content']),
-                  subtitle: Row(
-                    children: [
-                      IconButton(
-                        icon: Icon(Icons.thumb_up),
-                        onPressed: () => incrementThumbsUp(comment['id']),
-                      ),
-                      Text('${comment['thumbsUp'] ?? 0}'),
-                      IconButton(
-                        icon: Icon(Icons.thumb_down),
-                        onPressed: () => incrementThumbsDown(comment['id']),
-                      ),
-                      Text('${comment['thumbsDown'] ?? 0}'),
-                      IconButton(
-                        icon: Icon(Icons.report),
-                        onPressed: navigateToReportPage,
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 16.0),
-              child: TextField(
+                    Text('${comment['thumbsUp'] ?? 0}'),
+                    IconButton(
+                      icon: Icon(Icons.thumb_down),
+                      onPressed: () => incrementThumbsDown(comment['id']),
+                    ),
+                    Text('${comment['thumbsDown'] ?? 0}'),
+                  ],
+                ),
+              )),
+              TextField(
                 controller: commentController,
                 decoration: InputDecoration(
                   labelText: 'Write a comment...',
@@ -174,8 +141,8 @@ class _OpenForumState extends State<OpenForum> {
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

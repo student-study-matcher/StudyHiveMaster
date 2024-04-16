@@ -22,36 +22,44 @@ class _UserProfileState extends State<UserProfile> {
   List<Map<String, String>> friendsDetails = [];
   bool isEditingBio = false;
   bool isEditingName = false; // Flag to control editing of the name
+  // TextEditingController nameController = TextEditingController();
+
+
 
   @override
   void initState() {
     super.initState();
+    print("InitState Called");
     fetchUserData();
   }
 
   Future<void> fetchUserData() async {
-    User? user = _auth.currentUser;
-    if (user != null) {
-      final userSnapshot = await databaseReference.child('Users/${user.uid}')
-          .get();
-      if (userSnapshot.exists) {
-        final userData = userSnapshot.value as Map<dynamic, dynamic>;
-        setState(() {
-          firstName = userData['firstName'] ?? '';
-          lastName = userData['lastName'] ?? '';
-          username = userData['username'] ?? '';
-          bio = userData['bio'] ?? '';
-          university = userData['university'] ?? '';
-          course = userData['course'] ?? '';
-          profilePic = userData['profilePic'] ?? '';
+    try {
+      User? user = _auth.currentUser;
+      if (user != null) {
+        final userSnapshot = await databaseReference.child('Users/${user.uid}').get();
+        if (userSnapshot.exists) {
+          final userData = userSnapshot.value as Map<dynamic, dynamic>;
+          setState(() {
+            firstName = userData['firstName'] ?? '';
+            lastName = userData['lastName'] ?? '';
+            username = userData['username'] ?? '';
+            bio = userData['bio'] ?? '';
+            university = userData['university'] ?? '';
+            course = userData['course'] ?? '';
+            profilePic = userData['profilePic'] != null ? userData['profilePic'] : 0;
 
-          if (userData.containsKey('friends')) {
-            fetchFriendsDetails(userData['friends'] as Map<dynamic, dynamic>);
-          }
-        });
+            if (userData.containsKey('friends')) {
+              fetchFriendsDetails(userData['friends'] as Map<dynamic, dynamic>);
+            }
+          });
+        }
       }
+    } catch (error) {
+      print("Error fetching user data: $error");
     }
   }
+
 
   Future<void> fetchFriendsDetails(Map<dynamic, dynamic> friendsIds) async {
     List<Map<String, String>> fetchedFriendsDetails = [];
@@ -142,8 +150,19 @@ class _UserProfileState extends State<UserProfile> {
             CircleAvatar(radius: 60,
                 backgroundImage: AssetImage(getProfilePicturePath(profilePic))),
             SizedBox(height: 10),
-            isEditingName
+            !isEditingName
                 ? Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text("$firstName $lastName", style: TextStyle(
+                    fontWeight: FontWeight.bold, fontSize: 20)),
+                IconButton(
+                  icon: Icon(Icons.edit, size: 20),
+                  onPressed: () => setState(() => isEditingName = true),
+                ),
+              ],
+            ) :
+            Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Expanded(
@@ -172,17 +191,6 @@ class _UserProfileState extends State<UserProfile> {
                     setState(() => isEditingName = false);
                     updateNameInDatabase();
                   },
-                ),
-              ],
-            )
-                : Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text("$firstName $lastName", style: TextStyle(
-                    fontWeight: FontWeight.bold, fontSize: 20)),
-                IconButton(
-                  icon: Icon(Icons.edit, size: 20),
-                  onPressed: () => setState(() => isEditingName = true),
                 ),
               ],
             ),
@@ -282,32 +290,32 @@ class ProfileInfoBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-  return Container(
-  padding: EdgeInsets.all(10),
-  decoration: BoxDecoration(
-  border: Border.all(color: Colors.grey),
-  borderRadius: BorderRadius.circular(10),
-  ),
-  child: Column(
-  children: [
-  Text(
-  title,
-  style: TextStyle(
-  fontWeight: FontWeight.bold,
-  fontSize: 16,
-  ),
-  ),
-  SizedBox(height: 5),
-  Text(
-  subtitle,
-  style: TextStyle(
-  fontSize: 14,
-  ),
-  ),
-  ],
-  ),
-  );
+    return Container(
+      padding: EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Column(
+        children: [
+          Text(
+            title,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
+          ),
+          SizedBox(height: 5),
+          Text(
+            subtitle,
+            style: TextStyle(
+              fontSize: 14,
+            ),
+          ),
+        ],
+      ),
+    );
 
   }
 
-  }
+}

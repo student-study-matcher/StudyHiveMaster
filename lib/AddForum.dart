@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:login_and_registration/CustomAppBar.dart';
+import 'package:login_and_registration/index.dart';
 
 class AddForum extends StatefulWidget {
   @override
@@ -27,21 +29,16 @@ class _AddForumState extends State<AddForum> {
     final String userId = _auth.currentUser?.uid ?? '';
 
     if (title.isNotEmpty && content.isNotEmpty && userId.isNotEmpty) {
-      final forum = {
+      final Map<String, dynamic> forum = {
         'title': title,
         'content': content,
         'authorID': userId,
-        'subject': selectedSubject,
         'timestamp': ServerValue.timestamp,
         'responses': {},
       };
-      
       await _databaseReference.child('Forums').push().set(forum);
-      
       _titleController.clear();
       _contentController.clear();
-
-      
       Navigator.pop(context);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -54,10 +51,9 @@ class _AddForumState extends State<AddForum> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Color(0xffffffff),
-      appBar: AppBar(
-        backgroundColor: Color(0xffad32fe),
-        title: Text("Add Forum"),
-      ),
+      drawer: OpenDrawer(),
+      appBar: CustomAppBar(),
+
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(

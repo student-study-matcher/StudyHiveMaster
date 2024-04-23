@@ -34,4 +34,3 @@ class FriendsPopup extends StatelessWidget {
     );
   }
 }
-

@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'ReportPage.dart';
+import 'OpenDrawer.dart';
+
+enum CommentFilter { mostLiked, mostRecent, oldest }
 
 class OpenForum extends StatefulWidget {
   final String forumId;
@@ -15,10 +19,11 @@ class OpenForum extends StatefulWidget {
 class _OpenForumState extends State<OpenForum> {
   final DatabaseReference _databaseReference = FirebaseDatabase.instance.ref();
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  Map<String, dynamic> forumData = {};
-  List<Map<String, dynamic>> comments = [];
   bool isLoading = true;
+  Map<String, dynamic>? forumData;
+  List<Map<String, dynamic>> comments = [];
   TextEditingController commentController = TextEditingController();
+  CommentFilter currentFilter = CommentFilter.mostRecent;
 
   @override
   void initState() {
@@ -26,33 +31,47 @@ class _OpenForumState extends State<OpenForum> {
     fetchForumData();
   }
 
-  fetchForumData() async {
-    setState(() {
-      isLoading = true;
-    });
-
-
+  void fetchForumData() async {
+    setState(() => isLoading = true);
     final forumSnapshot = await _databaseReference.child('Forums/${widget.forumId}').get();
     if (forumSnapshot.exists && forumSnapshot.value != null) {
-      final forumDetails = Map<String, dynamic>.from(forumSnapshot.value as Map);
-
-      final commentsSnapshot = await _databaseReference.child('Forums/${widget.forumId}/responses').get();
-      final List<Map<String, dynamic>> commentsList = [];
-      if (commentsSnapshot.exists && commentsSnapshot.value != null) {
-        Map<String, dynamic>.from(commentsSnapshot.value as Map).forEach((key, value) {
-          commentsList.add({
-            "id": key,
-            ...value,
-          });
-        });
+      List<Map<String, dynamic>> fetchedComments = [];
+      Map<dynamic, dynamic> responses = forumSnapshot.child('responses').value as Map<dynamic, dynamic>? ?? {};
+      for (var entry in responses.entries) {
+        Map<dynamic, dynamic> response = entry.value as Map<dynamic, dynamic>? ?? {};
+        String userId = response['authorID'] ?? '';
+        DataSnapshot userSnapshot = await _databaseReference.child('Users/$userId').get();
+        Map<dynamic, dynamic> userData = userSnapshot.value as Map<dynamic, dynamic>? ?? {};
+        String profilePicture = getProfilePicturePath(userData['profilePic']);
+        Map<String, dynamic> commentData = {
+          'id': entry.key,
+          'content': response['content'],
+          'thumbsUp': response['thumbsUp'] ?? 0,
+          'thumbsDown': response['thumbsDown'] ?? 0,
+          'username': userData['username'] ?? 'Unknown',
+          'profilePicture': profilePicture,
+        };
+        fetchedComments.add(commentData);
       }
-
       setState(() {
-        forumData = forumDetails;
-        forumData['content'] = forumDetails['originalPost']['content'];  // Store the fetched content in forumData
-        comments = commentsList;
+        forumData = Map<String, dynamic>.from(forumSnapshot.value as Map<dynamic, dynamic>);
+        comments = fetchedComments;
         isLoading = false;
       });
+    } else {
+      setState(() => isLoading = false);
+    }
+  }
+
+  String getProfilePicturePath(int? profilePicIndex) {
+    switch (profilePicIndex) {
+      case 1: return "assets/purple.png";
+      case 2: return "assets/blue.png";
+      case 3: return "assets/blue-purple.png";
+      case 4: return "assets/orange.png";
+      case 5: return "assets/pink.png";
+      case 6: return "assets/turquoise.png";
+      default: return "assets/default_profile_picture.png";
     }
   }
 
@@ -60,8 +79,7 @@ class _OpenForumState extends State<OpenForum> {
     final String userId = _auth.currentUser!.uid;
     final String comment = commentController.text.trim();
     if (comment.isNotEmpty) {
-      final newCommentRef = _databaseReference.child('Forums/${widget.forumId}/responses').push();
-      await newCommentRef.set({
+      await _databaseReference.child('Forums/${widget.forumId}/responses').push().set({
         'content': comment,
         'authorID': userId,
         'thumbsUp': 0,
@@ -72,27 +90,53 @@ class _OpenForumState extends State<OpenForum> {
       fetchForumData();
     }
   }
-  Future<void> incrementThumbsUp(String commentId) async {
-    final commentRef = _databaseReference.child('Forums/${widget.forumId}/responses/$commentId');
-    final dataSnapshot = await commentRef.child('thumbsUp').get();
-    final currentCount = dataSnapshot.exists ? int.tryParse(dataSnapshot.value.toString()) ?? 0 : 0;
-    await commentRef.child('thumbsUp').set(currentCount + 1);
-    fetchForumData();
+
+  void sortComments(CommentFilter filter) {
+    setState(() {
+      comments.sort((a, b) {
+        switch (filter) {
+          case CommentFilter.mostLiked:
+            return (b['thumbsUp'] ?? 0).compareTo(a['thumbsUp'] ?? 0);
+          case CommentFilter.mostRecent:
+            return (b['timestamp'] ?? 0).compareTo(a['timestamp'] ?? 0);
+          case CommentFilter.oldest:
+            return (a['timestamp'] ?? 0).compareTo(b['timestamp'] ?? 0);
+        }
+      });
+    });
   }
 
-  Future<void> incrementThumbsDown(String commentId) async {
-    final commentRef = _databaseReference.child('Forums/${widget.forumId}/responses/$commentId');
-    final dataSnapshot = await commentRef.child('thumbsDown').get();
-    final currentCount = dataSnapshot.exists ? int.tryParse(dataSnapshot.value.toString()) ?? 0 : 0;
-    await commentRef.child('thumbsDown').set(currentCount + 1);
-    fetchForumData();
-  }
-
-
-  navigateToReportPage() {
+  void navigateToReportPage(String commentId) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => ReportPage()),
+      MaterialPageRoute(builder: (context) => ReportPage(forumId: widget.forumId, commentId: commentId)),
+    );
+  }
+
+  Future<void> _launchURL(String url) async {
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Warning!'),
+        content: Text('You are about to download a file from the internet. Always ensure that the source is trustworthy to avoid security risks.'),
+        actions: <Widget>[
+          TextButton(
+            child: Text('Cancel'),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+          TextButton(
+            child: Text('Continue'),
+            onPressed: () async {
+              Navigator.of(context).pop();
+              if (await canLaunch(url)) {
+                await launch(url);
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Could not launch $url')));
+              }
+            },
+          ),
+        ],
+      ),
     );
   }
 
@@ -100,71 +144,81 @@ class _OpenForumState extends State<OpenForum> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(forumData['title'] ?? 'Forum'),
+        title: Text(forumData?['title'] ?? 'Forum'),
         backgroundColor: Color(0xffad32fe),
+        actions: [
+          PopupMenuButton<CommentFilter>(
+            onSelected: (CommentFilter result) {
+              currentFilter = result;
+              sortComments(currentFilter);
+            },
+            itemBuilder: (BuildContext context) => <PopupMenuEntry<CommentFilter>>[
+              const PopupMenuItem<CommentFilter>(
+                value: CommentFilter.mostLiked,
+                child: Text('Most Liked'),
+              ),
+              const PopupMenuItem<CommentFilter>(
+                value: CommentFilter.mostRecent,
+                child: Text('Most Recent'),
+              ),
+              const PopupMenuItem<CommentFilter>(
+                value: CommentFilter.oldest,
+                child: Text('Oldest'),
+              ),
+            ],
+          ),
+        ],
       ),
+      drawer: OpenDrawer(),
       body: isLoading
           ? Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
-        child: Column(
-          children: [
-            Padding(
-              padding: EdgeInsets.all(8.0),
-              child: Text(
-                forumData['title'] ?? 'No Title',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 8.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Text(
-                      forumData['content'] ?? 'No Content',
-                      style: TextStyle(fontSize: 18),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(forumData?['title'] ?? 'No Title', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+              SizedBox(height: 10),
+              Text(forumData?['content'] ?? 'No Content', style: TextStyle(fontSize: 18)),
+
+              if (forumData?['fileUrl'] != null)
+                InkWell(
+                  onTap: () => _launchURL(forumData!['fileUrl']),
+                  child: Text(
+                    'Download Attached File',
+                    style: TextStyle(decoration: TextDecoration.underline, color: Colors.blue),
+                  ),
+                ),
+              Divider(),
+              Text('Comments:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              ...comments.map((comment) => ListTile(
+                leading: CircleAvatar(
+                  backgroundImage: NetworkImage(comment['profilePicture']),
+                ),
+                title: Text(comment['content']),
+                subtitle: Text('Sent by: ${comment['username']}'),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: Icon(Icons.thumb_up),
+                      onPressed: () => incrementThumbsUp(comment['id']),
                     ),
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.report),
-                    onPressed: navigateToReportPage,
-                  ),
-                ],
-              ),
-            ),
-            ListView.builder(
-              shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
-              itemCount: comments.length,
-              itemBuilder: (context, index) {
-                final comment = comments[index];
-                return ListTile(
-                  title: Text(comment['content']),
-                  subtitle: Row(
-                    children: [
-                      IconButton(
-                        icon: Icon(Icons.thumb_up),
-                        onPressed: () => incrementThumbsUp(comment['id']),
-                      ),
-                      Text('${comment['thumbsUp'] ?? 0}'),
-                      IconButton(
-                        icon: Icon(Icons.thumb_down),
-                        onPressed: () => incrementThumbsDown(comment['id']),
-                      ),
-                      Text('${comment['thumbsDown'] ?? 0}'),
-                      IconButton(
-                        icon: Icon(Icons.report),
-                        onPressed: navigateToReportPage,
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 16.0),
-              child: TextField(
+                    Text('${comment['thumbsUp'] ?? 0}'),
+                    IconButton(
+                      icon: Icon(Icons.thumb_down),
+                      onPressed: () => incrementThumbsDown(comment['id']),
+                    ),
+                    Text('${comment['thumbsDown'] ?? 0}'),
+                    IconButton(
+                      icon: Icon(Icons.report),
+                      onPressed: () => navigateToReportPage(comment['id']),
+                    ),
+                  ],
+                ),
+              )),
+              TextField(
                 controller: commentController,
                 decoration: InputDecoration(
                   labelText: 'Write a comment...',
@@ -174,10 +228,26 @@ class _OpenForumState extends State<OpenForum> {
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
+  }
+
+  Future<void> incrementThumbsUp(String commentId) async {
+    DatabaseReference thumbsUpRef = _databaseReference.child('Forums/${widget.forumId}/responses/$commentId/thumbsUp');
+    DataSnapshot snapshot = await thumbsUpRef.get();
+    int currentLikes = (snapshot.value ?? 0) as int;
+    await thumbsUpRef.set(currentLikes + 1);
+    fetchForumData();
+  }
+
+  Future<void> incrementThumbsDown(String commentId) async {
+    DatabaseReference thumbsDownRef = _databaseReference.child('Forums/${widget.forumId}/responses/$commentId/thumbsDown');
+    DataSnapshot snapshot = await thumbsDownRef.get();
+    int currentDislikes = (snapshot.value ?? 0) as int;
+    await thumbsDownRef.set(currentDislikes + 1);
+    fetchForumData();
   }
 }

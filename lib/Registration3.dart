@@ -13,6 +13,7 @@ class _Registration3State extends State<Registration3> {
   final databaseReference = FirebaseDatabase.instance.ref();
   TextEditingController bioController = TextEditingController();
   int profilePic = 0;
+  int selectedProfilePic = -1;
 
   Future<void> saveBio() async {
     User? user = _auth.currentUser;
@@ -24,6 +25,11 @@ class _Registration3State extends State<Registration3> {
         MaterialPageRoute(builder: (context) => HomeScreen()),
       );
     }
+  }
+  void selectProfilePic(int index) {
+    setState(() {
+      selectedProfilePic = index;
+    });
   }
 
   @override
@@ -39,66 +45,12 @@ class _Registration3State extends State<Registration3> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                GestureDetector(
-                  onTap: () {
-                    profilePic = 1;
-                  },
-                  child: Image.asset(
-                    'assets/purple.png',
-                    width: 60,
-                    height: 60,
-                  ),
-                ),
-                GestureDetector(
-                  onTap: () {
-                    profilePic = 2;
-                  },
-                  child: Image.asset(
-                    'assets/blue.png',
-                    width: 60,
-                    height: 60,
-                  ),
-                ),
-                GestureDetector(
-                  onTap: () {
-                    profilePic = 3;
-                  },
-                  child: Image.asset(
-                    'assets/blue-purple.png',
-                    width: 60,
-                    height: 60,
-                  ),
-                ),
-                GestureDetector(
-                  onTap: () {
-                    profilePic = 4;
-                  },
-                  child: Image.asset(
-                    'assets/orange.png',
-                    width: 60,
-                    height: 60,
-                  ),
-                ),
-                GestureDetector(
-                  onTap: () {
-                    profilePic = 5;
-                  },
-                  child: Image.asset(
-                    'assets/pink.png',
-                    width: 60,
-                    height: 60,
-                  ),
-                ),
-                GestureDetector(
-                  onTap: () {
-                    profilePic = 6;
-                  },
-                  child: Image.asset(
-                    'assets/turquoise.png',
-                    width: 60,
-                    height: 60,
-                  ),
-                ),
+                buildProfilePic(1, 'assets/purple.png'),
+                buildProfilePic(2, 'assets/blue.png'),
+                buildProfilePic(3, 'assets/blue-purple.png'),
+                buildProfilePic(4, 'assets/orange.png'),
+                buildProfilePic(5, 'assets/pink.png'),
+                buildProfilePic(6, 'assets/turquoise.png'),
               ],
             ),
             SizedBox(height: 20),
@@ -120,6 +72,30 @@ class _Registration3State extends State<Registration3> {
               child: Text('Finish Registration'),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget buildProfilePic(int index, String imagePath) {
+    return GestureDetector(
+      onTap: () {
+        selectProfilePic(index);
+        profilePic = index;
+      },
+      child: Container(
+        width: 100,
+        height: 100,
+        decoration: BoxDecoration(
+          border: selectedProfilePic == index
+              ? Border.all(color: Colors.blue, width: 2)
+              : null,
+          borderRadius: BorderRadius.circular(30),
+        ),
+        child: Image.asset(
+          imagePath,
+          width: 60,
+          height: 60,
         ),
       ),
     );

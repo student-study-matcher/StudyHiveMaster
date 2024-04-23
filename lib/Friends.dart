@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'CustomAppBar.dart';
+import 'FriendProfile.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class Friends extends StatelessWidget {
   @override
@@ -21,8 +24,8 @@ class Friends extends StatelessWidget {
             Expanded(
               child: TabBarView(
                 children: [
-                  _FriendsList(),
-                  _RequestsList(),
+                  FriendsList(),
+                  RequestsList(),
                 ],
               ),
             ),
@@ -33,211 +36,170 @@ class Friends extends StatelessWidget {
   }
 }
 
-class _FriendsList extends StatefulWidget {
+class FriendsList extends StatefulWidget {
   @override
   _FriendsListState createState() => _FriendsListState();
 }
 
-class _FriendsListState extends State<_FriendsList> {
-  List<String> friends = List.generate(10, (index) => "Friend ${index + 1}");
-  List<String> filteredFriends = [];
+class _FriendsListState extends State<FriendsList> {
+  List<Map<String, dynamic>> friendsDetails = [];
+  final DatabaseReference ref = FirebaseDatabase.instance.ref();
+  final String userId = FirebaseAuth.instance.currentUser!.uid;
 
   @override
   void initState() {
     super.initState();
-    filteredFriends.addAll(friends);
+    fetchFriendIds();
   }
 
-  void filterFriends(String query) {
-    setState(() {
-      filteredFriends = friends
-          .where((friend) => friend.toLowerCase().contains(query.toLowerCase()))
-          .toList();
+  void fetchFriendIds() {
+    ref.child('Users/$userId/friends').onValue.listen((event) {
+      final DataSnapshot snapshot = event.snapshot;
+      if (snapshot.exists) {
+        final friendsData = Map<String, dynamic>.from(snapshot.value as Map);
+        List<String> friendIds = friendsData.keys.toList();
+        fetchFriendsDetails(friendIds);
+      }
     });
   }
 
-  void showProfile(BuildContext context, String friendName) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(friendName),
-          content: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                CircleAvatar(
-                  radius: 60,
-                  backgroundImage: AssetImage("assets/profilePicture1.png"),
-                ),
-                SizedBox(height: 10),
-                Text("Bio: I like football"),
-                // Add more profile information here
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Text('Close'),
-            ),
-          ],
-        );
-      },
-    );
+  void fetchFriendsDetails(List<String> friendIds) {
+    friendsDetails.clear();
+    for (String id in friendIds) {
+      ref.child('Users/$id').get().then((snapshot) {
+        final DataSnapshot dataSnapshot = snapshot;
+        if (dataSnapshot.exists) {
+          final friendData = Map<String, dynamic>.from(dataSnapshot.value as Map);
+          setState(() {
+            friendsDetails.add({
+              'id': id,
+              'username': friendData['username'] ?? 'Unknown',
+              'profilePicture': friendData['profilePic'] != null ? getProfilePicturePath(friendData['profilePic']) : 'assets/default_profile_picture.png',
+            });
+          });
+        }
+      });
+    }
+  }
+
+  String getProfilePicturePath(int? profilePicIndex) {
+    switch (profilePicIndex) {
+      case 1: return "assets/purple.png";
+      case 2: return "assets/blue.png";
+      case 3: return "assets/blue-purple.png";
+      case 4: return "assets/orange.png";
+      case 5: return "assets/pink.png";
+      case 6: return "assets/turquoise.png";
+      default: return "assets/default_profile_picture.png";
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: TextField(
-            onChanged: filterFriends,
-            decoration: InputDecoration(
-              hintText: 'Search Friends...',
-              prefixIcon: Icon(Icons.search),
+    return Expanded(
+      child: ListView.builder(
+        itemCount: friendsDetails.length,
+        itemBuilder: (context, index) {
+          final friend = friendsDetails[index];
+          return ListTile(
+            leading: CircleAvatar(
+              backgroundImage: AssetImage(friend['profilePicture']),
             ),
-          ),
-        ),
-        Expanded(
-          child: ListView.builder(
-            itemCount: filteredFriends.length,
-            itemBuilder: (context, index) {
-              return ListTile(
-                title: Text(filteredFriends[index]),
-                onTap: () {
-                  showProfile(context, filteredFriends[index]);
-                },
-                trailing: OutlinedButton(
-                  onPressed: () {
-                    // Implement remove button functionality
-                  },
-                  style: ButtonStyle(
-                    side: MaterialStateProperty.all(BorderSide(color: Colors.black)),
-                  ),
-                  child: Text('Remove'),
-                ),
-              );
-            },
-          ),
-        ),
-      ],
+            title: InkWell(
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => FriendProfile(friendId: friend['id'])),
+              ),
+              child: Text(friend['username']),
+            ),
+          );
+        },
+      ),
     );
   }
 }
 
-class _RequestsList extends StatefulWidget {
+
+class RequestsList extends StatefulWidget {
   @override
   _RequestsListState createState() => _RequestsListState();
 }
 
-class _RequestsListState extends State<_RequestsList> {
-  List<String> requests = List.generate(5, (index) => "Request ${index + 1}");
-  List<String> filteredRequests = [];
+class _RequestsListState extends State<RequestsList> {
+  final DatabaseReference ref = FirebaseDatabase.instance.ref();
+  final String userId = FirebaseAuth.instance.currentUser!.uid;
+  List<Map<String, String>> requestDetails = [];
 
   @override
   void initState() {
     super.initState();
-    filteredRequests.addAll(requests);
+    fetchRequests();
   }
 
-  void filterRequests(String query) {
-    setState(() {
-      filteredRequests = requests
-          .where((request) => request.toLowerCase().contains(query.toLowerCase()))
-          .toList();
+  void fetchRequests() {
+    ref.child('Users/$userId/friendRequestsReceived').onValue.listen((event) async {
+      final DataSnapshot snapshot = event.snapshot;
+      if (snapshot.exists && snapshot.value != null) {
+        final requestsData = Map<String, dynamic>.from(snapshot.value as Map);
+        List<Map<String, String>> fetchedDetails = [];
+        for (String requestId in requestsData.keys) {
+          DataSnapshot usernameSnapshot = await ref.child('Users/$requestId/username').get();
+          String username = usernameSnapshot.value as String? ?? 'Unknown';
+          fetchedDetails.add({
+            'id': requestId,
+            'username': username,
+          });
+        }
+        setState(() {
+          requestDetails = fetchedDetails;
+        });
+      } else {
+        setState(() {
+          requestDetails.clear();
+        });
+      }
     });
   }
 
-  void showProfile(BuildContext context, String requestName) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(requestName),
-          content: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                CircleAvatar(
-                  radius: 60,
-                  backgroundImage: AssetImage("assets/profilePicture1.png"),
-                ),
-                SizedBox(height: 10),
-                Text("Bio: I like football"),
-                // Add more profile information here
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Text('Close'),
-            ),
-          ],
-        );
-      },
-    );
+  void acceptRequest(String requestId) async {
+    await ref.child('Users/$userId/friends/$requestId').set(true);
+    await ref.child('Users/$requestId/friends/$userId').set(true);
+    await ref.child('Users/$userId/friendRequestsReceived/$requestId').remove();
+    await ref.child('Users/$requestId/friendRequestsSent/$userId').remove();
+
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Friend request accepted.")));
+  }
+
+  void rejectRequest(String requestId) async {
+    await ref.child('Users/$userId/friendRequestsReceived/$requestId').remove();
+    await ref.child('Users/$requestId/friendRequestsSent/$userId').remove();
+
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Friend request declined.")));
   }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: TextField(
-            onChanged: filterRequests,
-            decoration: InputDecoration(
-              hintText: 'Search Requests...',
-              prefixIcon: Icon(Icons.search),
-            ),
+    return ListView.builder(
+      itemCount: requestDetails.length,
+      itemBuilder: (context, index) {
+        final details = requestDetails[index];
+        return ListTile(
+          title: Text(details['username']!),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                icon: Icon(Icons.check, color: Colors.green),
+                onPressed: () => acceptRequest(details['id']!),
+              ),
+              IconButton(
+                icon: Icon(Icons.close, color: Colors.red),
+                onPressed: () => rejectRequest(details['id']!),
+              ),
+            ],
           ),
-        ),
-        Expanded(
-          child: ListView.builder(
-            itemCount: filteredRequests.length,
-            itemBuilder: (context, index) {
-              return ListTile(
-                title: Text(filteredRequests[index]),
-                onTap: () {
-                  showProfile(context, filteredRequests[index]);
-                },
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    OutlinedButton(
-                      onPressed: () {
-                        // Implement accept button functionality
-                      },
-                      style: ButtonStyle(
-                        side: MaterialStateProperty.all(BorderSide(color: Colors.black)),
-                      ),
-                      child: Text('Accept'),
-                    ),
-                    SizedBox(width: 8),
-                    OutlinedButton(
-                      onPressed: () {
-                        // Implement reject button functionality
-                      },
-                      style: ButtonStyle(
-                        side: MaterialStateProperty.all(BorderSide(color: Colors.black)),
-                      ),
-                      child: Text('Reject'),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-        ),
-      ],
+        );
+      },
     );
   }
 }

@@ -194,7 +194,7 @@ class _EditProfileState extends State<EditChat> {
                   borderRadius: BorderRadius.zero,
                 ),
                 leading: Icon(Icons.info_outline, color: Color(0xff3a57e8), size: 24),
-
+                //trailing: Icon(Icons.edit, color: Color(0xff79797c), size: 22),
               ),
               Divider(
                 color: Color(0xffdddddd),

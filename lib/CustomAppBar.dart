@@ -1,103 +1,48 @@
 import 'package:flutter/material.dart';
-import 'index.dart';
+import 'SearchScreen.dart'; // Ensure this is imported if you're using SearchScreen for navigation
 
-class CustomAppBar extends StatefulWidget implements PreferredSizeWidget {
-  @override
-  _CustomAppBarState createState() => _CustomAppBarState();
-
-  @override
-  Size get preferredSize => Size.fromHeight(kToolbarHeight);
-}
-
-class _CustomAppBarState extends State<CustomAppBar> {
-  final TextEditingController _searchController = TextEditingController();
-  bool _isSearching = false;
-  List<dynamic> _searchResults = [];
-
-  @override
-  void initState() {
-    super.initState();
-    _searchController.addListener(_onSearchChanged);
-  }
-
-  @override
-  void dispose() {
-    _searchController.removeListener(_onSearchChanged);
-    _searchController.dispose();
-    super.dispose();
-  }
-
-  _onSearchChanged() {
-    if (_searchController.text.isNotEmpty) {
-      _performSearch(_searchController.text);
-    } else {
-      setState(() => _searchResults.clear());
-    }
-  }
-
-  _performSearch(String query) async {
-    // Your search implementation
-  }
-
+class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
       elevation: 4,
       centerTitle: false,
-      automaticallyImplyLeading: false,
-      backgroundColor: Color(0xffad32fe),
-      title: !_isSearching
-          ? GestureDetector(
-        onTap: () => Navigator.of(context).pushReplacementNamed('/home'),
+      flexibleSpace: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Color(0xFF8A2387),
+              Color(0xFFE94057),
+              Color(0xFFF27121),
+            ],
+          ),
+        ),
+      ),
+      title: GestureDetector(
+        onTap: () => Navigator.of(context).pushReplacementNamed('/home'), // Navigate to the home screen when the title is tapped
         child: Row(
           children: [
-            IconButton(
-              icon: Icon(Icons.menu, color: Colors.white),
-              onPressed: () {
-                Scaffold.of(context).openDrawer();
-              },
-            ),
-            Image.asset('assets/logo.png', width: 24),
+            Image.asset('assets/logo.png', width: 24), // Ensure you have this asset or replace it with your logo
             SizedBox(width: 8),
-            Text("Study Hive",
-                style: TextStyle(
-                    fontWeight: FontWeight.w400,
-                    fontSize: 14,
-                    color: Colors.white)),
+            Text("Study Hive", style: TextStyle(fontWeight: FontWeight.w400, fontSize: 14, color: Colors.white)),
           ],
         ),
-      )
-          : TextField(
-        controller: _searchController,
-        decoration: InputDecoration(
-          hintText: "Search...",
-          hintStyle: TextStyle(color: Colors.white),
-          border: InputBorder.none,
-        ),
-        style: TextStyle(color: Colors.white),
       ),
       actions: [
-        if (!_isSearching)
-          IconButton(
-            icon: Icon(Icons.search, color: Colors.white),
-            onPressed: () {
-              setState(() {
-                _isSearching = true;
-              });
-            },
-          ),
-        if (_isSearching)
-          IconButton(
-            icon: Icon(Icons.close, color: Colors.white),
-            onPressed: () {
-              setState(() {
-                _isSearching = false;
-                _searchController.clear();
-                _searchResults.clear();
-              });
-            },
-          ),
+        IconButton(
+          icon: Icon(Icons.search, color: Colors.white),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => SearchScreen()), // Navigate to the SearchScreen
+            );
+          },
+        ),
+        // Include any other action icons here if needed
       ],
     );
   }
+
+  @override
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight); // AppBar's preferred height
 }

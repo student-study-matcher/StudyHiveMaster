@@ -1,9 +1,7 @@
-import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'dart:typed_data';
-import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:image_picker_web/image_picker_web.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter/material.dart';
+import 'HomeScreen.dart';
 
 class Registration3 extends StatefulWidget {
   @override
@@ -11,210 +9,198 @@ class Registration3 extends StatefulWidget {
 }
 
 class _Registration3State extends State<Registration3> {
-  Uint8List? _image;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final databaseReference = FirebaseDatabase.instance.ref();
   TextEditingController bioController = TextEditingController();
+  int profilePic = 0;
+  int selectedProfilePic = -1;
 
-  Future<void> selectImage() async {
-    if (kIsWeb) {
-      final pickedImage = await ImagePickerWeb.getImageInfo;
-      if (pickedImage != null) {
-        setState(() {
-          _image = pickedImage.data;
-        });
-      }
+  Future<void> saveBio() async {
+    User? user = _auth.currentUser;
+    if (user != null) {
+      await databaseReference.child('Users/${user.uid}/bio').set(bioController.text);
+      await databaseReference.child('Users/${user.uid}/profilePic').set(profilePic);
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => HomeScreen()),
+      );
     }
+  }
+  void selectProfilePic(int index) {
+    setState(() {
+      selectedProfilePic = index;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xffffffff),
-      appBar: AppBar(
-        elevation: 4,
-        centerTitle: true,
-        automaticallyImplyLeading: false,
-        backgroundColor: Color(0xffad32fe),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.zero,
-        ),
-        title: Text(
-          "Registration ",
-          style: TextStyle(
-            fontWeight: FontWeight.w500,
-            fontSize: 18,
-            color: Color(0xffffffff),
-          ),
-        ),
-        leading: Icon(
-          Icons.arrow_back,
-          color: Color(0xff212435),
-          size: 24,
-        ),
-      ),
-      body: Padding(
-        padding: EdgeInsets.all(5),
+        body: SingleChildScrollView(
+        child: Container(
+        height: MediaQuery
+            .of(context)
+        .size
+        .height,
+    width: MediaQuery
+        .of(context)
+        .size
+        .width,
+    decoration: BoxDecoration(
+    gradient: LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [
+    Color(0xFF8A2387),
+    Color(0xFFE94057),
+    Color(0xFFF27121),
+    ],
+    ),
+    ),
+    child: Column(
+    mainAxisAlignment: MainAxisAlignment.center,
+    crossAxisAlignment: CrossAxisAlignment.center,
+    children: [
+    SizedBox(height: 80),
+    Image.asset(
+    'assets/logo.png',
+    width: 150,
+    height: 50,
+    ),
+    SizedBox(height: 10),
+    Text(
+    'Study Hive',
+    style: TextStyle(
+    color: Colors.white,
+    fontSize: 20,
+    ),
+    ),
+
+    SizedBox(height: 30),
+    Container(
+    padding: EdgeInsets.all(20),
+    width: MediaQuery
+        .of(context)
+        .size
+        .width * 0.5,
+    decoration: BoxDecoration(
+    color: Colors.white,
+    borderRadius: BorderRadius.circular(10),
+    ),
+    child: Column(
+    crossAxisAlignment: CrossAxisAlignment.center,
+    children: [
+    Text(
+    ' Complete Registration',
+    style: TextStyle(
+    fontSize: 35,
+    fontWeight: FontWeight.bold,
+    ),
+    ),
+    SizedBox(height: 10),
+    Text(
+    'Please select profile picture',
+    style: TextStyle(
+    fontSize: 15,
+    color: Colors.grey,
+    ),
+    ),
+
+
+      SingleChildScrollView(
+        padding: EdgeInsets.all(20),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          mainAxisSize: MainAxisSize.max,
           children: [
-            buildImageContainer(),
-            buildBioTextField(),
-            buildFinishButton(),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget buildImageContainer() {
-    return Container(
-      width: 200,
-      height: 160,
-      decoration: BoxDecoration(
-        color: Color(0x1fffffff),
-        shape: BoxShape.rectangle,
-        borderRadius: BorderRadius.zero,
-        border: Border.all(color: Color(0x4d9e9e9e), width: 1),
-      ),
-      child: Stack(
-        children: [
-          if (_image != null)
-            Positioned.fill(
-              child: Container(
-                clipBehavior: Clip.antiAlias,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                ),
-                child: ClipOval(
-                  child: Image.memory(
-                    _image!,
-                    width: 64,
-                    height: 64,
-                    fit: BoxFit.scaleDown,
-                  ),
-                ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                buildProfilePic(1, 'assets/purple.png'),
+                buildProfilePic(2, 'assets/blue.png'),
+                buildProfilePic(3, 'assets/blue-purple.png'),
+                buildProfilePic(4, 'assets/orange.png'),
+                buildProfilePic(5, 'assets/pink.png'),
+                buildProfilePic(6, 'assets/turquoise.png'),
+              ],
+            ),
+            SizedBox(height: 20),
+            TextField(
+              controller: bioController,
+              decoration: InputDecoration(
+                labelText: 'Bio',
+                counterText: '${bioController.text.length}/255',
               ),
+              maxLines: 3,
+              maxLength: 255,
+              onChanged: (text) {
+                setState(() {});
+              },
             ),
-          Positioned.fill(
-            bottom: -100,
-            left: 130,
-            child: IconButton(
-              onPressed: selectImage,
-              icon: const Icon(Icons.add_a_photo),
-            ),
-          ),
-        ],
+    Container(
+    width: 200,
+    height: 50,
+    decoration: BoxDecoration(
+    gradient: LinearGradient(
+    colors: [
+    Color(0xFF8A2387),
+    Color(0xFFE94057),
+    Color(0xFFF27121),
+    ],
+    ),
+    borderRadius: BorderRadius.circular(30),
+    ),
+    child: MaterialButton(
+    onPressed: () {
+    saveBio();
+    },
+    shape: RoundedRectangleBorder(
+    borderRadius: BorderRadius.circular(30),
+    side: BorderSide(color: Color(0xff808080), width: 1),
+    ),
+    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+    child: Text(
+    "Confirm Details",
+    style: TextStyle(
+    color: Colors.white,
+    fontSize: 14,
+    fontWeight: FontWeight.w400,
+    fontStyle: FontStyle.normal,
+    ),
+    ),
+        ),
       ),
+],
+    ),
+        ),
+    ],
+    ),
+    )
+    ],
+    ),
+    ),
+    ),
     );
   }
 
-  Widget buildBioTextField() {
-    return Container(
-      width: 200,
-      height: 100,
-      decoration: BoxDecoration(
-        color: Color(0x1ffdfbfb),
-        shape: BoxShape.rectangle,
-        borderRadius: BorderRadius.zero,
-        border: Border.all(color: Color(0x4d9e9e9e), width: 1),
-      ),
-      child: Padding(
-        padding: EdgeInsets.all(5),
-        child: TextField(
-          controller: bioController,
-          obscureText: false,
-          textAlign: TextAlign.start,
-          maxLines: 10,
-          style: TextStyle(
-            fontWeight: FontWeight.w400,
-            fontSize: 14,
-            color: Color(0xff000000),
-          ),
-          decoration: InputDecoration(
-            disabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(4.0),
-              borderSide: BorderSide(color: Color(0xff000000), width: 1),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(4.0),
-              borderSide: BorderSide(color: Color(0xff000000), width: 1),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(4.0),
-              borderSide: BorderSide(color: Color(0xff000000), width: 1),
-            ),
-            labelText: "Bio",
-            labelStyle: TextStyle(
-              fontWeight: FontWeight.w400,
-              fontSize: 14,
-              color: Color(0xff000000),
-            ),
-            hintText: "Tell us about yourself",
-            hintStyle: TextStyle(
-              fontWeight: FontWeight.w400,
-              fontSize: 14,
-              color: Color(0xff000000),
-            ),
-            filled: true,
-            fillColor: Color(0xfff2f2f3),
-            isDense: false,
-            contentPadding: EdgeInsets.fromLTRB(12, 8, 12, 8),
-          ),
+  Widget buildProfilePic(int index, String imagePath) {
+    return GestureDetector(
+      onTap: () {
+        selectProfilePic(index);
+        profilePic = index;
+      },
+      child: Container(
+        width: 100,
+        height: 100,
+        decoration: BoxDecoration(
+          border: selectedProfilePic == index
+              ? Border.all(color: Colors.blue, width: 2)
+              : null,
+          borderRadius: BorderRadius.circular(30),
+        ),
+        child: Image.asset(
+          imagePath,
+          width: 60,
+          height: 60,
         ),
       ),
     );
-  }
-
-  Widget buildFinishButton() {
-    return Container(
-      margin: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-      padding: EdgeInsets.zero,
-      width: 70,
-      height: 50,
-      decoration: BoxDecoration(
-        color: Color(0x1f000000),
-        shape: BoxShape.rectangle,
-        borderRadius: BorderRadius.zero,
-        border: Border.all(color: Color(0x4d9e9e9e), width: 1),
-      ),
-      child: MaterialButton(
-        onPressed: saveBio,
-        color: Color(0xff64f63c),
-        elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.zero,
-          side: BorderSide(color: Color(0xff808080), width: 1),
-        ),
-        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        child: Text(
-          "Finish",
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w400,
-          ),
-        ),
-        textColor: Color(0xff000000),
-        height: 40,
-        minWidth: 140,
-      ),
-    );
-  }
-
-  Future<void> saveBio() async {
-    try {
-      User? user = FirebaseAuth.instance.currentUser;
-
-      if (user != null) {
-        await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
-          'bio': bioController.text,
-        });
-        //Navigate to new page here
-      } else {
-        print('User not authenticated.');
-      }
-    } catch (e) {
-      print('Error saving user data: $e');
-    }
   }
 }

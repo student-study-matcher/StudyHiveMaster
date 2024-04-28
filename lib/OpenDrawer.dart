@@ -1,5 +1,7 @@
+import 'JoinGroupChat.dart';
 import 'package:flutter/material.dart';
 import 'index.dart';
+import 'Friends.dart';
 
 class OpenDrawer extends StatelessWidget {
   @override
@@ -24,8 +26,8 @@ class OpenDrawer extends StatelessWidget {
               onTap: () {
                 // Handle the profile tap action
                 Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => Forums()),
+                  context,
+                  MaterialPageRoute(builder: (context) => Forums()),
                 );// Close the drawer
               },
             ),
@@ -35,7 +37,7 @@ class OpenDrawer extends StatelessWidget {
                 // Handle the profile tap action
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => Forums()),
+                  MaterialPageRoute(builder: (context) => JoinGroupChat()),
                 );// // Close the drawer
               },
             ),
@@ -45,7 +47,7 @@ class OpenDrawer extends StatelessWidget {
                 // Handle the profile tap action
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => Forums()),
+                  MaterialPageRoute(builder: (context) => Friends()),
                 );// // Close the drawer
               },
             ),

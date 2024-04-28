@@ -1,383 +1,263 @@
 import 'package:flutter/material.dart';
-import 'index.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'ReportPage.dart';
+import 'OpenDrawer.dart';
+
+enum CommentFilter { mostLiked, mostRecent, oldest }
 
 class OpenForum extends StatefulWidget {
+  final String forumId;
+
+  OpenForum({required this.forumId});
+
   @override
   _OpenForumState createState() => _OpenForumState();
 }
 
 class _OpenForumState extends State<OpenForum> {
-  TextEditingController replyController = TextEditingController();
-  bool showReplyBox = false;
+  final DatabaseReference _databaseReference = FirebaseDatabase.instance.ref();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  bool isLoading = true;
+  Map<String, dynamic>? forumData;
+  List<Map<String, dynamic>> comments = [];
+  TextEditingController commentController = TextEditingController();
+  CommentFilter currentFilter = CommentFilter.mostRecent;
 
-  void _showReplyDialog() {
-    showDialog(
+  @override
+  void initState() {
+    super.initState();
+    fetchForumData();
+  }
+
+  void fetchForumData() async {
+    setState(() => isLoading = true);
+    final forumSnapshot = await _databaseReference.child('Forums/${widget.forumId}').get();
+    if (forumSnapshot.exists && forumSnapshot.value != null) {
+      List<Map<String, dynamic>> fetchedComments = [];
+      Map<dynamic, dynamic> responses = forumSnapshot.child('responses').value as Map<dynamic, dynamic>? ?? {};
+      for (var entry in responses.entries) {
+        Map<dynamic, dynamic> response = entry.value as Map<dynamic, dynamic>? ?? {};
+        String userId = response['authorID'] ?? '';
+        DataSnapshot userSnapshot = await _databaseReference.child('Users/$userId').get();
+        Map<dynamic, dynamic> userData = userSnapshot.value as Map<dynamic, dynamic>? ?? {};
+        String profilePicture = getProfilePicturePath(userData['profilePic']);
+        Map<String, dynamic> commentData = {
+          'id': entry.key,
+          'content': response['content'],
+          'thumbsUp': response['thumbsUp'] ?? 0,
+          'thumbsDown': response['thumbsDown'] ?? 0,
+          'username': userData['username'] ?? 'Unknown',
+          'profilePicture': profilePicture,
+        };
+        fetchedComments.add(commentData);
+      }
+      setState(() {
+        forumData = Map<String, dynamic>.from(forumSnapshot.value as Map<dynamic, dynamic>);
+        comments = fetchedComments;
+        isLoading = false;
+      });
+    } else {
+      setState(() => isLoading = false);
+    }
+  }
+
+  String getProfilePicturePath(int? profilePicIndex) {
+    switch (profilePicIndex) {
+      case 1: return "assets/purple.png";
+      case 2: return "assets/blue.png";
+      case 3: return "assets/blue-purple.png";
+      case 4: return "assets/orange.png";
+      case 5: return "assets/pink.png";
+      case 6: return "assets/turquoise.png";
+      default: return "assets/default_profile_picture.png";
+    }
+  }
+
+  Future<void> postComment() async {
+    final String userId = _auth.currentUser!.uid;
+    final String comment = commentController.text.trim();
+    if (comment.isNotEmpty) {
+      await _databaseReference.child('Forums/${widget.forumId}/responses').push().set({
+        'content': comment,
+        'authorID': userId,
+        'thumbsUp': 0,
+        'thumbsDown': 0,
+        'timestamp': ServerValue.timestamp,
+      });
+      commentController.clear();
+      fetchForumData();
+    }
+  }
+
+  void sortComments(CommentFilter filter) {
+    setState(() {
+      comments.sort((a, b) {
+        switch (filter) {
+          case CommentFilter.mostLiked:
+            return (b['thumbsUp'] ?? 0).compareTo(a['thumbsUp'] ?? 0);
+          case CommentFilter.mostRecent:
+            return (b['timestamp'] ?? 0).compareTo(a['timestamp'] ?? 0);
+          case CommentFilter.oldest:
+            return (a['timestamp'] ?? 0).compareTo(b['timestamp'] ?? 0);
+        }
+      });
+    });
+  }
+
+  void navigateToReportPage(String commentId) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => ReportPage(forumId: widget.forumId, commentId: commentId)),
+    );
+  }
+
+  Future<void> _launchURL(String url) async {
+    await showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text("Reply to the Discussion"),
-              IconButton(
-                icon: Icon(Icons.close),
-                onPressed: () {
-                  Navigator.of(context).pop(); // Close the dialog
-                },
-              ),
-            ],
+      builder: (context) => AlertDialog(
+        title: Text('Warning!'),
+        content: Text('You are about to download a file from the internet. Always ensure that the source is trustworthy to avoid security risks.'),
+        actions: <Widget>[
+          TextButton(
+            child: Text('Cancel'),
+            onPressed: () => Navigator.of(context).pop(),
           ),
-          content: TextField(
-            controller: replyController,
-            maxLines: null, // Allows for multiple lines
-            decoration: InputDecoration(
-              border: OutlineInputBorder(),
-              labelText: 'Enter your comment...',
-            ),
+          TextButton(
+            child: Text('Continue'),
+            onPressed: () async {
+              Navigator.of(context).pop();
+              if (await canLaunch(url)) {
+                await launch(url);
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Could not launch $url')));
+              }
+            },
           ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
-              },
-              child: Text("Cancel"),
-            ),
-            TextButton(
-              onPressed: () {
-                // Handle submit button press
-                String comment = replyController.text;
-                // TODO: Implement logic to post the comment to the forum
-                print("Submitted Comment: $comment");
-                Navigator.of(context).pop(); // Close the dialog
-              },
-              child: Text("Submit"),
-            ),
-          ],
-        );
-      },
+        ],
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xffffffff),
       appBar: AppBar(
-        backgroundColor: Color(0xffad32fe),
-        title: GestureDetector(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => HomeScreen()),
-            );
-          },
-          child: Row(
-            children: [
-              Image.asset(
-                'assets/logo.png',
-                width: 28,
+        title: Text(forumData?['title'] ?? 'Forum'),
+          flexibleSpace: Container(
+          decoration: BoxDecoration(
+          gradient: LinearGradient(
+          colors: [
+          Color(0xFF8A2387),
+        Color(0xFFE94057),
+        Color(0xFFF27121),
+        ],
+          ),
+          ),
+          ),
+        actions: [
+          PopupMenuButton<CommentFilter>(
+            onSelected: (CommentFilter result) {
+              currentFilter = result;
+              sortComments(currentFilter);
+            },
+            itemBuilder: (BuildContext context) => <PopupMenuEntry<CommentFilter>>[
+              const PopupMenuItem<CommentFilter>(
+                value: CommentFilter.mostLiked,
+                child: Text('Most Liked'),
               ),
-              SizedBox(width: 28),
-              Text(
-                "Study Hive",
-                style: TextStyle(
-                  fontWeight: FontWeight.w400,
-                  fontStyle: FontStyle.normal,
-                  fontSize: 16,
-                  color: Color(0xffffffff),
+              const PopupMenuItem<CommentFilter>(
+                value: CommentFilter.mostRecent,
+                child: Text('Most Recent'),
+              ),
+              const PopupMenuItem<CommentFilter>(
+                value: CommentFilter.oldest,
+                child: Text('Oldest'),
+              ),
+            ],
+          ),
+        ],
+      ),
+      drawer: OpenDrawer(),
+      body: isLoading
+          ? Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(forumData?['title'] ?? 'No Title', style: TextStyle(fontSize: 24,color: Colors.white, fontWeight: FontWeight.bold)),
+              SizedBox(height: 10),
+              Text(forumData?['content'] ?? 'No Content', style: TextStyle(fontSize: 18)),
+
+              if (forumData?['fileUrl'] != null)
+                InkWell(
+                  onTap: () => _launchURL(forumData!['fileUrl']),
+                  child: Text(
+                    'Download Attached File',
+                    style: TextStyle(decoration: TextDecoration.underline, color: Colors.blue),
+                  ),
+                ),
+              Divider(),
+              Text('Comments:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              ...comments.map((comment) => ListTile(
+                leading: CircleAvatar(
+                  backgroundImage: NetworkImage(comment['profilePicture']),
+                ),
+                title: Text(comment['content']),
+                subtitle: Text('Sent by: ${comment['username']}'),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: Icon(Icons.thumb_up),
+                      onPressed: () => incrementThumbsUp(comment['id']),
+                    ),
+                    Text('${comment['thumbsUp'] ?? 0}'),
+                    IconButton(
+                      icon: Icon(Icons.thumb_down),
+                      onPressed: () => incrementThumbsDown(comment['id']),
+                    ),
+                    Text('${comment['thumbsDown'] ?? 0}'),
+                    IconButton(
+                      icon: Icon(Icons.report),
+                      onPressed: () => navigateToReportPage(comment['id']),
+                    ),
+                  ],
+                ),
+              )),
+              TextField(
+                controller: commentController,
+                decoration: InputDecoration(
+                  labelText: 'Write a comment...',
+                  suffixIcon: IconButton(
+                    icon: Icon(Icons.send),
+                    onPressed: postComment,
+                  ),
                 ),
               ),
             ],
           ),
         ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.article),
-            label: "Forums",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.message),
-            label: "Messages",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.account_box),
-            label: "Profile",
-          ),
-        ],
-        onTap: (int index) {
-          if (index == 0) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => Forums()),
-            );
-          } else if (index == 1) {
-            // Handle Messages navigation
-          } else if (index == 2) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => UserProfile()),
-            );
-          }
-        },
-        backgroundColor: Color(0xffae32ff),
-        elevation: 8,
-        iconSize: 22,
-        selectedItemColor: Color(0xffffffff),
-        unselectedItemColor: Color(0xffffffff),
-        selectedFontSize: 12,
-        unselectedFontSize: 12,
-        showSelectedLabels: true,
-        showUnselectedLabels: true,
-        type: BottomNavigationBarType.fixed,
-      ),
-      body: Align(
-        alignment: Alignment.center,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.max,
-          children: [
-            Padding(
-              padding: EdgeInsets.all(5),
-              child: Text(
-                "Forum Title",
-                textAlign: TextAlign.center,
-                overflow: TextOverflow.clip,
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  fontStyle: FontStyle.normal,
-                  fontSize: 18,
-                  color: Color(0xff000000),
-                ),
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.all(5),
-              child: Align(
-                alignment: Alignment(-0.8, 0.0),
-                child: Text(
-                  "Forum Author",
-                  textAlign: TextAlign.left,
-                  overflow: TextOverflow.clip,
-                  style: TextStyle(
-                    fontWeight: FontWeight.w500,
-                    fontStyle: FontStyle.normal,
-                    fontSize: 16,
-                    color: Color(0xff000000),
-                  ),
-                ),
-              ),
-            ),
-            Container(
-              margin: EdgeInsets.zero,
-              padding: EdgeInsets.all(10),
-              width: 250,
-              height: 150,
-              decoration: BoxDecoration(
-                color: Color(0x1f000000),
-                shape: BoxShape.rectangle,
-                borderRadius: BorderRadius.zero,
-                border: Border.all(color: Color(0x4d9e9e9e), width: 1),
-              ),
-              child: Align(
-                alignment: Alignment.topLeft,
-                child: Text(
-                  "Discussion ",
-                  textAlign: TextAlign.start,
-                  overflow: TextOverflow.clip,
-                  style: TextStyle(
-                    fontWeight: FontWeight.w400,
-                    fontStyle: FontStyle.normal,
-                    fontSize: 14,
-                    color: Color(0xff000000),
-                  ),
-                ),
-              ),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisSize: MainAxisSize.max,
-              children: [
-                IconButton(
-                  onPressed: () {
-                    // Handle thumbs up
-                  },
-                  icon: Icon(Icons.thumb_up),
-                ),
-                IconButton(
-                  onPressed: () {
-                    // Handle thumbs down
-                  },
-                  icon: Icon(Icons.thumb_down),
-                ),
-                IconButton(
-                  onPressed: () {
-                    // Handle thumbs down
-                  },
-                  icon: Icon(Icons.report),
-                ),
-                MaterialButton(
-                  onPressed: () {
-                    setState(() {
-                      showReplyBox = !showReplyBox;
-                    });
-                  },
-                  color: Color(0xff04ff39),
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.zero,
-                    side: BorderSide(color: Color(0xff808080), width: 1),
-                  ),
-                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: Text(
-                    "Reply",
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w400,
-                      fontStyle: FontStyle.normal,
-                    ),
-                  ),
-                  textColor: Color(0xff000000),
-                  height: 40,
-                  minWidth: 100,
-                ),
-              ],
-            ),
-            if (showReplyBox)
-              Padding(
-                padding: EdgeInsets.all(10),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Reply Text Box
-                    TextField(
-                      controller: replyController,
-                      maxLines: null, // Allows for multiple lines
-                      decoration: InputDecoration(
-                        border: OutlineInputBorder(),
-                        labelText: 'Reply to the discussion',
-                      ),
-                    ),
-
-                    // Submit Button
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        TextButton(
-                          onPressed: () {
-                            // Handle submit button press
-                            String comment = replyController.text;
-                                                                          // logic to post the comment to the forum goes here
-                            print("Submitted Comment: $comment");
-                            setState(() {
-                              showReplyBox = false; // Hide the reply box
-                            });
-                          },
-                          child: Text("Submit"),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            Padding(
-              padding: EdgeInsets.all(5),
-              child: Align(
-                alignment: Alignment(-0.8, 0.0),
-                child: Text(
-                  "Comments",
-                  textAlign: TextAlign.start,
-                  overflow: TextOverflow.clip,
-                  style: TextStyle(
-                    fontWeight: FontWeight.w400,
-                    fontStyle: FontStyle.normal,
-                    fontSize: 14,
-                    color: Color(0xff000000),
-                  ),
-                ),
-              ),
-            ),
-            Expanded(
-              flex: 1,
-              child: ListView(
-                scrollDirection: Axis.vertical,
-                padding: EdgeInsets.zero,
-                shrinkWrap: false,
-                physics: ScrollPhysics(),
-                children: [
-                  ListTile(
-                    tileColor: Color(0x1f000000),
-                    title: Text(
-                      "User1214",
-                      style: TextStyle(
-                        fontWeight: FontWeight.w400,
-                        fontStyle: FontStyle.normal,
-                        fontSize: 14,
-                        color: Color(0xff000000),
-                      ),
-                      textAlign: TextAlign.start,
-                    ),
-                    subtitle: Text(
-                      "Comments about the discussion",
-                      style: TextStyle(
-                        fontWeight: FontWeight.w400,
-                        fontStyle: FontStyle.normal,
-                        fontSize: 14,
-                        color: Color(0xff000000),
-                      ),
-                      textAlign: TextAlign.start,
-                    ),
-                    dense: false,
-                    contentPadding: EdgeInsets.symmetric(horizontal: 16.0),
-                    selected: false,
-                    selectedTileColor: Color(0x42000000),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.zero,
-                      side: BorderSide(color: Color(0x4d9e9e9e), width: 1),
-                    ),
-                    leading: Icon(Icons.thumb_up, color: Color(0xff212435), size: 24),
-                  ),
-                  ListTile(
-                    tileColor: Color(0x1f000000),
-                    title: Text(
-                      "User3847",
-                      style: TextStyle(
-                        fontWeight: FontWeight.w400,
-                        fontStyle: FontStyle.normal,
-                        fontSize: 14,
-                        color: Color(0xff000000),
-                      ),
-                      textAlign: TextAlign.start,
-                    ),
-                    subtitle: Text(
-                      "Comments about the discussion",
-                      style: TextStyle(
-                        fontWeight: FontWeight.w400,
-                        fontStyle: FontStyle.normal,
-                        fontSize: 14,
-                        color: Color(0xff000000),
-                      ),
-                      textAlign: TextAlign.start,
-                    ),
-                    dense: false,
-                    contentPadding: EdgeInsets.symmetric(horizontal: 16.0),
-                    selected: false,
-                    selectedTileColor: Color(0x42000000),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.zero,
-                      side: BorderSide(color: Color(0x4d9e9e9e), width: 1),
-                    ),
-                    leading: Icon(Icons.thumb_up, color: Color(0xff212435), size: 24),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
     );
+  }
+
+  Future<void> incrementThumbsUp(String commentId) async {
+    DatabaseReference thumbsUpRef = _databaseReference.child('Forums/${widget.forumId}/responses/$commentId/thumbsUp');
+    DataSnapshot snapshot = await thumbsUpRef.get();
+    int currentLikes = (snapshot.value ?? 0) as int;
+    await thumbsUpRef.set(currentLikes + 1);
+    fetchForumData();
+  }
+
+  Future<void> incrementThumbsDown(String commentId) async {
+    DatabaseReference thumbsDownRef = _databaseReference.child('Forums/${widget.forumId}/responses/$commentId/thumbsDown');
+    DataSnapshot snapshot = await thumbsDownRef.get();
+    int currentDislikes = (snapshot.value ?? 0) as int;
+    await thumbsDownRef.set(currentDislikes + 1);
+    fetchForumData();
   }
 }

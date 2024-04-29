@@ -1,43 +1,13 @@
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_database/firebase_database.dart';
+import 'mocks.dart';
 
-class MockFirebaseAuth extends Mock implements FirebaseAuth {}
-class MockFirebaseDatabase extends Mock implements FirebaseDatabase {}
-class MockDatabaseReference extends Mock implements DatabaseReference {}
-class MockDataSnapshot extends Mock implements DataSnapshot {}
-class MockDatabaseEvent extends Mock implements DatabaseEvent {}
-class MockUser extends Mock implements User {}
 
 void main() {
-  late MockFirebaseAuth mockAuth;
-  late MockFirebaseDatabase mockDatabase;
-  late MockDatabaseReference mockDatabaseRef;
-  late MockDatabaseEvent mockDatabaseEvent;
-  late MockDataSnapshot mockDataSnapshot;
-  late MockUser mockUser;
+  setUpMocks();
 
-  setUp(() {
-    mockAuth = MockFirebaseAuth();
-    mockDatabase = MockFirebaseDatabase();
-    mockDatabaseRef = MockDatabaseReference();
-    mockDatabaseEvent = MockDatabaseEvent();
-    mockDataSnapshot = MockDataSnapshot();
-    mockUser = MockUser();
-
-    when(() => mockAuth.currentUser).thenReturn(mockUser);
-    when(() => mockUser.uid).thenReturn('userId');
-    when(() => mockDatabase.ref()).thenReturn(mockDatabaseRef);
-    when(() => mockDatabaseRef.child(any())).thenReturn(mockDatabaseRef);
-    when(() => mockDatabaseRef.set(any())).thenAnswer((_) async => {});
-    when(() => mockDatabaseRef.remove()).thenAnswer((_) async => {});
-    when(() => mockDatabaseRef.push()).thenReturn(mockDatabaseRef);
-    when(() => mockDatabaseEvent.snapshot).thenReturn(mockDataSnapshot);
-    when(() => mockDataSnapshot.exists).thenReturn(true);
-  });
-
-  test('User sends a friend request', () async {
+  test('User sends a friend request', () async {     //Sends a friend request
     print('Test Start: Sending a friend request');
     when(() => mockDatabaseRef.set(true)).thenAnswer((_) async => {});
 
@@ -48,7 +18,7 @@ void main() {
     print('Test Passed: Friend request sent successfully');
   });
 
-  test('User receives a friend request', () async {
+  test('User receives a friend request', () async {     //Receive a friend request
     print('Test Start: Receiving a friend request');
     when(() => mockDataSnapshot.value).thenReturn({'requestId': 'requestUserId'});
     when(() => mockDatabaseRef.onValue).thenAnswer((_) => Stream.fromIterable([mockDatabaseEvent]));
@@ -60,7 +30,7 @@ void main() {
     print('Test Passed: Friend request received successfully');
   });
 
-  test('User accepts a friend request', () async {
+  test('User accepts a friend request', () async {     //Accepts a friend request
     print('Test Start: Accepting a friend request');
     when(() => mockDatabaseRef.set(true)).thenAnswer((_) async => {});
 
@@ -73,7 +43,7 @@ void main() {
     print('Test Passed: Friend request accepted successfully');
   });
 
-  test('User denies a friend request', () async {
+  test('User denies a friend request', () async {     //Deny a friend request
     print('Test Start: Denying a friend request');
     await rejectFriendRequest(mockDatabase, 'userId', 'friendId');
 
@@ -82,7 +52,7 @@ void main() {
     print('Test Passed: Friend request denied successfully');
   });
 
-  test('User messages a friend', () async {
+  test('User messages a friend', () async {     //Messages a friend
     print('Test Start: Messaging a friend');
     when(() => mockDatabaseRef.set(any())).thenAnswer((_) async => {});
 
@@ -127,4 +97,5 @@ Future<void> sendMessageToFriend(FirebaseDatabase db, String userId, String frie
     'message': message,
     'timestamp': DateTime.now().toIso8601String()
   });
+
 }

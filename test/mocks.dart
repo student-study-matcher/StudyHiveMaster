@@ -35,6 +35,8 @@ void setUpMocks() {
   when(() => mockDatabaseRef.set(any())).thenAnswer((_) async => {});
   when(() => mockDatabaseRef.remove()).thenAnswer((_) async => {});
   when(() => mockDatabaseRef.push()).thenReturn(mockDatabaseRef);
+  when(() => mockDatabaseRef.once()).thenAnswer((_) async => mockDatabaseEvent); // Mock the once method
   when(() => mockDatabaseEvent.snapshot).thenReturn(mockDataSnapshot);
   when(() => mockDataSnapshot.exists).thenReturn(true);
 }
+

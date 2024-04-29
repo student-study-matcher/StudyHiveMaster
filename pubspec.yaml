@@ -49,11 +49,25 @@ dependencies:
 
   image_picker: ^0.8.0
   image_picker_web: ^3.1.1
+  build_runner:
+  mocktail:
+  faker: ^2.0.0
 
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  integration_test:
+    sdk: flutter
+
+
+  # You can remove flutter_driver and integration_test if you're not using them
+  # flutter_driver:
+  #   sdk: flutter
+  # integration_test:
+  #   sdk: flutter
+
+
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is

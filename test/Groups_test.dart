@@ -328,28 +328,6 @@ void sendMessage({
   }
 }
 
-// Future<String?> uploadFile(
-//     MockFirebaseAuth firebaseAuth,
-//     MockFirebaseStorage firebaseStorage,
-//     String chatId,
-//     String fileName,
-//     Uint8List? fileBytes,
-//     MockBuildContext context) async {
-//   if (fileBytes != null) {
-//     try {
-//       String userId = firebaseAuth.currentUser!.uid;
-//       String filePath = 'files/$chatId/$fileName';
-//       final ref = firebaseStorage.ref().child(filePath);
-//       final result = await ref.putData(Uint8List(0));
-//       return await result.ref.getDownloadURL();
-//     } catch (e) {
-//       ScaffoldMessenger.of(context)
-//           .showSnackBar(SnackBar(content: Text('Failed to upload file: $e')));
-//       return null;
-//     }
-//   }
-//   return null;
-// }
 
 Future<void> sendMessageNew({
   required String message,

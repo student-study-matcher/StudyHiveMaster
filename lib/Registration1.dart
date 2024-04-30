@@ -84,10 +84,9 @@ class Registration1State extends State<Registration1> {
             ),
           ),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              SizedBox(height: 80),
+              SizedBox(height: 260),
               Image.asset(
                 'assets/logo.png',
                 width: 150,
@@ -102,7 +101,7 @@ class Registration1State extends State<Registration1> {
                 ),
               ),
 
-              SizedBox(height: 30),
+              SizedBox(height: 20),
               Container(
                 padding: EdgeInsets.all(20),
                 width: MediaQuery

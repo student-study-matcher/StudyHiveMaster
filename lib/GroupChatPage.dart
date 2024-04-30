@@ -165,20 +165,20 @@ class _GroupChatPageState extends State<GroupChatPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: Color(0xffffffff),
-    appBar: AppBar(
-    title: Text((chatTitle), style: TextStyle(color: Colors.white),),
-    flexibleSpace: Container(
-    decoration: BoxDecoration(
-    gradient: LinearGradient(
-    colors: [
-    Color(0xFF8A2387),
-    Color(0xFFE94057),
-    Color(0xFFF27121),
-    ],
-    ),
-    ),
-    ),
+      backgroundColor: Color(0xffffffff),
+      appBar: AppBar(
+        title: Text((chatTitle), style: TextStyle(color: Colors.white),),
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Color(0xFF8A2387),
+                Color(0xFFE94057),
+                Color(0xFFF27121),
+              ],
+            ),
+          ),
+        ),
 
         actions: [
           IconButton(
@@ -208,62 +208,62 @@ class _GroupChatPageState extends State<GroupChatPage> {
               },
             ),
           ),
-    Padding(
-    padding: EdgeInsets.all(8.0),
-    child: Row(
-    children: [
-    Padding(
-    padding: EdgeInsets.only(left: 10),
-    child: IconButton(
-    icon: Icon(Icons.attach_file),
-    onPressed: pickFile,
-    ),
-    ),
-    Expanded(
-    child: Padding(
-    padding: EdgeInsets.only(left: 10),
-    child: Container(
-    decoration: BoxDecoration(
-    color: Colors.white,
-    borderRadius: BorderRadius.circular(30),
-    boxShadow: [
-    BoxShadow(
-    color: Colors.grey.withOpacity(0.5),
-    spreadRadius: 2,
-    blurRadius: 10,
-    offset: Offset(0, 3),
-    ),
-    ],
-    ),
-    child: Row(
-    children: [
-    Expanded(
-    child: Padding(
-    padding: EdgeInsets.symmetric(horizontal: 20),
-    child: TextFormField(
-    controller: _messageController,
-    decoration: InputDecoration(
-    hintText: "Type a message",
-    border: InputBorder.none,
-    ),
-    ),
-    ),
-    ),
-    IconButton(
-    icon: Icon(Icons.send),
-    onPressed: sendMessage,
-    ),
-    ],
-    ),
-    ),
-    ),
-    ),
+          Padding(
+            padding: EdgeInsets.all(8.0),
+            child: Row(
+              children: [
+                Padding(
+                  padding: EdgeInsets.only(left: 10),
+                  child: IconButton(
+                    icon: Icon(Icons.attach_file),
+                    onPressed: pickFile,
+                  ),
+                ),
+                Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.only(left: 10),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(30),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.5),
+                            spreadRadius: 2,
+                            blurRadius: 10,
+                            offset: Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 20),
+                              child: TextFormField(
+                                controller: _messageController,
+                                decoration: InputDecoration(
+                                  hintText: "Type a message",
+                                  border: InputBorder.none,
+                                ),
+                              ),
+                            ),
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.send),
+                            onPressed: sendMessage,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
 
 
 
-    ],
-    ),
-    ),
+              ],
+            ),
+          ),
 
           if (_fileName != null)
             Padding(

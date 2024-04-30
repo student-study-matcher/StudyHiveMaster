@@ -1,9 +1,3 @@
-import 'package:flutter/material.dart';
-import 'package:study_hive/Login.dart'; // Adjust this path to point to your actual Login widget
-import 'package:study_hive/HomeScreen.dart'; // Import
-import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/widgets.dart';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';

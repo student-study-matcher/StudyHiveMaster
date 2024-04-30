@@ -74,6 +74,7 @@ void main() {
 
   group('Message tests', () {
     test('send message in forums', () async {
+      print('Test Start: User send message in forums');
       String forumId = '123';
       String message = 'A message!';
 
@@ -93,10 +94,12 @@ void main() {
       })).called(1);
 
       verify(() => navigator.pop()).called(1);
-      print('Message sent');
+      print('Test Passed: User send message in forums');
+
     });
 
     test('send message in forums with restricted word', () async {
+      print('Test Start: User send message in forums with restricted word');
       String forumId = '123';
       String message = 'This message contains a restricted word: badword';
 
@@ -109,9 +112,11 @@ void main() {
         context: context,
       );
       verifyNever(() => databaseRef.child('Forums/$forumId/messages').push().set(any()));
+      print('Test Passed: User send message in forums with restricted word');
     });
 
     test('like or dislike forum comment', () async {
+      print('Test Start: User like or dislike forum comment');
       String commentId = '456';
       bool isLike = true;
 
@@ -126,7 +131,7 @@ void main() {
         'userId': auth.currentUser?.uid,
         'isLike': isLike,
       })).called(1);
-      print('success');
+      print('Test Start: User like or dislike forum comment');
     });
   });
 }
@@ -142,7 +147,6 @@ Future<void> sendMessageInForums({
   // Check if the message contains any restricted words
   if (message.contains('badword')) {
     // Handle the scenario when the message contains a restricted word
-    print('The message contains a restricted word.');
     // You can add further logic here, such as displaying an error message or preventing the message from being sent
     return;
   }
@@ -168,3 +172,4 @@ Future<void> likeOrDislikeComment({
     'isLike': isLike,
   });
 }
+

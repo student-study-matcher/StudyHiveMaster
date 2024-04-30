@@ -116,10 +116,9 @@ class _LoginState extends State<Login> {
             ),
           ),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              SizedBox(height: 80),
+              SizedBox(height: 260),
               Image.asset(
                 'assets/logo.png',
                 width: 150,
@@ -133,7 +132,7 @@ class _LoginState extends State<Login> {
                   fontSize: 20,
                 ),
               ),
-              SizedBox(height: 30),
+              SizedBox(height: 20),
               Container(
                 padding: EdgeInsets.all(20),
                 width: MediaQuery.of(context).size.width * 0.5,
@@ -239,14 +238,14 @@ class _LoginState extends State<Login> {
                         );
                       },
                       child: Text(
-                        'Register',
-                        style: TextStyle(
-                          color: Colors.deepPurple[900],
-                          fontSize: 18,
+                          'Register',
+                          style: TextStyle(
+                            color: Colors.deepPurple[900],
+                            fontSize: 18,
                           )
 
-                        ),
                       ),
+                    ),
 
                     SizedBox(height: 16),
                     Text(

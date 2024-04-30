@@ -141,9 +141,11 @@ void main() async {
 
       verify(() => databaseRef.child('Users/123/bio').set('Hello, world!'))
           .called(1);
+      print('Test Start: Edit Profile Picture');
       verify(() =>
           databaseRef.child('Users/123/profilePic').set('profilePic.jpg'))
           .called(1);
+      print('Test Passed: Edit Profile Picture');
     });
     print('Test Passed: User Registration');
   });

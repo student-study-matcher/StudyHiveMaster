@@ -30,28 +30,34 @@ void main() {
     String searchQuery = 'forum topic'; // Input
 
     // Mock the database response for forum search
-    when(() => mockDatabaseRef.child('Forums').once()).thenAnswer((_) async => mockDatabaseEvent);
+    when(() => mockDatabaseRef.child('Forums')).thenReturn(mockDatabaseRef);
+    when(() => mockDatabaseRef.once()).thenAnswer((_) async => mockDatabaseEvent);
 
     await performForumSearch(mockDatabase, searchQuery); // Perform forum search operation
 
     // Verify that the database query is called once
-    verify(() => mockDatabaseRef.child('Forums').once()).called(1);
+    verify(() => mockDatabaseRef.child('Forums')).called(1);
+    verify(() => mockDatabaseRef.once()).called(1);
 
     print('Test Passed: User searches for forums - no search button');
   });
-
   test('User searches for Courses - filter button', () async {
     print('Test Start: User searches for Courses - filter button');
     String selectedFilter = 'Flutter'; // Input
 
     // Mock the database response for course search
-    when(() => mockDatabaseRef.child('Courses').orderByChild('topic').equalTo(selectedFilter).once())
-        .thenAnswer((_) async => mockDatabaseEvent);
+    when(() => mockDatabaseRef.child('Courses')).thenReturn(mockDatabaseRef);
+    when(() => mockDatabaseRef.orderByChild('topic')).thenReturn(mockDatabaseRef);
+    when(() => mockDatabaseRef.equalTo(selectedFilter)).thenReturn(mockDatabaseRef);
+    when(() => mockDatabaseRef.once()).thenAnswer((_) async => mockDatabaseEvent);
 
     await performCourseSearch(mockDatabase, selectedFilter); // Perform course search operation
 
     // Verify that the database query is called once
-    verify(() => mockDatabaseRef.child('Courses').orderByChild('topic').equalTo(selectedFilter).once()).called(1);
+    verify(() => mockDatabaseRef.child('Courses')).called(1);
+    verify(() => mockDatabaseRef.orderByChild('topic')).called(1);
+    verify(() => mockDatabaseRef.equalTo(selectedFilter)).called(1);
+    verify(() => mockDatabaseRef.once()).called(1);
 
     print('Test Passed: User searches for Courses - filter button');
   });
@@ -61,13 +67,18 @@ void main() {
     String username = 'JohnDoe'; // Input
 
     // Mock the database response for user search
-    when(() => mockDatabaseRef.child('Users').orderByChild('username').equalTo(username).once())
-        .thenAnswer((_) async => mockDatabaseEvent);
+    when(() => mockDatabaseRef.child('Users')).thenReturn(mockDatabaseRef);
+    when(() => mockDatabaseRef.orderByChild('username')).thenReturn(mockDatabaseRef);
+    when(() => mockDatabaseRef.equalTo(username)).thenReturn(mockDatabaseRef);
+    when(() => mockDatabaseRef.once()).thenAnswer((_) async => mockDatabaseEvent);
 
     await performUserSearch(mockDatabase, username); // Perform user search operation
 
     // Verify that the database query is called once
-    verify(() => mockDatabaseRef.child('Users').orderByChild('username').equalTo(username).once()).called(1);
+    verify(() => mockDatabaseRef.child('Users')).called(1);
+    verify(() => mockDatabaseRef.orderByChild('username')).called(1);
+    verify(() => mockDatabaseRef.equalTo(username)).called(1);
+    verify(() => mockDatabaseRef.once()).called(1);
 
     print('Test Passed: User search for other users\' - button top right');
   });
@@ -77,13 +88,20 @@ void main() {
     String misspelledQuery = 'fluttar'; // Input
 
     // Mock the database response for misspelled search
-    when(() => mockDatabaseRef.child('Forums').orderByChild('title').startAt(misspelledQuery).endAt(misspelledQuery + '\uf8ff').once())
-        .thenAnswer((_) async => mockDatabaseEvent);
+    when(() => mockDatabaseRef.child('Forums')).thenReturn(mockDatabaseRef);
+    when(() => mockDatabaseRef.orderByChild('title')).thenReturn(mockDatabaseRef);
+    when(() => mockDatabaseRef.startAt(misspelledQuery)).thenReturn(mockDatabaseRef);
+    when(() => mockDatabaseRef.endAt(misspelledQuery + '\uf8ff')).thenReturn(mockDatabaseRef);
+    when(() => mockDatabaseRef.once()).thenAnswer((_) async => mockDatabaseEvent);
 
     await performMisspelledSearch(mockDatabase, misspelledQuery); // Perform misspelled search operation
 
     // Verify that the database query is called once
-    verify(() => mockDatabaseRef.child('Forums').orderByChild('title').startAt(misspelledQuery).endAt(misspelledQuery + '\uf8ff').once()).called(1);
+    verify(() => mockDatabaseRef.child('Forums')).called(1);
+    verify(() => mockDatabaseRef.orderByChild('title')).called(1);
+    verify(() => mockDatabaseRef.startAt(misspelledQuery)).called(1);
+    verify(() => mockDatabaseRef.endAt(misspelledQuery + '\uf8ff')).called(1);
+    verify(() => mockDatabaseRef.once()).called(1);
 
     print('Test Passed: User misspells something in their search');
   });
@@ -93,13 +111,18 @@ void main() {
     String nonExistentTag = 'nonexistenttag'; // Input
 
     // Mock the database response for non-existent tag search
-    when(() => mockDatabaseRef.child('Tags').orderByChild('name').equalTo(nonExistentTag).once())
-        .thenAnswer((_) async => mockDatabaseEvent);
+    when(() => mockDatabaseRef.child('Tags')).thenReturn(mockDatabaseRef);
+    when(() => mockDatabaseRef.orderByChild('name')).thenReturn(mockDatabaseRef);
+    when(() => mockDatabaseRef.equalTo(nonExistentTag)).thenReturn(mockDatabaseRef);
+    when(() => mockDatabaseRef.once()).thenAnswer((_) async => mockDatabaseEvent);
 
     await performTagSearch(mockDatabase, nonExistentTag); // Perform non-existent tag search operation
 
     // Verify that the database query is called once
-    verify(() => mockDatabaseRef.child('Tags').orderByChild('name').equalTo(nonExistentTag).once()).called(1);
+    verify(() => mockDatabaseRef.child('Tags')).called(1);
+    verify(() => mockDatabaseRef.orderByChild('name')).called(1);
+    verify(() => mockDatabaseRef.equalTo(nonExistentTag)).called(1);
+    verify(() => mockDatabaseRef.once()).called(1);
 
     print('Test Passed: User searches for a tag that doesn\'t exist');
   });

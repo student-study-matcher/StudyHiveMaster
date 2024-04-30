@@ -178,10 +178,10 @@ class _JoinGroupChatState extends State<JoinGroupChat> with SingleTickerProvider
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xffffffff),
+      backgroundColor: Colors.white, // Use a clear color convention
       drawer: OpenDrawer(),
       appBar: AppBar(
-        title: Text('Join Group Chat', style: TextStyle(color: Colors.white), ),
+        title: Text('Join Group Chat', style: TextStyle(color: Colors.white)),
         flexibleSpace: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -193,18 +193,6 @@ class _JoinGroupChatState extends State<JoinGroupChat> with SingleTickerProvider
             ),
           ),
         ),
-
-        bottom: TabBar(
-          controller: _tabController,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white70,
-          indicatorColor: Colors.white,
-          tabs: [
-            Tab(text: "My Chats"),
-            Tab(text: "All Chats"),
-            Tab(text: "Private Chats"),
-          ],
-        ),
         actions: [
           IconButton(
             icon: Icon(Icons.add),
@@ -213,7 +201,22 @@ class _JoinGroupChatState extends State<JoinGroupChat> with SingleTickerProvider
         ],
       ),
       body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          Container(
+            color: Colors.white,
+            child: TabBar(
+              controller: _tabController,
+              labelColor: Color(0xFF800080),
+              unselectedLabelColor: Color(0xFFB0A4B9),
+              indicatorColor: Color(0xFF800080),
+              tabs: [
+                Tab(text: "My Chats"),
+                Tab(text: "All Chats"),
+                Tab(text: "Private Chats"),
+              ],
+            ),
+          ),
           Padding(
             padding: EdgeInsets.all(8.0),
             child: TextField(

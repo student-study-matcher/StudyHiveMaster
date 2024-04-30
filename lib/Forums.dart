@@ -172,14 +172,15 @@ class _ForumsState extends State<Forums> with SingleTickerProviderStateMixin {
         ],
       ),
       body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Container(
-            color: Colors.grey,
+            color: Colors.white,
             child: TabBar(
               controller: _tabController,
-              labelColor: Colors.white,
-              unselectedLabelColor: Colors.white70,
-              indicatorColor: Colors.white,
+              labelColor: Color(0xFF800080),
+              unselectedLabelColor: Color(0xFFB0A4B9),
+              indicatorColor: Color(0xFF800080),
               tabs: [
                 Tab(text: "Current Forums"),
                 Tab(text: "Your Forums"),

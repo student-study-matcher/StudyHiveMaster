@@ -1,3 +1,9 @@
+import 'package:flutter/material.dart';
+import 'package:study_hive/Login.dart'; // Adjust this path to point to your actual Login widget
+import 'package:study_hive/HomeScreen.dart'; // Import
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/widgets.dart';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -33,5 +39,54 @@ void main() {
         await auth.signInWithEmailAndPassword(
             email: 'test@example.com', password: 'password'),
         isA<MockUserCredential>());
+
   });
+  test('Login with incorrect password', () async {
+    // Mocking the signInWithEmailAndPassword method to throw FirebaseAuthException
+    when(() => auth.signInWithEmailAndPassword(
+      email: any(named: 'email'),
+      password: any(named: 'password'),
+    )).thenThrow(FirebaseAuthException(
+      code: 'wrong-password',
+      message: 'The password is invalid',
+    ));
+
+    // Simulate the login attempt
+    try {
+      await auth.signInWithEmailAndPassword(
+        email: 'test@example.com',
+        password: 'incorrect_password',
+      );
+    } catch (e) {
+      // Verify that the FirebaseAuthException is thrown with the correct message
+      expect(e, isA<FirebaseAuthException>());
+      expect((e as FirebaseAuthException).code, 'wrong-password');
+      expect(e.message, 'The password is invalid');
+    }
+  });
+  test('Send password reset email with incorrect email', () async {
+    // Mocking the sendPasswordResetEmail method to throw FirebaseAuthException
+    when(() => auth.sendPasswordResetEmail(
+      email: any(named: 'email'),
+    )).thenThrow(FirebaseAuthException(
+      code: 'user-not-found',
+      message: 'There is no user record corresponding to this identifier. The user may have been deleted.',
+    ));
+
+    // Simulate sending password reset email with incorrect email
+    try {
+      await sendPasswordResetEmail(auth);
+    } catch (e) {
+      // Verify that the FirebaseAuthException is thrown with the correct message
+      expect(e, isA<FirebaseAuthException>());
+      expect((e as FirebaseAuthException).code, 'user-not-found');
+      expect(e.message, 'There is no user record corresponding to this identifier. The user may have been deleted.');
+    }
+  });
+}
+
+Future<void> sendPasswordResetEmail(MockFirebaseAuth auth) async {
+  await auth.sendPasswordResetEmail(
+    email: 'nonexistent@example.com',
+  );
 }

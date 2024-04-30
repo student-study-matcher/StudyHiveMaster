@@ -35,148 +35,147 @@ class _Registration3State extends State<Registration3> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: SingleChildScrollView(
+      body: SingleChildScrollView(
         child: Container(
-        height: MediaQuery
-            .of(context)
-        .size
-        .height,
-    width: MediaQuery
-        .of(context)
-        .size
-        .width,
-    decoration: BoxDecoration(
-    gradient: LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [
-    Color(0xFF8A2387),
-    Color(0xFFE94057),
-    Color(0xFFF27121),
-    ],
-    ),
-    ),
-    child: Column(
-    mainAxisAlignment: MainAxisAlignment.center,
-    crossAxisAlignment: CrossAxisAlignment.center,
-    children: [
-    SizedBox(height: 80),
-    Image.asset(
-    'assets/logo.png',
-    width: 150,
-    height: 50,
-    ),
-    SizedBox(height: 10),
-    Text(
-    'Study Hive',
-    style: TextStyle(
-    color: Colors.white,
-    fontSize: 20,
-    ),
-    ),
-
-    SizedBox(height: 30),
-    Container(
-    padding: EdgeInsets.all(20),
-    width: MediaQuery
-        .of(context)
-        .size
-        .width * 0.5,
-    decoration: BoxDecoration(
-    color: Colors.white,
-    borderRadius: BorderRadius.circular(10),
-    ),
-    child: Column(
-    crossAxisAlignment: CrossAxisAlignment.center,
-    children: [
-    Text(
-    ' Complete Registration',
-    style: TextStyle(
-    fontSize: 35,
-    fontWeight: FontWeight.bold,
-    ),
-    ),
-    SizedBox(height: 10),
-    Text(
-    'Please select profile picture',
-    style: TextStyle(
-    fontSize: 15,
-    color: Colors.grey,
-    ),
-    ),
-
-
-      SingleChildScrollView(
-        padding: EdgeInsets.all(20),
-        child: Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                buildProfilePic(1, 'assets/purple.png'),
-                buildProfilePic(2, 'assets/blue.png'),
-                buildProfilePic(3, 'assets/blue-purple.png'),
-                buildProfilePic(4, 'assets/orange.png'),
-                buildProfilePic(5, 'assets/pink.png'),
-                buildProfilePic(6, 'assets/turquoise.png'),
+          height: MediaQuery
+              .of(context)
+              .size
+              .height,
+          width: MediaQuery
+              .of(context)
+              .size
+              .width,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFF8A2387),
+                Color(0xFFE94057),
+                Color(0xFFF27121),
               ],
             ),
-            SizedBox(height: 20),
-            TextField(
-              controller: bioController,
-              decoration: InputDecoration(
-                labelText: 'Bio',
-                counterText: '${bioController.text.length}/255',
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              SizedBox(height: 260),
+              Image.asset(
+                'assets/logo.png',
+                width: 150,
+                height: 50,
               ),
-              maxLines: 3,
-              maxLength: 255,
-              onChanged: (text) {
-                setState(() {});
-              },
-            ),
-    Container(
-    width: 200,
-    height: 50,
-    decoration: BoxDecoration(
-    gradient: LinearGradient(
-    colors: [
-    Color(0xFF8A2387),
-    Color(0xFFE94057),
-    Color(0xFFF27121),
-    ],
-    ),
-    borderRadius: BorderRadius.circular(30),
-    ),
-    child: MaterialButton(
-    onPressed: () {
-    saveBio();
-    },
-    shape: RoundedRectangleBorder(
-    borderRadius: BorderRadius.circular(30),
-    side: BorderSide(color: Color(0xff808080), width: 1),
-    ),
-    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-    child: Text(
-    "Confirm Details",
-    style: TextStyle(
-    color: Colors.white,
-    fontSize: 14,
-    fontWeight: FontWeight.w400,
-    fontStyle: FontStyle.normal,
-    ),
-    ),
+              SizedBox(height: 10),
+              Text(
+                'Study Hive',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                ),
+              ),
+
+              SizedBox(height: 20),
+              Container(
+                padding: EdgeInsets.all(20),
+                width: MediaQuery
+                    .of(context)
+                    .size
+                    .width * 0.5,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      ' Complete Registration',
+                      style: TextStyle(
+                        fontSize: 35,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    Text(
+                      'Please select profile picture',
+                      style: TextStyle(
+                        fontSize: 15,
+                        color: Colors.grey,
+                      ),
+                    ),
+
+
+                    SingleChildScrollView(
+                      padding: EdgeInsets.all(20),
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              buildProfilePic(1, 'assets/purple.png'),
+                              buildProfilePic(2, 'assets/blue.png'),
+                              buildProfilePic(3, 'assets/blue-purple.png'),
+                              buildProfilePic(4, 'assets/orange.png'),
+                              buildProfilePic(5, 'assets/pink.png'),
+                              buildProfilePic(6, 'assets/turquoise.png'),
+                            ],
+                          ),
+                          SizedBox(height: 20),
+                          TextField(
+                            controller: bioController,
+                            decoration: InputDecoration(
+                              labelText: 'Bio',
+                              counterText: '${bioController.text.length}/255',
+                            ),
+                            maxLines: 3,
+                            maxLength: 255,
+                            onChanged: (text) {
+                              setState(() {});
+                            },
+                          ),
+                          Container(
+                            width: 200,
+                            height: 50,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  Color(0xFF8A2387),
+                                  Color(0xFFE94057),
+                                  Color(0xFFF27121),
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                            child: MaterialButton(
+                              onPressed: () {
+                                saveBio();
+                              },
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30),
+                                side: BorderSide(color: Color(0xff808080), width: 1),
+                              ),
+                              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              child: Text(
+                                "Confirm Details",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w400,
+                                  fontStyle: FontStyle.normal,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            ],
+          ),
         ),
       ),
-],
-    ),
-        ),
-    ],
-    ),
-    )
-    ],
-    ),
-    ),
-    ),
     );
   }
 

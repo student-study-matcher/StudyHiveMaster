@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+
 class MockFirebaseAuth extends Mock implements FirebaseAuth {}
 
 class MockFirebaseStorage extends Mock implements FirebaseStorage {}
@@ -120,6 +121,7 @@ void main() {
 
   group('group tests', () {
     test('create public group chat', () async {
+      print ('Test Start: User create public groupchat');
       String groupId = '123';
       String title = 'title';
       bool isPrivate = false;
@@ -146,9 +148,11 @@ void main() {
       })).called(1);
 
       verify(() => navigator.pop(context)).called(1);
+      print ('Test Passed: User create public groupchat');
     });
 
     test('create private group chat', () async {
+      print ('Test Start: User create private groupchat');
       String groupId = '123';
       String title = 'title';
       bool isPrivate = true;
@@ -177,9 +181,11 @@ void main() {
 
       expect(isPrivate, true);
       verify(() => navigator.pop(context)).called(1);
+      print ('Test Passed: User create private groupchat');
     });
 
     test('send message', () async {
+      print ('Test Start: User send a message in the groupchat');
       when(() => databaseRef.push()).thenReturn(databaseRef);
 
       String chatId = '123';
@@ -197,9 +203,11 @@ void main() {
         'senderId': auth.currentUser?.uid,
         'timestamp': ServerValue.timestamp,
       })).called(1);
+      print ('Test Passed: User send a message in the groupchat');
     });
 
     test('send message with file', () async {
+      print ('Test Start: User Upload study materials in the groupchat');
       String chatId = '123';
       String message = 'A message!';
       Uint8List fileBytes = Uint8List(0);
@@ -223,9 +231,11 @@ void main() {
         'fileUrl': 'url',
         'fileName': fileName
       })).called(1);
+      print ('Test Passed: User Upload study materials in the groupchat');
     });
 
     test('user selects file which is too big', () async {
+      print ('Test Start: User upload a file which is too big ');
       String chatId = '123';
       String message = 'A message!';
       Uint8List fileBytes =
@@ -244,6 +254,7 @@ void main() {
             uploadFile: () async => 'url',
           ),
           throwsException);
+      print ('Test Passed: User upload a file which is too big ');
     });
 
     test('joinChat', () async {
@@ -252,7 +263,7 @@ void main() {
       var chatId = 'testChatId';
       var isPrivate = false;
 
-      // Act
+      print ('Test Start: User joins groupchat');
       await joinChat(
         databaseReference: databaseRef,
         auth: auth,
@@ -263,11 +274,14 @@ void main() {
 
       // Assert
       verify(() => databaseRef.child(any()).set(true)).called(1);
+      print ('Test Passed: User joins groupchat');
     });
+
   });
 
   group('addUser', () {
     test('should add user to memberUsers list if not already present', () {
+      print ('Test Start: User invite/add other users to the groupchat');
       // Arrange
       var user = {'id': 'user1', 'name': 'John Doe'};
       var memberUsers = <Map<String, dynamic>>[];
@@ -278,15 +292,18 @@ void main() {
       // Assert
       expect(memberUsers.length, 1);
       expect(memberUsers[0], user);
+      print ('Test Passed: User invite/add other users to the groupchat');
     });
 
     test('should not add user to memberUsers list if already present', () {
+      print ('Test Start: User tries to add a user that doesnt exit');
       // Arrange
       var user = {'id': 'user1', 'name': 'John Doe'};
       var memberUsers = <Map<String, dynamic>>[user];
 
       // Act
       expect(() => addUser(user, memberUsers), throwsException);
+      print ('Test Passed: User tries to add a user that doesnt exit');
     });
   });
 }
@@ -328,6 +345,28 @@ void sendMessage({
   }
 }
 
+// Future<String?> uploadFile(
+//     MockFirebaseAuth firebaseAuth,
+//     MockFirebaseStorage firebaseStorage,
+//     String chatId,
+//     String fileName,
+//     Uint8List? fileBytes,
+//     MockBuildContext context) async {
+//   if (fileBytes != null) {
+//     try {
+//       String userId = firebaseAuth.currentUser!.uid;
+//       String filePath = 'files/$chatId/$fileName';
+//       final ref = firebaseStorage.ref().child(filePath);
+//       final result = await ref.putData(Uint8List(0));
+//       return await result.ref.getDownloadURL();
+//     } catch (e) {
+//       ScaffoldMessenger.of(context)
+//           .showSnackBar(SnackBar(content: Text('Failed to upload file: $e')));
+//       return null;
+//     }
+//   }
+//   return null;
+// }
 
 Future<void> sendMessageNew({
   required String message,
@@ -385,7 +424,6 @@ Future<void> joinChat({
     await databaseReference
         .child('GroupChats/$chatId/memberIDs/${auth.currentUser!.uid}')
         .set(true);
-    print("joined chat!");
     fetchGroupChats();
   } else {
     throw Exception("You can't join private chat");
@@ -393,7 +431,6 @@ Future<void> joinChat({
 }
 
 void fetchGroupChats() {
-  print('Fetching group chats...');
 }
 
 void addUser(

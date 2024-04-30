@@ -9,9 +9,20 @@ class FriendsPopup extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Friends'),
-      ),
+        appBar: AppBar(
+        title: Text('Your Friends', style: TextStyle(color: Colors.white), ),
+    flexibleSpace: Container(
+    decoration: BoxDecoration(
+    gradient: LinearGradient(
+    colors: [
+    Color(0xFF8A2387),
+    Color(0xFFE94057),
+    Color(0xFFF27121),
+    ],
+    ),
+    ),
+    ),
+        ),
       body: friendsDetails.isEmpty
           ? Center(child: Text('No friends yet.'))
           : ListView.builder(

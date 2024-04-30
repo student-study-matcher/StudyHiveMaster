@@ -4,6 +4,10 @@ import 'FriendProfile.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+import 'OpenDrawer.dart';
+
+
+
 class Friends extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -11,6 +15,7 @@ class Friends extends StatelessWidget {
       length: 2,
       child: Scaffold(
         backgroundColor: Color(0xfff6f6f6),
+        drawer: OpenDrawer(),
         appBar: CustomAppBar(),
         body: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,

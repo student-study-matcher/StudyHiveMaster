@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+
 class MockFirebaseAuth extends Mock implements FirebaseAuth {}
 
 class MockDatabase extends Mock implements FirebaseDatabase {}
@@ -53,7 +54,9 @@ void main() async {
   });
 
   group('registration tests', () {
+    print('Test Start: User Registration');
     test('register user successfully step 1', () async {
+
       String email = 'ex@example.com';
       String password = 'password123';
 
@@ -68,6 +71,7 @@ void main() async {
     });
 
     test('register user with already used email', () async {
+      print('Test Started: User inputs already registered email');
       String email = 'wrong@email.com';
       String password = 'password123';
 
@@ -82,6 +86,7 @@ void main() async {
               () async =>
           await registerUser1(auth, databaseRef, email, password, password),
           throwsException);
+      print('Test Passed: User inputs already registered email');
     });
 
     test('registration step 2', () async {
@@ -97,6 +102,7 @@ void main() async {
     });
 
     test('user registers with invalid username length', () async {
+      print('Test Start: User input incorrect information');
       when(() => databaseRef.once()).thenAnswer((_) async => databaseEvent);
 
       when(() => databaseEvent.snapshot).thenReturn(databaseSnapshot);
@@ -106,9 +112,11 @@ void main() async {
               () async => await registerUser2(auth, database, 'John', 'Doe',
               '2000-03-15', 'j', 'Computer Science', 'University of Example'),
           throwsException);
+      print('Test Passed: User input incorrect information');
     });
 
     test('register with age under 18', () async {
+      print('Test Started: User register with age under 18');
       when(() => databaseRef.once()).thenAnswer((_) async => databaseEvent);
 
       when(() => databaseEvent.snapshot).thenReturn(databaseSnapshot);
@@ -125,6 +133,7 @@ void main() async {
               'Computer Science',
               'University of Example'),
           throwsException);
+      print('Test Passed: User register with age under 18');
     });
 
     test('registration part 3', () async {
@@ -136,6 +145,7 @@ void main() async {
           databaseRef.child('Users/123/profilePic').set('profilePic.jpg'))
           .called(1);
     });
+    print('Test Passed: User Registration');
   });
 }
 
@@ -153,8 +163,6 @@ Future<void> registerUser1(MockFirebaseAuth auth, MockDatabaseRef database,
       database.child('Users').child(newUser.user!.uid).set({
         'email': email,
       });
-
-      print("registration successful");
     }
   } on FirebaseAuthException catch (e) {
     throw Exception(e.message ?? 'An unknown error occurred.');
@@ -218,9 +226,8 @@ Future<void> registerUser2(
       // Update the Usernames table with the new username for quick lookup
       await database.ref().child('Usernames').child(username).set(user.uid);
 
-      print('User data updated successfully!');
     } else {
-      print('User not authenticated.');
+
     }
   } catch (e) {
     print('Error updating user data: $e');

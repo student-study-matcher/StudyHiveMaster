@@ -30,7 +30,17 @@ class _ReportPageState extends State<ReportPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(titleText),
-        backgroundColor: Color(0xffad32fe),
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Color(0xFF8A2387),
+                Color(0xFFE94057),
+                Color(0xFFF27121),
+              ],
+            ),
+          ),
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -74,7 +84,8 @@ class _ReportPageState extends State<ReportPage> {
               },
               child: Text("Submit Report"),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Color(0xffae32ff),
+                backgroundColor: Color(0xFF8A2387),
+                foregroundColor: Colors.white,
               ),
             ),
           ],

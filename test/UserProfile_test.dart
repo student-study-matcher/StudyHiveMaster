@@ -33,6 +33,7 @@ void main() {
   });
 
   group('User Profile', () {
+    print('Test Start: View Others Profile');
     test('Fetch friends data', () async {
       final userId = '123';
       await fetchFriendsData(
@@ -40,10 +41,11 @@ void main() {
         userId: userId,
       );
       verify(() => databaseRef.child('Users/123').get()).called(1);
-      print('friends data fetched successfully');
+      print('Test Passed: View Others Profile');
     });
 
     test('Update user name in database', () async {
+      print('Test Start: Edit Profile');
       // Arrange
       final firstName = 'John';
       final lastName = 'Doe';
@@ -58,7 +60,6 @@ void main() {
         'firstName': firstName,
         'lastName': lastName,
       })).called(1);
-      print('name updated successfully');
     });
 
     test('Edit user bio in database', () async {
@@ -73,7 +74,7 @@ void main() {
       verify(() => databaseRef.child('Users/123').update({
         'bio': bio,
       })).called(1);
-      print('bio updated successfully');
+      print('Test Passed: Edit Profile');
     });
   });
 }

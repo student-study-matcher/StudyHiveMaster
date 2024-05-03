@@ -65,382 +65,271 @@ class _Registration2State extends State<Registration2> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xffffffff),
-      appBar: AppBar(
-        elevation: 4,
-        centerTitle: true,
-        automaticallyImplyLeading: false,
-        backgroundColor: Color(0xff3a57e8),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.zero,
-        ),
-        title: Text(
-          "Registration ",
-          style: TextStyle(
-            fontWeight: FontWeight.w500,
-            fontStyle: FontStyle.normal,
-            fontSize: 18,
-            color: Color(0xffffffff),
+        body: SingleChildScrollView(
+        child: Container(
+        height: MediaQuery
+            .of(context)
+        .size
+        .height,
+    width: MediaQuery
+        .of(context)
+        .size
+        .width,
+    decoration: BoxDecoration(
+    gradient: LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [
+    Color(0xFF8A2387),
+    Color(0xFFE94057),
+    Color(0xFFF27121),
+    ],
+    ),
+    ),
+    child: Column(
+    mainAxisAlignment: MainAxisAlignment.center,
+    crossAxisAlignment: CrossAxisAlignment.center,
+    children: [
+    SizedBox(height: 80),
+    Image.asset(
+    'assets/logo.png',
+    width: 150,
+    height: 50,
+    ),
+    SizedBox(height: 10),
+    Text(
+    'Study Hive',
+    style: TextStyle(
+    color: Colors.white,
+    fontSize: 20,
+    ),
+    ),
+    SizedBox(height: 30),
+    Container(
+    padding: EdgeInsets.all(20),
+    width: MediaQuery
+        .of(context)
+        .size
+        .width * 0.5,
+    decoration: BoxDecoration(
+    color: Colors.white,
+    borderRadius: BorderRadius.circular(10),
+    ),
+    child: Column(
+    crossAxisAlignment: CrossAxisAlignment.center,
+    children: [
+    Text(
+    'Registration',
+    style: TextStyle(
+    fontSize: 35,
+    fontWeight: FontWeight.bold,
+    ),
+    ),
+    SizedBox(height: 20),
+    TextField(
+    controller: firstNameController,
+    keyboardType: TextInputType.emailAddress,
+    decoration: InputDecoration(
+    labelText: 'First Name',
+    hintStyle: TextStyle(
+    fontWeight: FontWeight.w400,
+    fontStyle: FontStyle.normal,
+    fontSize: 14,
+    color: Color(0xff000000),
+    ),
+    filled: true,
+    fillColor: Color(0xfff2f2f3),
+    isDense: false,
+    contentPadding: EdgeInsets.symmetric(
+    vertical: 8,
+    horizontal: 12,
+    ),
+    ),
+    ),
+
+    SizedBox(height: 20),
+    TextField(
+    controller: lastNameController,
+    keyboardType: TextInputType.emailAddress,
+    decoration: InputDecoration(
+    labelText: 'Last Name',
+    hintStyle: TextStyle(
+    fontWeight: FontWeight.w400,
+    fontStyle: FontStyle.normal,
+    fontSize: 14,
+    color: Color(0xff000000),
+    ),
+    filled: true,
+    fillColor: Color(0xfff2f2f3),
+    isDense: false,
+    contentPadding: EdgeInsets.symmetric(
+    vertical: 8,
+    horizontal: 12,
+    ),
+    ),
+    ),
+
+    SizedBox(height: 20),
+    TextField(
+    controller: dobController,
+    keyboardType: TextInputType.emailAddress,
+    decoration: InputDecoration(
+    labelText: 'Date of Birth',
+    hintStyle: TextStyle(
+    fontWeight: FontWeight.w400,
+    fontStyle: FontStyle.normal,
+    fontSize: 14,
+    color: Color(0xff000000),
+    ),
+    filled: true,
+    fillColor: Color(0xfff2f2f3),
+    isDense: false,
+    contentPadding: EdgeInsets.symmetric(
+    vertical: 8,
+    horizontal: 12,
+    ),
+    ),
+    onTap: () {
+    _selectDate();
+    },
+    readOnly: true,
+    ),
+
+    SizedBox(height: 20),
+    InputDecorator(
+    decoration: InputDecoration(
+    labelText: 'Courses',
+    filled: true,
+    fillColor: Color(0xfff2f2f3),
+    isDense: false,
+    contentPadding: EdgeInsets.symmetric(
+    vertical: 8,
+    horizontal: 12,
+    ),
+    ),
+    child: DropdownButtonFormField<String>(
+    value: userCourse,
+    items: courses.map((String value) {
+    return DropdownMenuItem<String>(
+    value: value,
+    child: Text(value),
+    );
+    }).toList(),
+    onChanged: (value) {
+    setState(() {
+    userCourse = value!;
+    });
+    },
+    style: TextStyle(
+    color: Color(0xff000000),
+    fontSize: 16,
+    fontWeight: FontWeight.w400,
+    fontStyle: FontStyle.normal,
+    ),
+    elevation: 8,
+    isExpanded: true,
+    ),
+    ),
+
+
+      SizedBox(height: 20),
+      InputDecorator(
+        decoration: InputDecoration(
+          labelText: 'University Of',
+          filled: true,
+          fillColor: Color(0xfff2f2f3),
+          isDense: false,
+          contentPadding: EdgeInsets.symmetric(
+            vertical: 8,
+            horizontal: 12,
           ),
         ),
-        leading: Icon(
-          Icons.arrow_back,
-          color: Color(0xff212435),
-          size: 24,
+        child: DropdownButtonFormField<String>(
+          value: userUniversity,
+          items: universities.map((String value) {
+            return DropdownMenuItem<String>(
+              value: value,
+              child: Text(value),
+            );
+          }).toList(),
+          style: TextStyle(
+            color: Color(0xff000000),
+            fontSize: 16,
+            fontWeight: FontWeight.w400,
+            fontStyle: FontStyle.normal,
+          ),
+          onChanged: (value) {
+            setState(() {
+              userUniversity = value!;
+            });
+          },
+          elevation: 8,
+          isExpanded: true,
         ),
       ),
-      body: Padding(
-        padding: EdgeInsets.all(5),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          mainAxisSize: MainAxisSize.max,
-          children: [
-            // First Name TextField
-            Container(
-              margin: EdgeInsets.all(0),
-              padding: EdgeInsets.all(0),
-              width: 200,
-              height: 50,
-              decoration: BoxDecoration(
-                color: Color(0x1f000000),
-                shape: BoxShape.rectangle,
-                borderRadius: BorderRadius.zero,
-                border: Border.all(color: Color(0x4d9e9e9e), width: 1),
-              ),
-              child: Padding(
-                padding: EdgeInsets.all(5),
-                child: TextField(
-                  controller: firstNameController,
-                  obscureText: false,
-                  textAlign: TextAlign.start,
-                  maxLines: 1,
-                  style: TextStyle(
-                    fontWeight: FontWeight.w400,
-                    fontStyle: FontStyle.normal,
-                    fontSize: 14,
-                    color: Color(0xff000000),
-                  ),
-                  decoration: InputDecoration(
-                    disabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(4.0),
-                      borderSide: BorderSide(
-                          color: Color(0xff000000), width: 1),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(4.0),
-                      borderSide: BorderSide(
-                          color: Color(0xff000000), width: 1),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(4.0),
-                      borderSide: BorderSide(
-                          color: Color(0xff000000), width: 1),
-                    ),
-                    labelText: "First Name",
-                    labelStyle: TextStyle(
-                      fontWeight: FontWeight.w400,
-                      fontStyle: FontStyle.normal,
-                      fontSize: 14,
-                      color: Color(0xff000000),
-                    ),
-                    hintText: "Enter your first name",
-                    hintStyle: TextStyle(
-                      fontWeight: FontWeight.w400,
-                      fontStyle: FontStyle.normal,
-                      fontSize: 14,
-                      color: Color(0xff000000),
-                    ),
-                    filled: true,
-                    fillColor: Color(0xfff2f2f3),
-                    isDense: false,
-                    contentPadding: EdgeInsets.symmetric(
-                        vertical: 8, horizontal: 12),
-                  ),
-                ),
-              ),
+
+      TextField(
+        controller: usernameController,
+        decoration: InputDecoration(
+          labelText: 'Username',
+          hintText: 'Choose a username',
+          errorText: usernameError, // Display the error message if not null
+        ),
+        onChanged: (value) {
+          validateUsername(value); // Call validateUsername on each input change
+        },
+      ),
+
+
+    // Confirm Details Button
+      Container(
+        width: 200,
+        height: 50,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Color(0xFF8A2387),
+              Color(0xFFE94057),
+              Color(0xFFF27121),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(30),
+        ),
+        child: MaterialButton(
+          onPressed: () {
+            saveUserData();
+          },
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(30),
+            side: BorderSide(color: Color(0xff808080), width: 1),
+          ),
+          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Text(
+            "Confirm Details",
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 14,
+              fontWeight: FontWeight.w400,
+              fontStyle: FontStyle.normal,
             ),
-
-            // Last Name TextField
-            Container(
-              margin: EdgeInsets.all(0),
-              padding: EdgeInsets.all(0),
-              width: 200,
-              height: 50,
-              decoration: BoxDecoration(
-                color: Color(0x1f000000),
-                shape: BoxShape.rectangle,
-                borderRadius: BorderRadius.zero,
-                border: Border.all(color: Color(0x4d9e9e9e), width: 1),
-              ),
-              child: Padding(
-                padding: EdgeInsets.all(5),
-                child: TextField(
-                  controller: lastNameController,
-                  obscureText: false,
-                  textAlign: TextAlign.start,
-                  maxLines: 1,
-                  style: TextStyle(
-                    fontWeight: FontWeight.w400,
-                    fontStyle: FontStyle.normal,
-                    fontSize: 14,
-                    color: Color(0xff000000),
-                  ),
-                  decoration: InputDecoration(
-                    disabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(4.0),
-                      borderSide: BorderSide(
-                          color: Color(0xff000000), width: 1),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(4.0),
-                      borderSide: BorderSide(
-                          color: Color(0xff000000), width: 1),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(4.0),
-                      borderSide: BorderSide(
-                          color: Color(0xff000000), width: 1),
-                    ),
-                    labelText: "Last Name",
-                    labelStyle: TextStyle(
-                      fontWeight: FontWeight.w400,
-                      fontStyle: FontStyle.normal,
-                      fontSize: 14,
-                      color: Color(0xff000000),
-                    ),
-                    hintText: "Enter your last name",
-                    hintStyle: TextStyle(
-                      fontWeight: FontWeight.w400,
-                      fontStyle: FontStyle.normal,
-                      fontSize: 14,
-                      color: Color(0xff000000),
-                    ),
-                    filled: true,
-                    fillColor: Color(0xfff2f2f3),
-                    isDense: false,
-                    contentPadding: EdgeInsets.symmetric(
-                        vertical: 8, horizontal: 12),
-                  ),
-                ),
-              ),
-            ),
-
-            // Date Of Birth TextField
-            Container(
-              margin: EdgeInsets.all(0),
-              padding: EdgeInsets.all(0),
-              width: 200,
-              height: 50,
-              decoration: BoxDecoration(
-                color: Color(0x1f000000),
-                shape: BoxShape.rectangle,
-                borderRadius: BorderRadius.zero,
-                border: Border.all(color: Color(0x4d9e9e9e), width: 1),
-              ),
-              child: Padding(
-                padding: EdgeInsets.all(5),
-                child: TextField(
-                  controller: dobController,
-                  obscureText: false,
-                  textAlign: TextAlign.start,
-                  maxLines: 1,
-                  style: TextStyle(
-                    fontWeight: FontWeight.w400,
-                    fontStyle: FontStyle.normal,
-                    fontSize: 14,
-                    color: Color(0xff000000),
-                  ),
-                  decoration: InputDecoration(
-                    disabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(4.0),
-                      borderSide: BorderSide(
-                          color: Color(0xff000000), width: 1),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(4.0),
-                      borderSide: BorderSide(
-                          color: Color(0xff000000), width: 1),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(4.0),
-                      borderSide: BorderSide(
-                          color: Color(0xff000000), width: 1),
-                    ),
-                    labelText: "Date Of Birth",
-                    labelStyle: TextStyle(
-                      fontWeight: FontWeight.w400,
-                      fontStyle: FontStyle.normal,
-                      fontSize: 14,
-                      color: Color(0xff000000),
-                    ),
-
-                    filled: true,
-                    fillColor: Color(0xfff2f2f3),
-                    isDense: false,
-                    contentPadding: EdgeInsets.symmetric(
-                        vertical: 8, horizontal: 12),
-                  ),
-                  onTap: () {
-                    _selectDate();
-                  },
-                  readOnly: true,
-                ),
-              ),
-            ),
-
-            // Course Dropdown
-            Container(
-              margin: EdgeInsets.all(0),
-              padding: EdgeInsets.all(0),
-              width: 200,
-              height: 50,
-              decoration: BoxDecoration(
-                color: Color(0x1f000000),
-                shape: BoxShape.rectangle,
-                borderRadius: BorderRadius.zero,
-                border: Border.all(color: Color(0x4d9e9e9e), width: 1),
-              ),
-              child: Padding(
-                padding: EdgeInsets.all(5),
-                child: Container(
-                  width: 130,
-                  height: 50,
-                  padding: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-                  decoration: BoxDecoration(
-                    color: Color(0xffffffff),
-                    borderRadius: BorderRadius.circular(0),
-                  ),
-                  child: DropdownButton<String>(
-                    value: userCourse,
-                    items: courses.map<DropdownMenuItem<String>>((
-                        String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
-                    style: TextStyle(
-                      color: Color(0xff000000),
-                      fontSize: 16,
-                      fontWeight: FontWeight.w400,
-                      fontStyle: FontStyle.normal,
-                    ),
-                    onChanged: (value) {
-                      setState(() {
-                        userCourse = value!;
-                      });
-                    },
-                    elevation: 8,
-                    isExpanded: true,
-                  ),
-                ),
-              ),
-            ),
-
-// University Dropdown
-            Container(
-              margin: EdgeInsets.all(0),
-              padding: EdgeInsets.all(0),
-              width: 200,
-              height: 50,
-              decoration: BoxDecoration(
-                color: Color(0x1f000000),
-                shape: BoxShape.rectangle,
-                borderRadius: BorderRadius.zero,
-                border: Border.all(color: Color(0x4d9e9e9e), width: 1),
-              ),
-              child: Padding(
-                padding: EdgeInsets.all(5),
-                child: Container(
-                  width: 130,
-                  height: 50,
-                  padding: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-                  decoration: BoxDecoration(
-                    color: Color(0xffffffff),
-                    borderRadius: BorderRadius.circular(0),
-                  ),
-                  child: DropdownButton<String>(
-                    value: userUniversity,
-                    items: universities.map<DropdownMenuItem<String>>((
-                        String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
-                    style: TextStyle(
-                      color: Color(0xff000000),
-                      fontSize: 16,
-                      fontWeight: FontWeight.w400,
-                      fontStyle: FontStyle.normal,
-                    ),
-                    onChanged: (value) {
-                      setState(() {
-                        userUniversity = value!;
-                      });
-                    },
-                    elevation: 8,
-                    isExpanded: true,
-                  ),
-                ),
-              ),
-            ),
-            TextField(
-              controller: usernameController,
-              decoration: InputDecoration(
-                labelText: 'Username',
-                hintText: 'Choose a username',
-                errorText: usernameError, // Display the error message if not null
-              ),
-              onChanged: (value) {
-                validateUsername(value); // Call validateUsername on each input change
-              },
-            ),
-
-
-
-            // Confirm Details Button
-            Container(
-              margin: EdgeInsets.zero,
-              padding: EdgeInsets.zero,
-              width: 200,
-              height: 50,
-              decoration: BoxDecoration(
-                color: Color(0x1f000000),
-                shape: BoxShape.rectangle,
-                borderRadius: BorderRadius.zero,
-                border: Border.all(color: Color(0x4d9e9e9e), width: 1),
-              ),
-              child: MaterialButton(
-                onPressed: () {
-                  saveUserData();
-                },
-                color: Color(0xff48ff54),
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.zero,
-                  side: BorderSide(color: Color(0xff808080), width: 1),
-                ),
-                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: Text(
-                  "Confirm Details",
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w400,
-                    fontStyle: FontStyle.normal,
-                  ),
-                ),
-                textColor: Color(0xff000000),
-                height: 40,
-                minWidth: 140,
-              ),
-            ),
-          ],
+          ),
         ),
       ),
+
+    ],
+    ),
+    ),
+  ],
+    ),
+    ),
+    ),
     );
   }
+
+
+
+
+
 
   Future<void> _selectDate() async {
     DateTime? _picked = await showDatePicker(context: context,
@@ -552,4 +441,3 @@ class _Registration2State extends State<Registration2> {
     );
   }
 }
-

@@ -10,7 +10,21 @@ class ReportBug extends StatelessWidget {
     return Scaffold(
       backgroundColor: Color(0xffffffff),
       drawer: OpenDrawer(),
-      appBar: CustomAppBar(),
+      appBar: AppBar(
+        title: Text('Report Settings', style: TextStyle(color: Colors.white),),
+
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Color(0xFF8A2387),
+                Color(0xFFE94057),
+                Color(0xFFF27121),
+              ],
+            ),
+          ),
+        ),
+      ),
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -55,7 +69,7 @@ class ReportBug extends StatelessWidget {
                   );
                   Navigator.of(context).pop();
                 },
-                color: Color(0xffae32ff),
+                color: Color(0xFFE94057),
                 elevation: 0,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12.0),

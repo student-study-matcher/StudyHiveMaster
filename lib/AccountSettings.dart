@@ -6,10 +6,22 @@ class AccountSettings extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Account Settings'),
-        backgroundColor: Color(0xffad32fe),
-      ),
-      body: ListView(
+        title: Text('Account Settings' ,style: TextStyle(color: Colors.white), ),
+
+    flexibleSpace: Container(
+    decoration: BoxDecoration(
+    gradient: LinearGradient(
+    colors: [
+    Color(0xFF8A2387),
+    Color(0xFFE94057),
+    Color(0xFFF27121),
+    ],
+    ),
+    ),
+    ),
+    ),
+
+    body: ListView(
         children: [
           ListTile(
             title: Text('Change Password'),

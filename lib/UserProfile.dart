@@ -90,98 +90,124 @@ class _UserProfileState extends State<UserProfile> {
       backgroundColor: Colors.white,
       drawer: OpenDrawer(),
       appBar: CustomAppBar(),
-
       body: Padding(
-        padding: EdgeInsets.all(2.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            SizedBox(height: 20),
-            CircleAvatar(radius: 60, backgroundImage: AssetImage(getProfilePicturePath(profilePic))),
-            SizedBox(height: 10),
-            !isEditingName
-                ? Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text("$firstName $lastName", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
-                IconButton(icon: Icon(Icons.edit, size: 20), onPressed: () => setState(() => isEditingName = true)),
-              ],
-            )
-                : Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: TextEditingController(text: "$firstName $lastName"),
-                    onChanged: (value) {
-                      List<String> names = value.split(' ');
-                      if (names.isNotEmpty) {
-                        firstName = names.first;
-                        lastName = names.length > 1 ? names.sublist(1).join(' ') : '';
-                      }
-                    },
-                    decoration: InputDecoration(hintText: "Enter your full name", border: InputBorder.none),
-                    autofocus: true,
-                  ),
+        padding: EdgeInsets.only(top: 50.0),
+        child: Align(
+    alignment: Alignment.topCenter,
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: EdgeInsets.all(2.0),
+              child: Container(
+                padding: EdgeInsets.all(20),
+                width: MediaQuery.of(context).size.width * 0.7,
+                decoration: BoxDecoration(
+                  color: Color(0xFFF5F5F5),
+                  border: Border.all(color: Colors.black),
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                IconButton(icon: Icon(Icons.check, size: 20), onPressed: () {
-                  setState(() => isEditingName = false);
-                  updateNameInDatabase();
-                }),
-              ],
-            ),
-            Text(username, style: TextStyle(fontSize: 18)),
-            SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ProfileInfoBox(title: course, subtitle: "Subject"),
-                GestureDetector(
-                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => FriendsPopup(friendsDetails: friendsDetails))),
-                  child: ProfileInfoBox(title: "${friendsDetails.length} Friends", subtitle: ""),
-                ),
-                ProfileInfoBox(title: university, subtitle: "University"),
-              ],
-            ),
-            SizedBox(height: 20),
-            Container(
-              padding: EdgeInsets.all(20),
-              margin: EdgeInsets.symmetric(horizontal: 20),
-              decoration: BoxDecoration(border: Border.all(color: Colors.grey), borderRadius: BorderRadius.circular(10)),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: isEditingBio
-                            ? TextField(
-                          controller: TextEditingController(text: bio),
-                          onChanged: (value) => bio = value,
-                          decoration: InputDecoration(hintText: "Edit your bio", border: InputBorder.none),
-                          autofocus: true,
-                        )
-                            : Text(bio),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Your Profile',
+                      style: TextStyle(
+                        fontSize: 35,
+                        fontWeight: FontWeight.bold,
                       ),
-                      IconButton(icon: Icon(isEditingBio ? Icons.check : Icons.edit), onPressed: () {
-                        if (isEditingBio) {
-                          final user = _auth.currentUser;
-                          if (user != null) {
-                            databaseReference.child('Users/${user.uid}/bio').set(bio);
-                          }
-                        }
-                        setState(() => isEditingBio = !isEditingBio);
-                      }),
-                    ],
-                  ),
-                ],
+                    ),
+                    SizedBox(height: 20),
+                    CircleAvatar(radius: 60, backgroundImage: AssetImage(getProfilePicturePath(profilePic))),
+                    SizedBox(height: 10),
+                    !isEditingName
+                        ? Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text("$firstName $lastName", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
+                        IconButton(icon: Icon(Icons.edit, size: 20), onPressed: () => setState(() => isEditingName = true)),
+                      ],
+                    )
+                        : Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: TextEditingController(text: "$firstName $lastName"),
+                            onChanged: (value) {
+                              List<String> names = value.split(' ');
+                              if (names.isNotEmpty) {
+                                firstName = names.first;
+                                lastName = names.length > 1 ? names.sublist(1).join(' ') : '';
+                              }
+                            },
+                            decoration: InputDecoration(hintText: "Enter your full name", border: InputBorder.none),
+                            autofocus: true,
+                          ),
+                        ),
+                        IconButton(icon: Icon(Icons.check, size: 20), onPressed: () {
+                          setState(() => isEditingName = false);
+                          updateNameInDatabase();
+                        }),
+                      ],
+                    ),
+                    Text(username, style: TextStyle(fontSize: 18)),
+                    SizedBox(height: 20),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        ProfileInfoBox(title: course, subtitle: "Subject"),
+                        GestureDetector(
+                          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => FriendsPopup(friendsDetails: friendsDetails))),
+                          child: ProfileInfoBox(title: "${friendsDetails.length} Friends", subtitle: ""),
+                        ),
+                        ProfileInfoBox(title: university, subtitle: "University"),
+                      ],
+                    ),
+                    SizedBox(height: 20),
+                    Container(
+                      padding: EdgeInsets.all(20),
+                      margin: EdgeInsets.symmetric(horizontal: 20),
+                      decoration: BoxDecoration(border: Border.all(color: Colors.grey), borderRadius: BorderRadius.circular(10)),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: isEditingBio
+                                    ? TextField(
+                                  controller: TextEditingController(text: bio),
+                                  onChanged: (value) => bio = value,
+                                  decoration: InputDecoration(hintText: "Edit your bio", border: InputBorder.none),
+                                  autofocus: true,
+                                )
+                                    : Text(bio),
+                              ),
+                              IconButton(icon: Icon(isEditingBio ? Icons.check : Icons.edit), onPressed: () {
+                                if (isEditingBio) {
+                                  final user = _auth.currentUser;
+                                  if (user != null) {
+                                    databaseReference.child('Users/${user.uid}/bio').set(bio);
+                                  }
+                                }
+                                setState(() => isEditingBio = !isEditingBio);
+                              }),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ],
+          ),
         ),
       ),
     );
+
   }
+
+
 
   String getProfilePicturePath(int profilePic) {
     switch (profilePic) {

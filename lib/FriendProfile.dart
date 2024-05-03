@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:login_and_registration/CustomAppBar.dart';
+
+import 'CustomAppBar.dart';
+import 'OpenDrawer.dart';
+
 
 class FriendProfile extends StatefulWidget {
   final String friendId;
@@ -69,54 +72,93 @@ class _FriendProfileState extends State<FriendProfile> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
+      drawer: OpenDrawer(),
       appBar: CustomAppBar(),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            SizedBox(height: 20),
-            CircleAvatar(
-              radius: 60,
-              backgroundImage: AssetImage(getProfilePicturePath(profilePic)),
-            ),
-            SizedBox(height: 10),
-            Text("$firstName $lastName", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
-            Text(username, style: TextStyle(fontSize: 18)),
-            SizedBox(height: 20),
-            Container(
-              padding: EdgeInsets.all(20),
-              margin: EdgeInsets.symmetric(horizontal: 20),
-              decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey),
-                  borderRadius: BorderRadius.circular(10)
+      body: Padding(
+        padding: EdgeInsets.only(top: 50.0),
+        child: Align(
+          alignment: Alignment.topCenter,
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: EdgeInsets.all(2.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(20),
+                    width: MediaQuery.of(context).size.width * 0.7,
+                    decoration: BoxDecoration(
+                      color: Color(0xFFF5F5F5),
+                      border: Border.all(color: Colors.black),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text(
+                          "$firstName $lastName's Profile",
+                          style: TextStyle(
+                            fontSize: 35,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SizedBox(height: 20),
+                        CircleAvatar(
+                          radius: 60,
+                          backgroundImage: AssetImage(getProfilePicturePath(profilePic)),
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text("$firstName $lastName", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
+                            Text(username, style: TextStyle(fontSize: 18)),
+                          ],
+                        ),
+                        SizedBox(height: 20),
+                        Container(
+                          padding: EdgeInsets.all(20),
+                          margin: EdgeInsets.symmetric(horizontal: 20),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(bio),
+                        ),
+                        SizedBox(height: 20),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            ProfileInfoBox(title: course, subtitle: "Course"),
+                            ProfileInfoBox(title: "$friendCount friends", subtitle: "Friends"),
+                            ProfileInfoBox(title: university, subtitle: "University"),
+                          ],
+                        ),
+                        SizedBox(height: 20),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: removeFriend,
+                    child: Text("Remove Friend"),
+                    style: ButtonStyle(
+                      backgroundColor: MaterialStateProperty.all<Color>(Colors.red),
+                      foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
+                    ),
+                  ),
+                ],
               ),
-              child: Text(bio),
             ),
-            SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ProfileInfoBox(title: course, subtitle: "Course"),
-                ProfileInfoBox(title: "$friendCount friends", subtitle: "Friends"),
-                ProfileInfoBox(title: university, subtitle: "University"),
-              ],
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: removeFriend,
-              child: Text("Remove Friend"),
-              style: ButtonStyle(
-                backgroundColor: MaterialStateProperty.all<Color>(Colors.red),
-                foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
-              ),
-            ),
-
-          ],
+          ),
         ),
       ),
     );
   }
+
+
 }
+
 
 class ProfileInfoBox extends StatelessWidget {
   final String title;

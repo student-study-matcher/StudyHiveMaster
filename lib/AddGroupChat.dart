@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 
+import 'OpenDrawer.dart';
+
 class AddGroupChat extends StatefulWidget {
   @override
   _AddGroupChatState createState() => _AddGroupChatState();
@@ -92,7 +94,19 @@ class _AddGroupChatState extends State<AddGroupChat> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Add Group Chat'),
+        title: Text('Add Group Chat' ,style: TextStyle(color: Colors.white), ),
+
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Color(0xFF8A2387),
+                Color(0xFFE94057),
+                Color(0xFFF27121),
+              ],
+            ),
+          ),
+        ),
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16.0),

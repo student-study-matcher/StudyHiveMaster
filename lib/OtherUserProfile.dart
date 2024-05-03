@@ -36,23 +36,50 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
   }
 
   Future<void> fetchUserData() async {
-    final userSnapshot = await databaseReference.child('Users/${widget.userID}')
-        .get();
-    if (userSnapshot.exists) {
-      final userData = Map<String, dynamic>.from(userSnapshot.value as Map);
-      setState(() {
-        firstName = userData['firstName'] ?? '';
-        lastName = userData['lastName'] ?? '';
-        username = userData['username'] ?? '';
-        bio = userData['bio'] ?? '';
-        university = userData['university'] ?? '';
-        course = userData['course'] ?? '';
-        profilePic = userData['profilePic'] ?? 0;
-        friendCount = userData['friends'] != null ? Map<String, dynamic>.from(
-            userData['friends']).length : 0;
-      });
+    try {
+      final userSnapshot = await databaseReference.child('Users/${widget.userID}').get();
+      if (userSnapshot.exists) {
+        final userData = Map<String, dynamic>.from(userSnapshot.value as Map);
+
+        Map<String, dynamic> privacySettings = {};
+        if (userData['privacySettings'] != null) {
+          (userData['privacySettings'] as Map<dynamic, dynamic>).forEach((key, value) {
+            privacySettings[key.toString()] = value;
+          });
+        }
+
+        bool isProfileVisible = privacySettings['profileVisible'] ?? false;
+        print(isProfileVisible);
+
+        print('Privacy Settings: $privacySettings');
+
+        setState(() {
+          if (isProfileVisible == false) {
+            firstName = 'Private';
+            username = userData['username'] ?? '';
+            profilePic = userData['profilePic'] ?? 0; }
+
+
+            else {
+            firstName = userData['firstName'] ?? '';
+            lastName = userData['lastName'] ?? '';
+            username = userData['username'] ?? '';
+            bio = userData['bio'] ?? '';
+            university = userData['university'] ?? '';
+            course = userData['course'] ?? '';
+            profilePic = userData['profilePic'] ?? 0;
+            friendCount =
+            userData['friends'] != null ? Map<String, dynamic>.from(
+                userData['friends']).length : 0;
+          }
+        });
+      }
+    } catch (error) {
+      print('Error fetching user data: $error');
     }
   }
+
+
 
   void modifyFriendship() async {
     if (widget.isFriend) {
@@ -120,7 +147,7 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Text(
-                          "$firstName $lastName's Profile",
+                          "$firstName $lastName Profile",
                           style: TextStyle(
                             fontSize: 35,
                             fontWeight: FontWeight.bold,
@@ -134,8 +161,19 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Text("$firstName $lastName", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
-                            Text(username, style: TextStyle(fontSize: 18)),
+                            Column(
+                              children: [
+                                Text(
+                                  "$firstName $lastName",
+                                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                                ),
+                                SizedBox(height: 4), // Add some spacing between the name and username
+                                Text(
+                                  username,
+                                  style: TextStyle(fontSize: 18),
+                                ),
+                              ],
+                            ),
                           ],
                         ),
                         SizedBox(height: 20),

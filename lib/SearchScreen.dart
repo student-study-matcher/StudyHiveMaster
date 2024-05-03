@@ -27,8 +27,16 @@ class _SearchScreenState extends State<SearchScreen> {
       userEvent.snapshot.children.forEach((child) {
         if (child.key == currentUserId) return;
         Map<String, dynamic> userData = Map<String, dynamic>.from(child.value as Map);
+        Map<String, dynamic> privacySettings = {};
+        if (userData['privacySettings'] != null) {
+          (userData['privacySettings'] as Map<dynamic, dynamic>).forEach((key, value) {
+            privacySettings[key.toString()] = value;
+          });
+        }
+
+        bool isProfileSearchable = privacySettings['searchable'] ?? false;
         String username = userData['username'] ?? '';
-        if (username.toLowerCase().contains(query.toLowerCase())) {
+        if (isProfileSearchable && username.toLowerCase().contains(query.toLowerCase())) {
           results.add({
             'type': 'user',
             'username': username,

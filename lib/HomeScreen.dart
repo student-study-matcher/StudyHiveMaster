@@ -28,7 +28,8 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> getForums() async {
     User? user = _auth.currentUser;
     if (user != null) {
-      final userSnapshot = await databaseReference.child('Users/${user.uid}').get();
+      final userSnapshot = await databaseReference.child('Users/${user.uid}')
+          .get();
       if (userSnapshot.exists) {
         final userData = Map<String, dynamic>.from(userSnapshot.value as Map);
         Map<dynamic, dynamic>? friendsMap = userData['friends'];
@@ -42,7 +43,9 @@ class _HomeScreenState extends State<HomeScreen> {
     final DatabaseReference forumsRef = FirebaseDatabase.instance.ref('Forums');
     final forumSnapshot = await forumsRef.get();
     if (forumSnapshot.exists) {
-      final Map<dynamic, dynamic> snapshotValue = forumSnapshot.value as Map<dynamic, dynamic>;
+      final Map<dynamic, dynamic> snapshotValue = forumSnapshot.value as Map<
+          dynamic,
+          dynamic>;
       snapshotValue.forEach((key, value) {
         final forum = Map<String, dynamic>.from(value);
         forum['id'] = key;
@@ -60,8 +63,10 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void navigateToForum(String forumId) {
-    Navigator.push(context, MaterialPageRoute(builder: (_) => OpenForum(forumId: forumId)));
+    Navigator.push(context,
+        MaterialPageRoute(builder: (_) => OpenForum(forumId: forumId)));
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -70,68 +75,91 @@ class _HomeScreenState extends State<HomeScreen> {
       drawer: OpenDrawer(),
       appBar: CustomAppBar(),
       body: Padding(
-        padding: EdgeInsets.all(2.0),
+        padding: EdgeInsets.all(8.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text(
-              "Top Forums for You",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontWeight: FontWeight.w500,
-                fontSize: 17,
-                color: Colors.black,
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                "Top Forums for You",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontWeight: FontWeight.w500,
+                  fontSize: 17,
+                  color: Colors.black,
+                ),
               ),
             ),
-            Expanded(
-              child: ListView.builder(
-                shrinkWrap: true,
-                itemCount: forYouForums.isEmpty ? 1 : forYouForums.length,
-                itemBuilder: (context, index) {
-                  if (forYouForums.isEmpty) {
-                    return ListTile(
-                      title: Text('No forums available'),
-                    );
-                  } else {
-                    final item = forYouForums[index];
-                    return ListTile(
-                      title: Text(item["title"] ?? 'No Title'),
-                      subtitle: Text(item["content"] ?? 'No Content'),
-                      leading: Icon(Icons.forum),
-                      trailing: Icon(Icons.arrow_forward),
-                      onTap: () => navigateToForum(item["id"]),
-                    );
-                  }
-                },
+            SizedBox(
+              height: 200,
+              child: Card(
+                elevation: 4,
+                color: Colors.grey[100],
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: ListView.builder(
+                    itemCount: forYouForums.isEmpty ? 1 : forYouForums.length,
+                    itemBuilder: (context, index) {
+                      if (forYouForums.isEmpty) {
+                        return ListTile(
+                          title: Text('No forums available'),
+                        );
+                      } else {
+                        final item = forYouForums[index];
+                        return ListTile(
+                          title: Text(item["title"] ?? 'No Title'),
+                          subtitle: Text(item["content"] ?? 'No Content'),
+                          leading: Icon(Icons.forum),
+                          trailing: Icon(Icons.arrow_forward),
+                          onTap: () => navigateToForum(item["id"]),
+                        );
+                      }
+                    },
+                  ),
+                ),
               ),
             ),
-            const Text(
-              "Recent Posts from Friends",
-              style: TextStyle(
-                fontWeight: FontWeight.w500,
-                fontSize: 17,
-                color: Colors.black,
+            SizedBox(height: 20), // Adjust the height to create spacing
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                "Recent Posts from Friends",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontWeight: FontWeight.w500,
+                  fontSize: 17,
+                  color: Colors.black,
+                ),
               ),
             ),
-            Expanded(
-              child: ListView.builder(
-                shrinkWrap: true,
-                itemCount: friendsForums.isEmpty ? 1 : friendsForums.length,
-                itemBuilder: (context, index) {
-                  if (friendsForums.isEmpty) {
-                    return ListTile(
-                      title: Text('No recent posts from friends'),
-                    );
-                  } else {
-                    final item = friendsForums[index];
-                    return ListTile(
-                      title: Text(item["title"] ?? 'No Title'),
-                      subtitle: Text(item["content"] ?? 'No Content'),
-                      leading: Icon(Icons.forum),
-                      trailing: Icon(Icons.arrow_forward),
-                      onTap: () => navigateToForum(item["id"]),
-                    );
-                  }
-                },
+            SizedBox(
+              height: 200,
+              child: Card(
+                elevation: 4,
+                color: Colors.grey[100],
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: ListView.builder(
+                    itemCount: friendsForums.isEmpty ? 1 : friendsForums.length,
+                    itemBuilder: (context, index) {
+                      if (friendsForums.isEmpty) {
+                        return ListTile(
+                          title: Text('No recent posts from friends'),
+                        );
+                      } else {
+                        final item = friendsForums[index];
+                        return ListTile(
+                          title: Text(item["title"] ?? 'No Title'),
+                          subtitle: Text(item["content"] ?? 'No Content'),
+                          leading: Icon(Icons.forum),
+                          trailing: Icon(Icons.arrow_forward),
+                          onTap: () => navigateToForum(item["id"]),
+                        );
+                      }
+                    },
+                  ),
+                ),
               ),
             ),
           ],
@@ -139,4 +167,5 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+
 }

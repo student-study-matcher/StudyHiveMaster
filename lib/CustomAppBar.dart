@@ -7,7 +7,17 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     return AppBar(
       elevation: 4,
       centerTitle: false,
-      backgroundColor: Color(0xffad32fe),
+      flexibleSpace: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Color(0xFF8A2387),
+              Color(0xFFE94057),
+              Color(0xFFF27121),
+            ],
+          ),
+        ),
+      ),
       title: GestureDetector(
         onTap: () => Navigator.of(context).pushReplacementNamed('/home'), // Navigate to the home screen when the title is tapped
         child: Row(

@@ -17,38 +17,41 @@ class _LoginState extends State<Login> {
   bool _passwordVisible = false;
 
   void _signIn() async {
-    final input = _emailOrUsernameController.text.trim();
-    String email = '';
-    if (input.contains('@')) {
-      email = input;
-    } else {
-      final usernameSnapshot = await FirebaseDatabase.instance.ref().child('Usernames/$input').get();
-      if (usernameSnapshot.exists) {
-        final userId = usernameSnapshot.value as String?;
-        if (userId != null) {
-          final emailSnapshot = await FirebaseDatabase.instance.ref().child('Users/$userId/email').get();
-          if (emailSnapshot.exists && emailSnapshot.value != null) {
-            email = emailSnapshot.value as String;
+    try {
+      final input = _emailOrUsernameController.text.trim();
+      String email = '';
+
+      if (input.contains('@')) {
+        email = input;
+      } else {
+        final usernameSnapshot = await FirebaseDatabase.instance
+            .ref()
+            .child('Usernames/$input')
+            .get();
+        if (usernameSnapshot.exists) {
+          final userId = usernameSnapshot.value as String?;
+          if (userId != null) {
+            final emailSnapshot =
+            await FirebaseDatabase.instance.ref()
+                .child('Users/$userId/email')
+                .get();
+            if (emailSnapshot.exists && emailSnapshot.value != null) {
+              email = emailSnapshot.value as String;
+            } else {
+              throw FirebaseAuthException(
+                  code: 'email-not-found',
+                  message: 'Email not found for username.');
+            }
           } else {
-            setState(() {
-              _errorMessage = 'Email not found for username.';
-            });
-            return;
+            throw FirebaseAuthException(
+                code: 'username-not-found', message: 'Username not found.');
           }
         } else {
-          setState(() {
-            _errorMessage = 'Username not found.';
-          });
-          return;
+          throw FirebaseAuthException(
+              code: 'username-not-found', message: 'Username not found.');
         }
-      } else {
-        setState(() {
-          _errorMessage = 'Username not found.';
-        });
-        return;
       }
-    }
-    try {
+
       await _auth.signInWithEmailAndPassword(
         email: email,
         password: _passwordController.text,
@@ -67,9 +70,11 @@ class _LoginState extends State<Login> {
 
   void _resetPassword() async {
     final email = _emailOrUsernameController.text.trim();
+
     if (email.isEmpty || !email.contains('@')) {
       setState(() {
-        _errorMessage = 'Please enter a valid email address for password reset.';
+        _errorMessage =
+        'Please enter a valid email address for password reset.';
       });
       return;
     }
@@ -89,99 +94,171 @@ class _LoginState extends State<Login> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xffffffff),
-      appBar: AppBar(
-        elevation: 4,
-        centerTitle: false,
-        automaticallyImplyLeading: false,
-        backgroundColor: Color(0xff3f93f2),
-        title: Text(
-          "Login Page",
-          style: TextStyle(
-            fontWeight: FontWeight.w600,
-            fontSize: 17,
-            color: Color(0xffffffff),
+      body: SingleChildScrollView(
+        child: Container(
+          height: MediaQuery
+              .of(context)
+              .size
+              .height,
+          width: MediaQuery
+              .of(context)
+              .size
+              .width,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFF8A2387),
+                Color(0xFFE94057),
+                Color(0xFFF27121),
+              ],
+            ),
           ),
-        ),
-        leading: Icon(
-          Icons.arrow_back,
-          color: Color(0xffffffff),
-          size: 24,
-        ),
-      ),
-      body: Align(
-        alignment: Alignment.center,
-        child: Padding(
-          padding: EdgeInsets.all(10),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisSize: MainAxisSize.max,
             children: [
-              TextField(
-                controller: _emailOrUsernameController,
-                decoration: InputDecoration(
-                  labelText: "Enter Email or Username",
-                  fillColor: Color(0xfff2f2f3),
-                  filled: true,
-                ),
+              SizedBox(height: 80),
+              Image.asset(
+                'assets/logo.png',
+                width: 150,
+                height: 50,
               ),
               SizedBox(height: 10),
-              TextField(
-                controller: _passwordController,
-                obscureText: !_passwordVisible,
-                decoration: InputDecoration(
-                  labelText: "Enter Password",
-                  fillColor: Color(0xfff2f2f3),
-                  filled: true,
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _passwordVisible ? Icons.visibility : Icons.visibility_off,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        _passwordVisible = !_passwordVisible;
-                      });
-                    },
-                  ),
-                ),
-              ),
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: _resetPassword,
-                  child: Text('Forgot Password?'),
-                ),
-              ),
-              SizedBox(height: 20),
-              MaterialButton(
-                onPressed: _signIn,
-                color: Color(0xfffed140),
-                child: Text(
-                  "Login",
-                  style: TextStyle(fontSize: 14),
-                ),
-                textColor: Color(0xff000000),
-              ),
-              MaterialButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => Registration1()),
-                  );
-                },
-                color: Color(0xfffed141),
-                child: Text(
-                  "Register",
-                  style: TextStyle(fontSize: 14),
-                ),
-                textColor: Color(0xff000000),
-              ),
-              SizedBox(height: 16.0),
               Text(
-                _errorMessage,
-                style: TextStyle(color: Colors.red),
-                textAlign: TextAlign.center,
+                'Study Hive',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                ),
+              ),
+              SizedBox(height: 40),
+              Container(
+                padding: EdgeInsets.all(20),
+                width: MediaQuery.of(context).size.width * 0.5,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Welcome!',
+                      style: TextStyle(
+                        fontSize: 35,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    Text(
+                      'Please Login to Your Account',
+                      style: TextStyle(
+                        fontSize: 15,
+                        color: Colors.grey,
+                      ),
+                    ),
+                    SizedBox(height: 20),
+                    TextField(
+                      controller: _emailOrUsernameController,
+                      decoration: InputDecoration(
+                        labelText: 'Email Address or Username',
+                        prefixIcon: Icon(Icons.email),
+                      ),
+                    ),
+                    SizedBox(height: 20),
+                    TextField(
+                      controller: _passwordController,
+                      obscureText: !_passwordVisible,
+                      decoration: InputDecoration(
+                        labelText: 'Password',
+                        prefixIcon: Icon(Icons.lock),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _passwordVisible ? Icons.visibility : Icons
+                                .visibility_off,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _passwordVisible = !_passwordVisible;
+                            });
+                          },
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 20),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton(
+                          onPressed: _resetPassword,
+                          child: Text(
+                            'Forgot Password?',
+                            style: TextStyle(
+                              color: Colors.orangeAccent[700],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 20),
+                    GestureDetector(
+                      onTap: _signIn,
+                      child: Container(
+                        alignment: Alignment.center,
+                        width: double.infinity,
+                        padding: EdgeInsets.symmetric(vertical: 14),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(30),
+                          gradient: LinearGradient(
+                            colors: [
+                              Color(0xFF8A2387),
+                              Color(0xFFE94057),
+                              Color(0xFFF27121),
+                            ],
+                          ),
+                        ),
+                        child: Text(
+                          'Login',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 20),
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) =>
+                              Registration1()),
+                        );
+                      },
+                      child: Text(
+                        'Register',
+                        style: TextStyle(
+                          color: Colors.deepPurple[900],
+                          fontSize: 18,
+                          )
+
+                        ),
+                      ),
+
+                    SizedBox(height: 16),
+                    Text(
+                      _errorMessage,
+                      style: TextStyle(
+                        color: Colors.red,
+                        fontSize: 14,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
               ),
             ],
           ),

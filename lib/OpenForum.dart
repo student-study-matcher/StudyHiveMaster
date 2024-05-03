@@ -145,7 +145,17 @@ class _OpenForumState extends State<OpenForum> {
     return Scaffold(
       appBar: AppBar(
         title: Text(forumData?['title'] ?? 'Forum'),
-        backgroundColor: Color(0xffad32fe),
+          flexibleSpace: Container(
+          decoration: BoxDecoration(
+          gradient: LinearGradient(
+          colors: [
+          Color(0xFF8A2387),
+        Color(0xFFE94057),
+        Color(0xFFF27121),
+        ],
+          ),
+          ),
+          ),
         actions: [
           PopupMenuButton<CommentFilter>(
             onSelected: (CommentFilter result) {
@@ -178,7 +188,7 @@ class _OpenForumState extends State<OpenForum> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(forumData?['title'] ?? 'No Title', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+              Text(forumData?['title'] ?? 'No Title', style: TextStyle(fontSize: 24,color: Colors.white, fontWeight: FontWeight.bold)),
               SizedBox(height: 10),
               Text(forumData?['content'] ?? 'No Content', style: TextStyle(fontSize: 18)),
 

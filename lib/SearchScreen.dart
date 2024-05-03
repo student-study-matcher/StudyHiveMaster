@@ -77,7 +77,17 @@ class _SearchScreenState extends State<SearchScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Color(0xffad32fe),
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Color(0xFF8A2387),
+                Color(0xFFE94057),
+                Color(0xFFF27121),
+              ],
+            ),
+          ),
+        ),
         title: TextField(
           controller: _searchController,
           onChanged: (value) {

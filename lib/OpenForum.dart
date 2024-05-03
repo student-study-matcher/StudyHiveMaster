@@ -50,6 +50,7 @@ class _OpenForumState extends State<OpenForum> {
           'thumbsDown': response['thumbsDown'] ?? 0,
           'username': userData['username'] ?? 'Unknown',
           'profilePicture': profilePicture,
+          'timestamp': response['timestamp']
         };
         fetchedComments.add(commentData);
       }
@@ -84,7 +85,7 @@ class _OpenForumState extends State<OpenForum> {
         'authorID': userId,
         'thumbsUp': 0,
         'thumbsDown': 0,
-        'timestamp': ServerValue.timestamp,
+        'timestamp': DateTime.now().millisecondsSinceEpoch,
       });
       commentController.clear();
       fetchForumData();

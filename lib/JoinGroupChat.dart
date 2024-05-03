@@ -104,41 +104,62 @@ class _JoinGroupChatState extends State<JoinGroupChat> with SingleTickerProvider
   }
 
   Widget buildChatList(List<Map<String, dynamic>> chats, bool isMyChatList) {
-    return ListView.builder(
-      itemCount: chats.length,
-      itemBuilder: (context, index) {
-        final chat = chats[index];
-        bool joined = chat['memberIDs'] != null && chat['memberIDs'][_auth.currentUser?.uid] == true;
-        bool isPrivate = chat['isPrivate'] ?? false;
-
-
-        if (isPrivate && !joined && chat['adminID'] != _auth.currentUser?.uid) {
-          return Container();
-        }
-
-
-        void openChat() {
-          Navigator.push(context, MaterialPageRoute(builder: (_) => GroupChatPage(chatId: chat['id'] ?? "", isAdmin: chat['adminID'] == _auth.currentUser?.uid)));
-        }
-
-
-        String buttonText = "Open Chat";
-        VoidCallback? onTapFunction = openChat;
-
-        if (!isPrivate && !joined) {
-          buttonText = "Join";
-          onTapFunction = () => joinChat(chat['id'] ?? "", isPrivate);
-        }
-
-        return ListTile(
-          title: Text(chat['title'] ?? "Untitled Chat"),
-          subtitle: Text('Owner: ${chat['adminName']}'),
-          trailing: ElevatedButton(
-            onPressed: onTapFunction,
-            child: Text(buttonText),
+    return Container(
+      margin: EdgeInsets.only(top: 20),
+      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 25),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(35),
+          topRight: Radius.circular(35),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.5),
+            blurRadius: 10,
+            spreadRadius: 2,
+            offset: Offset(0, 2),
           ),
-        );
-      },
+        ],
+      ),
+      child: ListView.builder(
+        itemCount: chats.length,
+        itemBuilder: (context, index) {
+          final chat = chats[index];
+          bool joined = chat['memberIDs'] != null && chat['memberIDs'][_auth.currentUser?.uid] == true;
+          bool isPrivate = chat['isPrivate'] ?? false;
+
+          if (isPrivate && !joined && chat['adminID'] != _auth.currentUser?.uid) {
+            return Container();
+          }
+
+          void openChat() {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => GroupChatPage(chatId: chat['id'] ?? "", isAdmin: chat['adminID'] == _auth.currentUser?.uid)));
+          }
+
+          String buttonText = isMyChatList ? "Open Chat" : (joined ? "Open Chat" : "Join");
+          VoidCallback? onTapFunction = isMyChatList || joined ? openChat : () => joinChat(chat['id'] ?? "", isPrivate);
+
+          return Padding(
+            padding: EdgeInsets.symmetric(vertical: 15),
+            child: InkWell(
+              onTap: onTapFunction,
+              child: ListTile(
+                title: Text(chat['title'] ?? "Untitled Chat"),
+                subtitle: Text('Owner: ${chat['adminName']}'),
+                trailing: ElevatedButton(
+                  onPressed: onTapFunction,
+                  child: Text(buttonText),
+                  style: ElevatedButton.styleFrom(
+
+                  ),
+
+                ),
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 
@@ -157,16 +178,20 @@ class _JoinGroupChatState extends State<JoinGroupChat> with SingleTickerProvider
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white, // Use a clear color convention
       drawer: OpenDrawer(),
       appBar: AppBar(
-        title: Text("Join Group Chat"),
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: [
-            Tab(text: "My Chats"),
-            Tab(text: "All Chats"),
-            Tab(text: "Private Chats"),
-          ],
+        title: Text('Join Group Chat', style: TextStyle(color: Colors.white)),
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Color(0xFF8A2387),
+                Color(0xFFE94057),
+                Color(0xFFF27121),
+              ],
+            ),
+          ),
         ),
         actions: [
           IconButton(
@@ -176,7 +201,22 @@ class _JoinGroupChatState extends State<JoinGroupChat> with SingleTickerProvider
         ],
       ),
       body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          Container(
+            color: Colors.white,
+            child: TabBar(
+              controller: _tabController,
+              labelColor: Color(0xFF800080),
+              unselectedLabelColor: Color(0xFFB0A4B9),
+              indicatorColor: Color(0xFF800080),
+              tabs: [
+                Tab(text: "My Chats"),
+                Tab(text: "All Chats"),
+                Tab(text: "Private Chats"),
+              ],
+            ),
+          ),
           Padding(
             padding: EdgeInsets.all(8.0),
             child: TextField(

@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -148,8 +149,18 @@ class _ForumsState extends State<Forums> with SingleTickerProviderStateMixin {
       backgroundColor: Color(0xffffffff),
       drawer: OpenDrawer(),
       appBar: AppBar(
-        backgroundColor: Color(0xffad32fe),
-        title: Text("Forums"),
+        title: Text('Forums', style: TextStyle(color: Colors.white), ),
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Color(0xFF8A2387),
+                Color(0xFFE94057),
+                Color(0xFFF27121),
+              ],
+            ),
+          ),
+        ),
         actions: [
           IconButton(
             icon: Icon(Icons.filter_list),
@@ -162,14 +173,15 @@ class _ForumsState extends State<Forums> with SingleTickerProviderStateMixin {
         ],
       ),
       body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Container(
-            color: Theme.of(context).primaryColor,
+            color: Colors.white,
             child: TabBar(
               controller: _tabController,
-              labelColor: Colors.white,
-              unselectedLabelColor: Colors.white70,
-              indicatorColor: Colors.white,
+              labelColor: Color(0xFF800080),
+              unselectedLabelColor: Color(0xFFB0A4B9),
+              indicatorColor: Color(0xFF800080),
               tabs: [
                 Tab(text: "Current Forums"),
                 Tab(text: "Your Forums"),
@@ -195,33 +207,38 @@ class _ForumsState extends State<Forums> with SingleTickerProviderStateMixin {
       itemCount: forums.length,
       itemBuilder: (context, index) {
         final forum = forums[index];
-        return ListTile(
-          title: Text(forum["title"] ?? 'No Title'),
-          subtitle: Text("${forum["content"] ?? 'No Content'} - ${forum['subject']}"),
-          onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => OpenForum(forumId: forum['forumId'])),
-          ),
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              IconButton(
-                icon: Icon(Icons.flag, color: Colors.red),
-                onPressed: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => ReportPage(forumId: forum['forumId'])),
+        return Card(
+          elevation: 4,
+          margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+          child: ListTile(
+            title: Text(forum["title"] ?? 'No Title'),
+            subtitle: Text("${forum["content"] ?? 'No Content'} - ${forum['subject']}"),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => OpenForum(forumId: forum['forumId'])),
+            ),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: Icon(Icons.flag, color: Colors.red),
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => ReportPage(forumId: forum['forumId'])),
+                  ),
                 ),
-              ),
-              if (showDeleteButton) IconButton(
-                icon: Icon(Icons.delete, color: Colors.red),
-                onPressed: () => confirmDelete(context, forum['forumId']),
-              ),
-            ],
+                if (showDeleteButton) IconButton(
+                  icon: Icon(Icons.delete, color: Colors.red),
+                  onPressed: () => confirmDelete(context, forum['forumId']),
+                ),
+              ],
+            ),
           ),
         );
       },
     );
   }
+
 
   void deleteForum(String forumId) async {
     await _databaseReference.child('Forums/$forumId').remove();

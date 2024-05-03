@@ -40,8 +40,19 @@ class _PrivacySettingsState extends State<PrivacySettings> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Privacy Settings'),
-        backgroundColor: Color(0xffad32fe),
+        title: Text('Privacy Settings', style: TextStyle(color: Colors.white),),
+
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Color(0xFF8A2387),
+                Color(0xFFE94057),
+                Color(0xFFF27121),
+              ],
+            ),
+          ),
+        ),
       ),
       body: ListView(
         children: [

@@ -76,8 +76,21 @@ class _ChatSettingsPageState extends State<ChatSettingsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Chat Settings"),
+        backgroundColor: Color(0xffffffff),
+    appBar: AppBar(
+    title: Text(("Chat Settings"), style: TextStyle(color: Colors.white),),
+    flexibleSpace: Container(
+    decoration: BoxDecoration(
+    gradient: LinearGradient(
+    colors: [
+    Color(0xFF8A2387),
+    Color(0xFFE94057),
+    Color(0xFFF27121),
+    ],
+    ),
+    ),
+    ),
+
         actions: [
           if (isAdmin)
             IconButton(

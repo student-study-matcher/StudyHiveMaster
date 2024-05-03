@@ -4,7 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:login_and_registration/OpenDrawer.dart';
+import 'package:studyhive/OpenDrawer.dart';
 
 class AddForum extends StatefulWidget {
   @override
@@ -120,20 +120,22 @@ class _AddForumState extends State<AddForum> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            IconButton(
-              icon: Icon(Icons.arrow_back),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-            Text('Add Forum'),
-            SizedBox(width: 48),
-          ],
+        appBar: AppBar(
+        title: Text('Add Forum' ,style: TextStyle(color: Colors.white), ),
+
+    flexibleSpace: Container(
+    decoration: BoxDecoration(
+    gradient: LinearGradient(
+    colors: [
+    Color(0xFF8A2387),
+    Color(0xFFE94057),
+    Color(0xFFF27121),
+    ],
+    ),
+    ),
+    ),
         ),
-      ),
-      drawer: OpenDrawer(),
+
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16.0),
         child: Column(

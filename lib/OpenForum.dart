@@ -33,15 +33,22 @@ class _OpenForumState extends State<OpenForum> {
 
   void fetchForumData() async {
     setState(() => isLoading = true);
-    final forumSnapshot = await _databaseReference.child('Forums/${widget.forumId}').get();
+    final forumSnapshot = await _databaseReference.child(
+        'Forums/${widget.forumId}').get();
     if (forumSnapshot.exists && forumSnapshot.value != null) {
       List<Map<String, dynamic>> fetchedComments = [];
-      Map<dynamic, dynamic> responses = forumSnapshot.child('responses').value as Map<dynamic, dynamic>? ?? {};
+      Map<dynamic, dynamic> responses = forumSnapshot
+          .child('responses')
+          .value as Map<dynamic, dynamic>? ?? {};
       for (var entry in responses.entries) {
-        Map<dynamic, dynamic> response = entry.value as Map<dynamic, dynamic>? ?? {};
+        Map<dynamic, dynamic> response = entry.value as Map<dynamic,
+            dynamic>? ?? {};
         String userId = response['authorID'] ?? '';
-        DataSnapshot userSnapshot = await _databaseReference.child('Users/$userId').get();
-        Map<dynamic, dynamic> userData = userSnapshot.value as Map<dynamic, dynamic>? ?? {};
+        DataSnapshot userSnapshot = await _databaseReference.child(
+            'Users/$userId').get();
+        Map<dynamic, dynamic> userData = userSnapshot.value as Map<
+            dynamic,
+            dynamic>? ?? {};
         String profilePicture = getProfilePicturePath(userData['profilePic']);
         Map<String, dynamic> commentData = {
           'id': entry.key,
@@ -55,7 +62,8 @@ class _OpenForumState extends State<OpenForum> {
         fetchedComments.add(commentData);
       }
       setState(() {
-        forumData = Map<String, dynamic>.from(forumSnapshot.value as Map<dynamic, dynamic>);
+        forumData =
+        Map<String, dynamic>.from(forumSnapshot.value as Map<dynamic, dynamic>);
         comments = fetchedComments;
         isLoading = false;
       });
@@ -66,13 +74,20 @@ class _OpenForumState extends State<OpenForum> {
 
   String getProfilePicturePath(int? profilePicIndex) {
     switch (profilePicIndex) {
-      case 1: return "assets/purple.png";
-      case 2: return "assets/blue.png";
-      case 3: return "assets/blue-purple.png";
-      case 4: return "assets/orange.png";
-      case 5: return "assets/pink.png";
-      case 6: return "assets/turquoise.png";
-      default: return "assets/default_profile_picture.png";
+      case 1:
+        return "assets/purple.png";
+      case 2:
+        return "assets/blue.png";
+      case 3:
+        return "assets/blue-purple.png";
+      case 4:
+        return "assets/orange.png";
+      case 5:
+        return "assets/pink.png";
+      case 6:
+        return "assets/turquoise.png";
+      default:
+        return "assets/default_profile_picture.png";
     }
   }
 
@@ -80,12 +95,16 @@ class _OpenForumState extends State<OpenForum> {
     final String userId = _auth.currentUser!.uid;
     final String comment = commentController.text.trim();
     if (comment.isNotEmpty) {
-      await _databaseReference.child('Forums/${widget.forumId}/responses').push().set({
+      await _databaseReference.child('Forums/${widget.forumId}/responses')
+          .push()
+          .set({
         'content': comment,
         'authorID': userId,
         'thumbsUp': 0,
         'thumbsDown': 0,
-        'timestamp': DateTime.now().millisecondsSinceEpoch,
+        'timestamp': DateTime
+            .now()
+            .millisecondsSinceEpoch,
       });
       commentController.clear();
       fetchForumData();
@@ -110,34 +129,38 @@ class _OpenForumState extends State<OpenForum> {
   void navigateToReportPage(String commentId) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => ReportPage(forumId: widget.forumId, commentId: commentId)),
+      MaterialPageRoute(builder: (context) =>
+          ReportPage(forumId: widget.forumId, commentId: commentId)),
     );
   }
 
   Future<void> _launchURL(String url) async {
     await showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Warning!'),
-        content: Text('You are about to download a file from the internet. Always ensure that the source is trustworthy to avoid security risks.'),
-        actions: <Widget>[
-          TextButton(
-            child: Text('Cancel'),
-            onPressed: () => Navigator.of(context).pop(),
+      builder: (context) =>
+          AlertDialog(
+            title: Text('Warning!'),
+            content: Text(
+                'You are about to download a file from the internet. Always ensure that the source is trustworthy to avoid security risks.'),
+            actions: <Widget>[
+              TextButton(
+                child: Text('Cancel'),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+              TextButton(
+                child: Text('Continue'),
+                onPressed: () async {
+                  Navigator.of(context).pop();
+                  if (await canLaunch(url)) {
+                    await launch(url);
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Could not launch $url')));
+                  }
+                },
+              ),
+            ],
           ),
-          TextButton(
-            child: Text('Continue'),
-            onPressed: () async {
-              Navigator.of(context).pop();
-              if (await canLaunch(url)) {
-                await launch(url);
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Could not launch $url')));
-              }
-            },
-          ),
-        ],
-      ),
     );
   }
 
@@ -146,24 +169,25 @@ class _OpenForumState extends State<OpenForum> {
     return Scaffold(
       appBar: AppBar(
         title: Text(forumData?['title'] ?? 'Forum'),
-          flexibleSpace: Container(
+        flexibleSpace: Container(
           decoration: BoxDecoration(
-          gradient: LinearGradient(
-          colors: [
-          Color(0xFF8A2387),
-        Color(0xFFE94057),
-        Color(0xFFF27121),
-        ],
+            gradient: LinearGradient(
+              colors: [
+                Color(0xFF8A2387),
+                Color(0xFFE94057),
+                Color(0xFFF27121),
+              ],
+            ),
           ),
-          ),
-          ),
+        ),
         actions: [
           PopupMenuButton<CommentFilter>(
             onSelected: (CommentFilter result) {
               currentFilter = result;
               sortComments(currentFilter);
             },
-            itemBuilder: (BuildContext context) => <PopupMenuEntry<CommentFilter>>[
+            itemBuilder: (BuildContext context) =>
+            <PopupMenuEntry<CommentFilter>>[
               const PopupMenuItem<CommentFilter>(
                 value: CommentFilter.mostLiked,
                 child: Text('Most Liked'),
@@ -189,46 +213,55 @@ class _OpenForumState extends State<OpenForum> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(forumData?['title'] ?? 'No Title', style: TextStyle(fontSize: 24,color: Colors.white, fontWeight: FontWeight.bold)),
+              Text(forumData?['title'] ?? 'No Title', style: TextStyle(
+                  fontSize: 24,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold)),
               SizedBox(height: 10),
-              Text(forumData?['content'] ?? 'No Content', style: TextStyle(fontSize: 18)),
+              Text(forumData?['content'] ?? 'No Content',
+                  style: TextStyle(fontSize: 18)),
 
               if (forumData?['fileUrl'] != null)
                 InkWell(
                   onTap: () => _launchURL(forumData!['fileUrl']),
                   child: Text(
                     'Download Attached File',
-                    style: TextStyle(decoration: TextDecoration.underline, color: Colors.blue),
+                    style: TextStyle(decoration: TextDecoration.underline,
+                        color: Colors.blue),
                   ),
                 ),
               Divider(),
-              Text('Comments:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              ...comments.map((comment) => ListTile(
-                leading: CircleAvatar(
-                  backgroundImage: NetworkImage(comment['profilePicture']),
-                ),
-                title: Text(comment['content']),
-                subtitle: Text('Sent by: ${comment['username']}'),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      icon: Icon(Icons.thumb_up),
-                      onPressed: () => incrementThumbsUp(comment['id']),
+              Text('Comments:',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              ...comments.map((comment) =>
+                  ListTile(
+                    leading: CircleAvatar(
+                      backgroundImage: NetworkImage(comment['profilePicture']),
                     ),
-                    Text('${comment['thumbsUp'] ?? 0}'),
-                    IconButton(
-                      icon: Icon(Icons.thumb_down),
-                      onPressed: () => incrementThumbsDown(comment['id']),
+                    title: Text(comment['content']),
+                    subtitle: Text('Sent by: ${comment['username']}'),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: Icon(Icons.thumb_up),
+                          onPressed: () => toggleLike(comment['id']),
+
+                        ),
+                        Text('${comment['thumbsUp'] ?? 0}'),
+                        IconButton(
+                          icon: Icon(Icons.thumb_down),
+                          onPressed: () => toggleDislike(comment['id']),
+
+                        ),
+                        Text('${comment['thumbsDown'] ?? 0}'),
+                        IconButton(
+                          icon: Icon(Icons.report),
+                          onPressed: () => navigateToReportPage(comment['id']),
+                        ),
+                      ],
                     ),
-                    Text('${comment['thumbsDown'] ?? 0}'),
-                    IconButton(
-                      icon: Icon(Icons.report),
-                      onPressed: () => navigateToReportPage(comment['id']),
-                    ),
-                  ],
-                ),
-              )),
+                  )),
               TextField(
                 controller: commentController,
                 decoration: InputDecoration(
@@ -245,20 +278,73 @@ class _OpenForumState extends State<OpenForum> {
       ),
     );
   }
-
-  Future<void> incrementThumbsUp(String commentId) async {
-    DatabaseReference thumbsUpRef = _databaseReference.child('Forums/${widget.forumId}/responses/$commentId/thumbsUp');
-    DataSnapshot snapshot = await thumbsUpRef.get();
-    int currentLikes = (snapshot.value ?? 0) as int;
-    await thumbsUpRef.set(currentLikes + 1);
+  Future<void> toggleLike(String commentId) async {
+    DatabaseReference likeRef = _databaseReference.child(
+        'Forums/${widget.forumId}/responses/$commentId/likes/${_auth
+            .currentUser!.uid}');
+    DataSnapshot snapshot = await likeRef.get();
+    bool liked = snapshot.exists;
+    if (liked) {
+      likeRef.remove();
+      int currentLikes = comments.firstWhere((element) =>
+      element['id'] == commentId)['thumbsUp'];
+      _databaseReference.child('Forums/${widget.forumId}/responses/$commentId')
+          .update({'thumbsUp': currentLikes - 1});
+    } else {
+      DatabaseReference dislikeRef = _databaseReference.child(
+          'Forums/${widget.forumId}/responses/$commentId/dislikes/${_auth
+              .currentUser!.uid}');
+      DataSnapshot dislikeSnapshot = await dislikeRef.get();
+      bool disliked = dislikeSnapshot.exists;
+      if (disliked) {
+        dislikeRef.remove();
+        int currentDislikes = comments.firstWhere((element) =>
+        element['id'] == commentId)['thumbsDown'];
+        _databaseReference.child(
+            'Forums/${widget.forumId}/responses/$commentId').update(
+            {'thumbsDown': currentDislikes - 1});
+      }
+      likeRef.set(true);
+      int currentLikes = comments.firstWhere((element) =>
+      element['id'] == commentId)['thumbsUp'];
+      _databaseReference.child('Forums/${widget.forumId}/responses/$commentId')
+          .update({'thumbsUp': currentLikes + 1});
+    }
     fetchForumData();
   }
 
-  Future<void> incrementThumbsDown(String commentId) async {
-    DatabaseReference thumbsDownRef = _databaseReference.child('Forums/${widget.forumId}/responses/$commentId/thumbsDown');
-    DataSnapshot snapshot = await thumbsDownRef.get();
-    int currentDislikes = (snapshot.value ?? 0) as int;
-    await thumbsDownRef.set(currentDislikes + 1);
+  Future<void> toggleDislike(String commentId) async {
+    DatabaseReference dislikeRef = _databaseReference.child(
+        'Forums/${widget.forumId}/responses/$commentId/dislikes/${_auth
+            .currentUser!.uid}');
+    DataSnapshot snapshot = await dislikeRef.get();
+    bool disliked = snapshot.exists;
+    if (disliked) {
+      dislikeRef.remove();
+      int currentDislikes = comments.firstWhere((element) =>
+      element['id'] == commentId)['thumbsDown'];
+      _databaseReference.child('Forums/${widget.forumId}/responses/$commentId')
+          .update({'thumbsDown': currentDislikes - 1});
+    } else {
+      DatabaseReference likeRef = _databaseReference.child(
+          'Forums/${widget.forumId}/responses/$commentId/likes/${_auth
+              .currentUser!.uid}');
+      DataSnapshot likeSnapshot = await likeRef.get();
+      bool liked = likeSnapshot.exists;
+      if (liked) {
+        likeRef.remove();
+        int currentLikes = comments.firstWhere((element) =>
+        element['id'] == commentId)['thumbsUp'];
+        _databaseReference.child(
+            'Forums/${widget.forumId}/responses/$commentId').update(
+            {'thumbsUp': currentLikes - 1});
+      }
+      dislikeRef.set(true);
+      int currentDislikes = comments.firstWhere((element) =>
+      element['id'] == commentId)['thumbsDown'];
+      _databaseReference.child('Forums/${widget.forumId}/responses/$commentId')
+          .update({'thumbsDown': currentDislikes + 1});
+    }
     fetchForumData();
   }
 }

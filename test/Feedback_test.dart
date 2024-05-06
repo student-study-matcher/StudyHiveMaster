@@ -10,166 +10,189 @@ class MockDatabase extends Mock implements FirebaseDatabase {}
 
 class MockDatabaseRef extends Mock implements DatabaseReference {}
 
-class MockBuildContext extends Mock implements BuildContext {}
-
-class MockNavigatorState extends Mock implements NavigatorState {
-  @override
-  String toString({DiagnosticLevel minLevel = DiagnosticLevel.debug}) {
-    return super.toString();
-  }
-}
-
 class MockUser extends Mock implements User {
   @override
   String get uid => '123';
-}
-
-class MockScaffoldMessengerState extends Mock
-    implements ScaffoldMessengerState {
-  @override
-  String toString({DiagnosticLevel minLevel = DiagnosticLevel.debug}) {
-    return super.toString();
-  }
-}
-
-class MockSnackBar extends Mock implements SnackBar {
-  @override
-  String toString({DiagnosticLevel minLevel = DiagnosticLevel.debug}) {
-    return super.toString();
-  }
 }
 
 void main() {
   late MockFirebaseAuth auth;
   late MockDatabase database;
   late MockDatabaseRef databaseRef;
-  late MockBuildContext context;
-  late MockNavigatorState navigator;
 
   setUpAll(() async {
     auth = MockFirebaseAuth();
     database = MockDatabase();
     databaseRef = MockDatabaseRef();
-    context = MockBuildContext();
-    navigator = MockNavigatorState();
 
-    // Mock the behavior of database methods
     when(() => database.ref()).thenReturn(databaseRef);
     when(() => databaseRef.child(any())).thenReturn(databaseRef);
     when(() => databaseRef.push()).thenReturn(databaseRef);
-
-    // Mock the set method to return a Future<void>
-    when(() => databaseRef.set(any())).thenAnswer((_) async => {});
-
     when(() => auth.currentUser).thenReturn(MockUser());
-
-    when(() => databaseRef.child('Forums').child(any()).push()).thenReturn(databaseRef);
-    when(() => databaseRef.child('Forums').child(any()).child('messages').push()).thenReturn(databaseRef);
-
-    when(() => context.findAncestorStateOfType<NavigatorState>())
-        .thenReturn(navigator);
-
-    when(() => navigator.pop()).thenAnswer((_) async => {});
   });
 
-  group('Message tests', () {
-    test('send message in forums', () async {
-      print('Test Start: User send message in forums');
-      String forumId = '123';
-      String message = 'A message!';
+  group('Writing comments tests', () {
+    test('Sending null comment', () async {
+      // Test sending a null comment
+      String comment = '';
 
-      await sendMessageInForums(
-        database: database,
-        auth: auth,
-        navigator: navigator,
-        forumId: forumId,
-        message: message,
-        context: context,
-      );
+      await sendComment(database, 'commentId', comment, auth);
 
-      verify(() => databaseRef.child('Forums/$forumId/messages').push().set({
-        'text': message,
-        'senderId': auth.currentUser?.uid,
+      // Verify that no comment is sent
+      verifyNever(() => databaseRef.child('Comments/commentId').push().set(any()));
+    });
+
+    test('Sending valid comment', () async {
+      // Test sending a valid comment
+      String comment = 'Hello';
+
+      await sendComment(database, 'commentId', comment, auth);
+
+      // Verify that the comment is sent
+      verify(() => databaseRef.child('Comments/commentId').push().set({
+        'text': comment,
+        'userId': auth.currentUser!.uid,
         'timestamp': ServerValue.timestamp,
       })).called(1);
-
-      verify(() => navigator.pop()).called(1);
-      print('Test Passed: User send message in forums');
-
     });
 
-    test('send message in forums with restricted word', () async {
-      print('Test Start: User send message in forums with restricted word');
-      String forumId = '123';
-      String message = 'This message contains a restricted word: badword';
+    test('Sending comment with restricted characters', () async {
+      // Test sending a comment with restricted characters
+      String comment = '1_.-@2';
 
-      await sendMessageInForums(
-        database: database,
-        auth: auth,
-        navigator: navigator,
-        forumId: forumId,
-        message: message,
-        context: context,
-      );
-      verifyNever(() => databaseRef.child('Forums/$forumId/messages').push().set(any()));
-      print('Test Passed: User send message in forums with restricted word');
+      await sendComment(database, 'commentId', comment, auth);
+
+      // Verify that no comment is sent
+      verifyNever(() => databaseRef.child('Comments/commentId').push().set(any()));
+    });
+  });
+
+  group('Liking comments tests', () {
+    test('Like Comment - User does not press button', () async {
+      // Test scenario when user does not press the like button
+      bool isLike = false;
+
+      await likeComment(database, 'commentId', isLike, auth);
+
+      // Verify that no action is taken (like counter remains unchanged)
+      verifyNever(() => databaseRef.child('Comments/commentId/likes').push().set(any()));
     });
 
-    test('like or dislike forum comment', () async {
-      print('Test Start: User like or dislike forum comment');
-      String commentId = '456';
+    test('Like Comment - Button press', () async {
+      // Test scenario when user presses the like button
       bool isLike = true;
 
-      await likeOrDislikeComment(
-        database: database,
-        auth: auth,
-        commentId: commentId,
-        isLike: isLike,
-      );
+      await likeComment(database, 'commentId', isLike, auth);
 
-      verify(() => databaseRef.child('Comments/$commentId/likes').push().set({
-        'userId': auth.currentUser?.uid,
+      // Verify that the like action is performed
+      verify(() => databaseRef.child('Comments/commentId/likes').push().set({
+        'userId': auth.currentUser!.uid,
         'isLike': isLike,
       })).called(1);
-      print('Test Start: User like or dislike forum comment');
+    });
+
+    test('Dislike Comment - User does not press button', () async {
+      // Test scenario when user does not press the dislike button
+      bool isLike = true;
+
+      await likeComment(database, 'commentId', isLike, auth);
+
+      // Verify that no action is taken (dislike counter remains unchanged)
+      verifyNever(() => databaseRef.child('Comments/commentId/dislikes').push().set(any()));
+    });
+
+    test('Dislike Comment - Button press', () async {
+      // Test scenario when user presses the dislike button
+      bool isLike = false;
+
+      await likeComment(database, 'commentId', isLike, auth);
+
+      // Verify that the dislike action is performed
+      verify(() => databaseRef.child('Comments/commentId/dislikes').push().set({
+        'userId': auth.currentUser!.uid,
+        'isLike': isLike,
+      })).called(1);
+    });
+
+    test('Toggle from like to dislike', () async {
+      // Set up initial like for the comment
+      await likeComment(database, 'commentId', true, auth);
+
+      // Toggle to dislike
+      await toggleDislike('commentId', database, auth);
+
+      // Verify that the like has been removed
+      verify(() => databaseRef.child('Comments/commentId/likes').remove()).called(1);
+
+      // Verify that a dislike action is performed
+      verify(() => databaseRef.child('Comments/commentId/dislikes').push().set({
+        'userId': auth.currentUser!.uid,
+        'isLike': false,
+      })).called(1);
+    });
+
+    test('Toggle from dislike to like', () async {
+      // Set up initial dislike for the comment
+      await likeComment(database, 'commentId', false, auth);
+
+      // Toggle to like
+      await toggleLike('commentId', database, auth);
+
+      // Verify that the dislike has been removed
+      verify(() => databaseRef.child('Comments/commentId/dislikes').remove()).called(1);
+
+      // Verify that a like action is performed
+      verify(() => databaseRef.child('Comments/commentId/likes').push().set({
+        'userId': auth.currentUser!.uid,
+        'isLike': true,
+      })).called(1);
     });
   });
 }
 
-Future<void> sendMessageInForums({
-  required MockDatabase database,
-  required MockFirebaseAuth auth,
-  required MockNavigatorState navigator,
-  required String forumId,
-  required String message,
-  required MockBuildContext context,
-}) async {
-  // Check if the message contains any restricted words
-  if (message.contains('badword')) {
-    // Handle the scenario when the message contains a restricted word
-    // You can add further logic here, such as displaying an error message or preventing the message from being sent
+Future<void> sendComment(MockDatabase database, String commentId, String comment, MockFirebaseAuth auth) async {
+  if (commentId.isEmpty || comment.isEmpty || auth == null) {
+    // Handle null inputs gracefully
     return;
   }
-
-  // Send the message if there are no restricted words
-  await database.ref().child('Forums/$forumId/messages').push().set({
-    'text': message,
-    'senderId': auth.currentUser?.uid,
+  final String userId = auth.currentUser!.uid;
+  await database.ref().child('Comments/$commentId').push().set({
+    'text': comment,
+    'userId': userId,
     'timestamp': ServerValue.timestamp,
   });
-
-  navigator.pop();
 }
 
-Future<void> likeOrDislikeComment({
-  required MockDatabase database,
-  required MockFirebaseAuth auth,
-  required String commentId,
-  required bool isLike,
-}) async {
-  await database.ref().child('Comments/$commentId/likes').push().set({
-    'userId': auth.currentUser?.uid,
+Future<void> likeComment(MockDatabase database, String commentId, bool isLike, MockFirebaseAuth auth) async {
+  if (commentId.isEmpty || auth == null) {
+    // Handle null inputs gracefully
+    return;
+  }
+  final String userId = auth.currentUser!.uid;
+  final String path = isLike ? 'likes' : 'dislikes';
+  await database.ref().child('Comments/$commentId/$path').push().set({
+    'userId': userId,
     'isLike': isLike,
   });
+}
+
+Future<void> toggleLike(String commentId, MockDatabase database, MockFirebaseAuth auth) async {
+  if (commentId.isEmpty || database == null || auth == null) {
+    // Handle null inputs gracefully
+    return;
+  }
+  final String userId = auth.currentUser!.uid;
+  await database.ref().child('Comments/$commentId/likes').remove();
+  await likeComment(database, commentId, true, auth);
+}
+
+Future<void> toggleDislike(String commentId, MockDatabase database, MockFirebaseAuth auth) async {
+  if (commentId.isEmpty || database == null || auth == null) {
+    // Handle null inputs gracefully
+    return;
+  }
+  final String userId = auth.currentUser!.uid;
+  await database.ref().child('Comments/$commentId/dislikes').remove();
+  await likeComment(database, commentId, false, auth);
 }
 

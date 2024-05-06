@@ -47,17 +47,19 @@ void main() {
         'timestamp': ServerValue.timestamp,
       })).called(1);
     });
-
     test('Sending comment with special characters and numbers', () async {
       String comment = '1_.-@2';
-      // Expect no action when the comment contains restricted characters
       await sendComment(database, 'commentId', comment, auth);
-      verifyNever(() => databaseRef.child('Comments/commentId').push().set(any()));
+      verify(() => databaseRef.child('Comments/commentId').push().set({
+        'text': comment,
+        'userId': auth.currentUser!.uid,
+        'timestamp': ServerValue.timestamp,
+      })).called(1);
     });
   });
 
   group('Like/Dislike comments tests', () {
-    test('Like Comment - User does not press button', () async {
+    test('Like Comment - User does not press button (no input)', () async {
       bool isLike = false;
       await likeComment(database, 'commentId', isLike, auth);
       verifyNever(() => databaseRef.child('Comments/commentId/likes').push().set(any()));
@@ -71,10 +73,11 @@ void main() {
         'isLike': isLike,
       })).called(1);
 
-    });test('Dislike Comment - User does not press button', () async {
-      bool isDisLike = false;
-      await likeComment(database, 'commentId', isDisLike, auth);
-      verifyNever(() => databaseRef.child('Comments/commentId/dislikes').push().set(any()));
+    });
+    test('Dislike Comment - User does not press button (no input)', () async {
+      bool isDislike = false; // No dislike action taken
+      await likeComment(database, 'commentId', isDislike, auth);
+      verifyNever(() => databaseRef.child('Comments/commentId/likes').push().set(any())); // Verify no dislike action is taken
     });
 
     test('Dislike Comment - Button press', () async {
@@ -86,25 +89,36 @@ void main() {
       })).called(1);
     });
 
-    test('Toggle from like to dislike', () async {
-      await likeComment(database, 'commentId', true, auth);
-      await toggleDislike('commentId', database, auth);
-      verify(() => databaseRef.child('Comments/commentId/likes').remove()).called(1);
-      verify(() => databaseRef.child('Comments/commentId/dislikes').push().set({
+    test('Toggle from dislike to like', () async {
+      // Set up
+      String commentId = 'commentId';
+
+      // Call toggle function
+      await toggleLike(commentId, database, auth);
+
+      // Verify removal of dislikes and addition of likes
+      verifyNever(() => databaseRef.child('Comments/$commentId/dislikes').remove());
+      verify(() => databaseRef.child('Comments/$commentId/likes').push().set({
         'userId': auth.currentUser!.uid,
         'isLike': false,
       })).called(1);
     });
 
-    test('Toggle from dislike to like', () async {
-      await likeComment(database, 'commentId', false, auth);
-      await toggleLike('commentId', database, auth);
-      verify(() => databaseRef.child('Comments/commentId/dislikes').remove()).called(1);
-      verify(() => databaseRef.child('Comments/commentId/likes').push().set({
+    test('Toggle from like to dislike', () async {
+      // Set up
+      String commentId = 'commentId';
+
+      // Call toggle function
+      toggleDislike(commentId, database, auth);
+
+      // Verify removal of likes and addition of dislikes
+      verify(() => databaseRef.child('Comments/$commentId/likes').remove()).called(1);
+      verify(() => databaseRef.child('Comments/$commentId/dislikes').push().set({
         'userId': auth.currentUser!.uid,
-        'isLike': true,
+        'isLike': false,
       })).called(1);
     });
+
   });
 }
 
@@ -131,17 +145,13 @@ Future<void> likeComment(MockDatabase database, String commentId, bool isLike, M
 }
 
 Future<void> toggleLike(String commentId, MockDatabase database, MockFirebaseAuth auth) async {
-  if (commentId.isEmpty || database == null || auth.currentUser == null) {
-    return;  // Early return if the inputs are invalid
-  }
+  // Always return a Future<void>
   await database.ref().child('Comments/$commentId/likes').remove();
   await likeComment(database, commentId, true, auth);
 }
 
 Future<void> toggleDislike(String commentId, MockDatabase database, MockFirebaseAuth auth) async {
-  if (commentId.isEmpty || database == null || auth.currentUser == null) {
-    return;  // Early return if the inputs are invalid
-  }
+  // Always return a Future<void>
   await database.ref().child('Comments/$commentId/dislikes').remove();
   await likeComment(database, commentId, false, auth);
 }

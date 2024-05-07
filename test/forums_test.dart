@@ -1,201 +1,148 @@
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 
 class MockFirebaseAuth extends Mock implements FirebaseAuth {}
-class MockFirebaseDatabase extends Mock implements FirebaseDatabase {}
-class MockDatabaseReference extends Mock implements DatabaseReference {}
-class MockDataSnapshot extends Mock implements DataSnapshot {}
-class MockDatabaseEvent extends Mock implements DatabaseEvent {}
-class MockUser extends Mock implements User {}
-
-// Declare mock instances as global variables
-MockFirebaseAuth? mockAuth;
-MockFirebaseDatabase? mockDatabase;
-MockDatabaseReference? mockDatabaseRef;
-MockDatabaseEvent? mockDatabaseEvent;
-MockDataSnapshot? mockDataSnapshot;
-MockUser? mockUser;
-
-void setUpMocks() {
-  // Initialize the mocks
-  mockAuth = MockFirebaseAuth();
-  mockDatabase = MockFirebaseDatabase();
-  mockDatabaseRef = MockDatabaseReference();
-  mockDatabaseEvent = MockDatabaseEvent();
-  mockDataSnapshot = MockDataSnapshot();
-  mockUser = MockUser();
-
-  // Set up the when conditions
-  when(() => mockAuth?.currentUser).thenReturn(mockUser);
-  when(() => mockUser?.uid).thenReturn('userId');
-  when(() => mockDatabase?.ref()).thenReturn(mockDatabaseRef);
-  when(() => mockDatabaseRef?.child(any())).thenReturn(mockDatabaseRef);
-  when(() => mockDatabaseRef?.set(any())).thenAnswer((_) async => {});
-  when(() => mockDatabaseRef?.remove()).thenAnswer((_) async => {});
-  when(() => mockDatabaseRef?.push()).thenReturn(mockDatabaseRef);
-  when(() => mockDatabaseRef?.once()).thenAnswer((_) async => mockDatabaseEvent!); // Mock the once method
-  when(() => mockDatabaseEvent?.snapshot).thenReturn(mockDataSnapshot);
-  when(() => mockDataSnapshot?.exists).thenReturn(true);
+class MockDatabase extends Mock implements FirebaseDatabase {}
+class MockDatabaseRef extends Mock implements DatabaseReference {}
+class MockUser extends Mock implements User {
+  @override
+  String get uid => '123'; // Consistently return a specific user ID
 }
 
 void main() {
-  setUpMocks();
+  late MockFirebaseAuth auth;
+  late MockDatabase database;
+  late MockDatabaseRef databaseRef;
+  bool allowDelete = true;  // Control flag for deletion
 
-  test('Registered user creates forum', () async {
-    print('Test Start: Registered user creates forum');
-    when(() => mockDatabaseRef!.child(any())).thenReturn(mockDatabaseRef!);
-    when(() => mockDatabaseRef!.set(any())).thenAnswer((_) async => {});
+  setUpAll(() {
+    auth = MockFirebaseAuth();
+    database = MockDatabase();
+    databaseRef = MockDatabaseRef();
 
-    await createForum(mockDatabase!, 'userId', 'forumTitle', 'forumContent');
-
-    verify(() => mockDatabaseRef!.child('Forums').push().set({
-      'title': 'forumTitle',
-      'content': 'forumContent',
-      'createdBy': 'userId',
-    })).called(1);
-    print('Test Passed: Forum created successfully');
+    when(() => database.ref()).thenReturn(databaseRef);
+    when(() => databaseRef.child(any())).thenReturn(databaseRef);
+    when(() => databaseRef.push()).thenReturn(databaseRef);
+    when(() => databaseRef.set(any())).thenAnswer((_) async => Future<void>.value());
+    when(() => auth.currentUser).thenReturn(MockUser());
   });
 
-  test('Registered user deletes forum', () async {
-    print('Test Start: Registered user deletes forum');
-    when(() => mockDatabaseRef!.remove()).thenAnswer((_) async => {});
+  group('Create Forum tests', () {
+    test('Create valid forum', () async {
+      String title = 'Help with Calculus Question';
+      String content = 'Struggling with this equation file attached below';
+      await createForum(database, auth, title, content, false, 0);
+      verify(() => databaseRef.child('Forums').push().set({
+        'title': title,
+        'content': content,
+        'userId': auth.currentUser!.uid,
+      })).called(1);
+    });
 
-    await deleteForum(mockDatabase!, 'forumId');
+    test('Attempt to create forum with null title', () async {
+      await createForum(database, auth, null, 'help with programming', false, 0);
+      verifyNever(() => databaseRef.child('Forums').push().set(any()));
+    });
 
-    verify(() => mockDatabaseRef!.child('Forums/forumId').remove()).called(1);
-    print('Test Passed: Forum deleted successfully');
+    test('Attempt to create forum with null content', () async {
+      await createForum(database, auth, 'any ideas', null, false, 0);
+      verifyNever(() => databaseRef.child('Forums').push().set(any()));
+    });
+
+    test('Attempt to create forum with both title and content null', () async {
+      await createForum(database, auth, null, null, false, 0);
+      verifyNever(() => databaseRef.child('Forums').push().set(any()));
+    });
+
+    test('Attempt to create forum when not logged in', () async {
+      when(() => auth.currentUser).thenReturn(null);
+      await createForum(database, auth, 'Help with Calculus Question', 'Struggling with this', false, 0);
+      verifyNever(() => databaseRef.child('Forums').push().set(any()));
+    });
+
+    test('Attempt to create forum with oversized file attachment', () async {
+      await createForum(database, auth, 'help with questions', 'heres content', true, 11);  // 11MB, exceeds limit
+      verifyNever(() => databaseRef.child('Forums').push().set(any()));
+    });
   });
 
-  test('Registered user comments', () async {
-    print('Test Start: Registered user comments');
-    when(() => mockDatabaseRef!.push()).thenReturn(mockDatabaseRef!);
-    when(() => mockDatabaseRef!.set(any())).thenAnswer((_) async => {});
+  group('Reporting a forum', () {
+    test('Report forum with "Offensive Content"', () async {
+      await reportForum(database, 'forumId', 'Offensive Content');
+      verify(() => databaseRef.child('Forums/forumId/report').set('Offensive Content')).called(1);
+    });
 
-    await addComment(mockDatabase!, 'forumId', 'userId', 'commentContent');
-
-    verify(() => mockDatabaseRef!.child('Comments/forumId').push().set({
-      'userId': 'userId',
-      'content': 'commentContent',
-      'timestamp': DateTime.now().toIso8601String(),
-    })).called(1);
-    print('Test Passed: Comment added successfully');
+    test('Attempt to report a forum without selecting an option', () async {
+      await reportForum(database, 'forumId', null);
+      verifyNever(() => databaseRef.child('Forums/forumId/report').set(any()));
+    });
   });
 
-  test('User reports a forum', () async {
-    print('Test Start: User reports a forum');
-    when(() => mockDatabaseRef!.set(any())).thenAnswer((_) async => {});
+  group('Deleting forums', () {
+    test('Do nothing', () async {
+    });
 
-    await reportForum(mockDatabase!, 'forumId', 'userId', 'reason');
+    test('Press delete', () async {
+      allowDelete = true;  
+      await deleteForum(database, 'forumId', allowDelete);
+      verify(() => databaseRef.child('Forums/forumId').remove()).called(1);
+    });
 
-    verify(() => mockDatabaseRef!.child('Reports/forumId').push().set({
-      'userId': 'userId',
-      'reason': 'reason',
-      'timestamp': DateTime.now().toIso8601String(),
-    })).called(1);
-    print('Test Passed: Forum reported successfully');
+    test('Press cancel', () async {
+      allowDelete = false;  
+      await cancelDelete(database, 'forumId');
+      await deleteForum(database, 'forumId', allowDelete);
+      verifyNever(() => databaseRef.child('Forums/forumId').remove());
+    });
   });
 
-  test('Registered user likes/dislikes forum comments', () async {
-    print('Test Start: Registered user likes/dislikes forum comments');
-    when(() => mockDatabaseRef!.set(any())).thenAnswer((_) async => {});
+  group('Filtering forums', () {
+    test('Filter comments by "Most Liked"', () async {
+      await filterComments(database, 'Most Liked');
+      verify(() => databaseRef.child('Comments').orderByChild('likes')).called(1);
+    });
 
-    await likeComment(mockDatabase!, 'forumId', 'commentId', 'userId', true);
-
-    verify(() => mockDatabaseRef!.child('Likes/forumId/commentId').set({
-      'userId': 'userId',
-      'isLike': true,
-      'timestamp': DateTime.now().toIso8601String(),
-    })).called(1);
-    print('Test Passed: Comment liked/disliked successfully');
-  });
-
-  test('User not logged in tries to interact with forum', () async {
-    print('Test Start: User not logged in tries to interact with forum');
-    when(() => mockAuth!.currentUser).thenReturn(null);
-
-    final result = await userInteractsWithForum(mockDatabase!, 'forumId', 'userId');
-
-    expect(result, false);
-    print('Test Passed: User not logged in');
-  });
-
-  test('User tries to send restricted content', () async {
-    print('Test Start: User tries to send restricted content');
-    when(() => mockDatabaseRef!.set(any())).thenAnswer((_) async => {});
-
-    final result = await sendContent(mockDatabase!, 'userId', 'restrictedContent');
-
-    expect(result, false);
-    print('Test Passed: User tried to send restricted content');
+    test('Attempt to filter comments without selecting an option', () async {
+      await filterComments(database, null);
+      verifyNever(() => databaseRef.child('Comments').orderByChild(any())).called(any());
+    });
   });
 }
 
-// Implementations of the functionalities to be tested
 
-Future<void> createForum(FirebaseDatabase db, String userId, String title, String content) async {
-  DatabaseReference ref = db.ref();
-  await ref.child('Forums').push().set({
+Future<void> createForum(MockDatabase database, MockFirebaseAuth auth, String? title, String? content, bool hasFile, int fileSizeMB) async {
+  if (title == null || content == null || title.isEmpty || content.isEmpty || auth.currentUser == null || (hasFile && fileSizeMB > 10)) {
+    return;
+  }
+  await database.ref().child('Forums').push().set({
     'title': title,
     'content': content,
-    'createdBy': userId,
-    'timestamp': DateTime.now().toIso8601String(),
+    'userId': auth.currentUser!.uid,
   });
 }
 
-Future<void> deleteForum(FirebaseDatabase db, String forumId) async {
-  DatabaseReference ref = db.ref();
-  await ref.child('Forums/$forumId').remove();
+Future<void> reportForum(MockDatabase database, String forumId, String? reason) async {
+  if (reason == null || reason.isEmpty) {
+    return;
+  }
+  await database.ref().child('Forums/$forumId/report').set(reason);
 }
 
-Future<void> addComment(FirebaseDatabase db, String forumId, String userId, String content) async {
-  DatabaseReference ref = db.ref();
-  await ref.child('Comments/$forumId').push().set({
-    'userId': userId,
-    'content': content,
-    'timestamp': DateTime.now().toIso8601String(),
-  });
-}
-
-Future<void> reportForum(FirebaseDatabase db, String forumId, String userId, String reason) async {
-  DatabaseReference ref = db.ref();
-  await ref.child('Reports/$forumId').push().set({
-    'userId': userId,
-    'reason': reason,
-    'timestamp': DateTime.now().toIso8601String(),
-  });
-}
-
-Future<void> likeComment(FirebaseDatabase db, String forumId, String commentId, String userId, bool isLike) async {
-  DatabaseReference ref = db.ref();
-  await ref.child('Likes/$forumId/$commentId').set({
-    'userId': userId,
-    'isLike': isLike,
-    'timestamp': DateTime.now().toIso8601String(),
-  });
-}
-
-Future<bool> userInteractsWithForum(FirebaseDatabase db, String forumId, String userId) async {
-  DatabaseReference ref = db.ref();
-  final snapshot = await ref.child('Forums/$forumId').once();
-  if (mockAuth!.currentUser != null) {
-    return true;
-  } else {
-    return false;
+Future<void> deleteForum(MockDatabase database, String forumId, bool allowDelete) async {
+  if (allowDelete) {
+    await database.ref().child('Forums/$forumId').remove();
   }
 }
 
-Future<bool> sendContent(FirebaseDatabase db, String userId, String content) async {
-  DatabaseReference ref = db.ref();
-  if (content.contains('restricted')) {
-    return false;
-  } else {
-    await ref.child('Content').push().set({
-      'userId': userId,
-      'content': content,
-      'timestamp': DateTime.now().toIso8601String(),
-    });
-    return true;
+Future<void> cancelDelete(MockDatabase database, String forumId) async {
+  return Future.value();
+}
+
+Future<void> filterComments(MockDatabase database, String? filterType) async {
+  if (filterType == null || filterType.isEmpty) {
+    return;
   }
+  await database.ref().child('Comments').orderByChild(filterType);
 }

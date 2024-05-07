@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart'; // Import the mocktail package
 
-// Mock classes
 class MockFirebaseDatabase extends Mock implements FirebaseDatabase {}
 class MockDatabaseReference extends Mock implements DatabaseReference {}
 class MockDatabaseEvent extends Mock implements DatabaseEvent {}
@@ -22,14 +21,12 @@ void main() {
     mockDatabaseEvent = MockDatabaseEvent();
     mockDataSnapshot = MockDataSnapshot();
 
-    // Set up mocks
     when(() => mockDatabase.reference()).thenReturn(mockDatabaseRef);
     when(() => mockDatabaseRef.child(any())).thenReturn(mockDatabaseRef);
     when(() => mockDatabaseRef.once()).thenAnswer((_) async => mockDatabaseEvent);
     when(() => mockDatabaseEvent.snapshot).thenReturn(mockDataSnapshot);
   });
 
-  // Test cases for searching forums
   test('User searches for forums - subject: "Computer Science"', () async {
     String searchQuery = 'Computer Science'; // Input
     await performForumSearch(mockDatabase, searchQuery); // Perform forum search operation
@@ -51,7 +48,6 @@ void main() {
     verify(() => mockDatabaseRef.once()).called(1);
   });
 
-  // Test cases for searching users
   test('User searches for users - username: "Billy"', () async {
     String searchQuery = 'Billy'; // Input
     await performUserSearch(mockDatabase, searchQuery); // Perform user search operation
@@ -73,7 +69,6 @@ void main() {
     verify(() => mockDatabaseRef.once()).called(1);
   });
 
-  // Test cases for searching groupchats
   test('User searches for groupchats - name: "ComputerScience2024"', () async {
     String searchQuery = 'ComputerScience2024'; // Input
     await performGroupchatSearch(mockDatabase, searchQuery); // Perform groupchat search operation
@@ -96,20 +91,17 @@ void main() {
   });
 }
 
-// Function to search for forums
 Future<DatabaseEvent> performForumSearch(FirebaseDatabase database, String? searchQuery) async {
   DatabaseReference ref = database.reference();
   return await ref.child('Forums').once();
 }
 
-// Function to search for users
 Future<DataSnapshot> performUserSearch(FirebaseDatabase database, String? username) async {
   DatabaseReference ref = database.reference();
   DatabaseEvent event = await ref.child('Users').once();
   return event.snapshot;
 }
 
-// Function to search for groupchats
 Future<DataSnapshot> performGroupchatSearch(FirebaseDatabase database, String? groupchatName) async {
   DatabaseReference ref = database.reference();
   DatabaseEvent event = await ref.child('Groupchats').once();

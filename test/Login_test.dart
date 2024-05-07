@@ -4,18 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
-// Mock FirebaseAuth and User classes
 class MockFirebaseAuth extends Mock implements FirebaseAuth {}
-
 class MockUser extends Mock implements User {}
-
-// Mock FirebaseDatabase, DatabaseReference, and other database-related classes
 class MockFirebaseDatabase extends Mock implements FirebaseDatabase {}
-
 class MockDatabaseReference extends Mock implements DatabaseReference {}
-
 class MockDatabaseEvent extends Mock implements DatabaseEvent {}
-
 class MockDatabaseSnapshot extends Mock implements DataSnapshot {}
 
 void main() {
@@ -132,8 +125,6 @@ void main() {
   });
 }
 class MockUserCredential extends Mock implements UserCredential {}
-
-// Mock LoginState class
 class _LoginState {
   final FirebaseAuth auth;
   String errorMessage = '';

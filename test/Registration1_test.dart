@@ -3,14 +3,9 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
-// Mock FirebaseAuth and User classes
 class MockFirebaseAuth extends Mock implements FirebaseAuth {}
-
 class MockUser extends Mock implements User {}
-
-// Mock FirebaseDatabase, DatabaseReference, and other database-related classes
 class MockFirebaseDatabase extends Mock implements FirebaseDatabase {}
-
 class MockDatabaseReference extends Mock implements DatabaseReference {}
 
 void main() {
@@ -23,7 +18,6 @@ void main() {
     database = MockFirebaseDatabase();
     databaseRef = MockDatabaseReference();
 
-    // Configure mock database interactions
     when(() => database.ref()).thenReturn(databaseRef);
     when(() => databaseRef.child(any())).thenReturn(databaseRef);
   });
@@ -55,17 +49,12 @@ void main() {
     final password = 'password123';
     final confirmPassword = 'password123';
 
-    // Mock FirebaseAuth to throw FirebaseAuthException when createUserWithEmailAndPassword is called
     when(() => auth.createUserWithEmailAndPassword(email: email, password: password))
         .thenThrow(Exception('The email address is already in use by another account.'));
-
-    // Act & Assert
     await expectLater(
           () async => await registerUser1(auth, databaseRef, email, password, confirmPassword),
       throwsA(predicate<Exception>((e) => e.toString().contains('The email address is already in use by another account.'))),
     );
-
-    // Verify that createUserWithEmailAndPassword method was called with the provided email and password
     verify(() => auth.createUserWithEmailAndPassword(email: email, password: password)).called(1);
   });
 
@@ -73,7 +62,6 @@ void main() {
     String email = 'invalidemail';
     String password = 'password123';
     String confirmPassword = 'password123';
-
     expect(
           () async => await registerUser1(auth, databaseRef, email, password, confirmPassword),
       throwsA(isA<Exception>()),
@@ -83,7 +71,6 @@ void main() {
   test('Please enter a password', () async {
     String email = 'testing@test.com';
     String confirmPassword = 'password123';
-
     expect(
           () async => await registerUser1(auth, databaseRef, email, '', confirmPassword),
       throwsA(isA<Exception>()),
@@ -94,7 +81,6 @@ void main() {
     String email = 'testing@test.com';
     String password = 'pass';
     String confirmPassword = 'pass';
-
     expect(
           () async => await registerUser1(auth, databaseRef, email, password, confirmPassword),
       throwsA(isA<Exception>()),
@@ -147,7 +133,6 @@ void main() {
 }
 
 class MockUserCredential extends Mock implements UserCredential {}
-
 Future<void> registerUser1(FirebaseAuth auth, DatabaseReference databaseRef, String email, String password, String confirmPassword) async {
   if (email.isEmpty) {
     throw Exception('Missing email');

@@ -3,7 +3,6 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
-// Mock classes
 class MockFirebaseAuth extends Mock implements FirebaseAuth {}
 class MockDatabaseReference extends Mock implements DatabaseReference {}
 

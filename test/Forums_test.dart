@@ -1,193 +1,174 @@
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 
-
-// Mocks
 class MockFirebaseAuth extends Mock implements FirebaseAuth {}
-class MockFirebaseDatabase extends Mock implements FirebaseDatabase {
+class MockDatabase extends Mock implements FirebaseDatabase {}
+class MockDatabaseRef extends Mock implements DatabaseReference {}
+class MockUser extends Mock implements User {
   @override
-  DatabaseReference reference() {
-    // Return a mock DatabaseReference here
-    return MockDatabaseReference();
-  }
+  String get uid => '123'; // Consistently return a specific user ID
 }
-class MockDatabaseReference extends Mock implements DatabaseReference {}
-class MockDataSnapshot extends Mock implements DataSnapshot {}
-class MockDatabaseEvent extends Mock implements DatabaseEvent {}
-class MockUser extends Mock implements User {}
-class MockXFile extends Mock implements XFile {
-  int lengthSync() {
-    return 0; // Return any suitable value for your test case
-  }
-}
-
 
 void main() {
-  late MockFirebaseDatabase mockDatabase;
-  late MockDatabaseReference mockDatabaseRef;
-  late MockDatabaseEvent mockDatabaseEvent;
-  late MockDataSnapshot mockDataSnapshot;
-  late MockFirebaseAuth mockAuth;
-  late MockXFile mockFile;
+  late MockFirebaseAuth auth;
+  late MockDatabase database;
+  late MockDatabaseRef databaseRef;
+  bool allowDelete = true;  // Control flag for deletion
 
-  setUp(() {
-    mockAuth = MockFirebaseAuth();
-    mockFile = MockXFile();
+  setUpAll(() {
+    auth = MockFirebaseAuth();
+    database = MockDatabase();
+    databaseRef = MockDatabaseRef();
 
-    mockDatabase = MockFirebaseDatabase();
-    mockDatabaseRef = MockDatabaseReference();
-    mockDatabaseEvent = MockDatabaseEvent();
-    mockDataSnapshot = MockDataSnapshot();
-
-    // Ensure that mockDatabase returns mockDatabaseRef when reference() is called
-    when(() => mockDatabase.reference()).thenReturn(mockDatabaseRef);
-
+    when(() => database.ref()).thenReturn(databaseRef);
+    when(() => databaseRef.child(any())).thenReturn(databaseRef);
+    when(() => databaseRef.push()).thenReturn(databaseRef);
+    when(() => databaseRef.set(any())).thenAnswer((_) async => Future<void>.value());
+    when(() => auth.currentUser).thenReturn(MockUser());
   });
 
-  // Forum Creation Tests
-  test('Forum Creation: Title and Content Provided', () async {
-    when(() => mockDatabase.reference()).thenReturn(mockDatabaseRef);
-    when(() => mockDatabaseRef.set(any())).thenAnswer((_) async => {});
-
-    await createForum(mockDatabase, 'userId', 'Help with Calculus Question', 'Struggling with this equation file attached below');
-
-    expect(mockDatabaseRef, isNotNull); // Assert mockDatabaseRef is not null
-    verify(() => mockDatabaseRef.child('Forums').push().set({
-      'title': 'Help with Calculus Question',
-      'content': 'Struggling with this equation file attached below',
-      'createdBy': 'userId',
-      'timestamp': any(named: 'timestamp'),
-    })).called(1);
-  });
-
-
-  test('Forum Creation: No Title Provided', () async {
-    await createForum(mockDatabase, 'userId', '', 'Struggling with this equation file attached below');
-
-    verifyNever(() => mockDatabaseRef.child(any()));
-  });
-
-  test('Forum Creation: No Content Provided', () async {
-    await createForum(mockDatabase, 'userId', 'Help with Calculus Question', '');
-
-    verifyNever(() => mockDatabaseRef.child(any()));
-  });
-
-  test('Forum Creation: Title and Content Null', () async {
-    await createForum(mockDatabase, 'userId', '', '');
-
-    verifyNever(() => mockDatabaseRef.child(any()));
-  });
-
-  test('Forum Creation: Not Logged In', () async {
-    when(() => mockAuth.currentUser).thenReturn(null);
-
-    await createForum(mockDatabase, 'userId', 'Help with Calculus Question', 'Struggling with this equation file attached below');
-
-    verifyNever(() => mockDatabaseRef.child(any()));
-  });
-
-  test('Forum Creation: Large File Attached', () async {
-    final largeFile = List.filled(11 * 1024 * 1024, 0);
-    when(() => mockFile.lengthSync()).thenReturn(11 * 1024 * 1024);
-
-    await createForum(mockDatabase, 'userId', 'Help with questions', 'heres content', mockFile);
-
-    verifyNever(() => mockDatabaseRef.child(any()));
-  });
-
-  // Reporting a Forum Tests
-  test('Reporting a Forum: Valid Reason Selected', () async {
-    when(() => mockDatabaseRef.set(any())).thenAnswer((_) async => {});
-
-    await reportForum(mockDatabase, 'forumId', 'userId', 'Offensive Content');
-
-    verify(() => mockDatabaseRef.child('Reports/forumId').push().set({
-      'userId': 'userId',
-      'reason': 'Offensive Content',
-      'timestamp': any(named: 'timestamp'),
-    })).called(1);
-  });
-
-  test('Reporting a Forum: No Reason Selected', () async {
-    await reportForum(mockDatabase, 'forumId', 'userId', '');
-
-    verifyNever(() => mockDatabaseRef.child(any()));
-  });
-
-  // Delete A Forum Test
-  test('Delete A Forum: Valid', () async {
-    when(() => mockDatabaseRef.remove()).thenAnswer((_) async => {});
-
-    await deleteForum(mockDatabase, 'forumId');
-
-    verify(() => mockDatabaseRef.child('Forums/forumId').remove()).called(1);
-  });
-
-  // Filter Comments Tests
-  test('Filter Comments: Most Liked Selected', () async {
-    when(() => mockDatabaseRef.set(any())).thenAnswer((_) async => {});
-
-    await filterComments(mockDatabase, 'Most Liked');
-
-    verify(() => mockDatabaseRef.child('Comments').orderByChild('likes').once()).called(1);
-  });
-
-  test('Filter Comments: Null Filter', () async {
-    await filterComments(mockDatabase, null);
-
-    verifyNever(() => mockDatabaseRef.child(any()));
-  });
-}
-
-
-
-Future<void> deleteForum(FirebaseDatabase db, String forumId) async {
-  DatabaseReference ref = db.ref();
-  await ref.child('Forums/$forumId').remove();
-}
-
-Future<void> reportForum(FirebaseDatabase db, String forumId, String userId, String reason) async {
-  DatabaseReference ref = db.ref();
-  if (reason.isNotEmpty) {
-    await ref.child('Reports/$forumId').push().set({
-      'userId': userId,
-      'reason': reason,
-      'timestamp': DateTime.now().toIso8601String(),
+  group('Create Forum tests', () {
+    test('Create valid forum', () async {
+      String title = 'Help with Calculus Question';
+      String content = 'Struggling with this equation file attached below';
+      await createForum(database, auth, title, content, false, 0);
+      verify(() => databaseRef.child('Forums').push().set({
+        'title': title,
+        'content': content,
+        'userId': auth.currentUser!.uid,
+      })).called(1);
     });
-  }
-}
 
-Future<void> filterComments(FirebaseDatabase db, String? filter) async {
-  DatabaseReference ref = db.ref();
-  if (filter == 'Most Liked') {
-    await ref.child('Comments').orderByChild('likes').once();
-  }
-}
-Future<void> createForum(FirebaseDatabase db, String userId, String title, String content, [XFile? file]) async {
-  DatabaseReference ref = db.ref();
-
-  if (title.isNotEmpty && content.isNotEmpty && (file == null || await _isFileSizeValid(file))) {
-    await ref.child('Forums').push().set({
-      'title': title,
-      'content': content,
-      'createdBy': userId,
-      'timestamp': DateTime.now().toIso8601String(),
+    test('Attempt to create forum with null title', () async {
+      await createForum(database, auth, null, 'help with programming', false, 0);
+      verifyNever(() => databaseRef.child('Forums').push().set(any()));
     });
-  }
-}
-Future<bool> _isFileSizeValid(XFile file) async {
-  if (file == null) {
-    return true; // No file provided, consider size valid
-  }
 
-  // Get file size asynchronously
-  final fileLength = await file.length();
+    test('Attempt to create forum with null content', () async {
+      await createForum(database, auth, 'any ideas', null, false, 0);
+      verifyNever(() => databaseRef.child('Forums').push().set(any()));
+    });
 
-  // Check if file size exceeds the limit (10 MB)
-  const maxSizeBytes = 10 * 1024 * 1024;
-  return fileLength <= maxSizeBytes;
+    test('Attempt to create forum with both title and content null', () async {
+      await createForum(database, auth, null, null, false, 0);
+      verifyNever(() => databaseRef.child('Forums').push().set(any()));
+    });
+
+    test('Attempt to create forum when not logged in', () async {
+      when(() => auth.currentUser).thenReturn(null);
+      await createForum(database, auth, 'Help with Calculus Question', 'Struggling with this', false, 0);
+      verifyNever(() => databaseRef.child('Forums').push().set(any()));
+    });
+
+    test('Attempt to create forum with oversized file attachment', () async {
+      await createForum(database, auth, 'help with questions', 'heres content', true, 11);  // 11MB, exceeds limit
+      verifyNever(() => databaseRef.child('Forums').push().set(any()));
+    });
+  });
+
+  group('Reporting a forum', () {
+    test('Report forum with "Offensive Content"', () async {
+      await reportForum(database, 'forumId', 'Offensive Content');
+      verify(() => databaseRef.child('Forums/forumId/report').set('Offensive Content')).called(1);
+    });
+
+    test('Attempt to report a forum without selecting an option', () async {
+      await reportForum(database, 'forumId', null);
+      verifyNever(() => databaseRef.child('Forums/forumId/report').set(any()));
+    });
+  });
+
+  group('Deleting forums', () {
+    test('Do nothing', () async {
+      await deleteForum(database, 'forumId', false);
+      verifyNever(() => databaseRef.child('Forums/forumId').remove());
+    });
+
+    test('Press delete', () async {
+      allowDelete = true;
+      await deleteForum(database, 'forumId', allowDelete);
+      verify(() => databaseRef.child('Forums/forumId').remove()).called(1);
+    });
+
+    test('Press cancel', () async {
+      allowDelete = false;
+      await cancelDelete(database, 'forumId');
+      await deleteForum(database, 'forumId', allowDelete);
+      verifyNever(() => databaseRef.child('Forums/forumId').remove());
+    });
+  });
+
+  group('Filtering forums', () {
+    test('Filter comments by "Most Liked"', () async {
+      await filterComments(database, 'Most Liked');
+      verify(() => databaseRef.child('Comments').orderByChild('likes')).called(1);
+    });
+
+    test('Attempt to filter comments without selecting an option', () async {
+      await filterComments(database, null);
+      verifyNever(() => databaseRef.child('Comments').orderByChild(any())).called(any());
+    });
+  });
 }
+
+
+Future<void> createForum(MockDatabase database, MockFirebaseAuth auth, String? title, String? content, bool hasFile, int fileSizeMB) async {
+  if (title == null || content == null || title.isEmpty || content.isEmpty || auth.currentUser == null || (hasFile && fileSizeMB > 10)) {
+    return;
+  }
+  await database.ref().child('Forums').push().set({
+    'title': title,
+    'content': content,
+    'userId': auth.currentUser!.uid,
+  });
+}
+
+Future<void> reportForum(MockDatabase database, String forumId, String? reason) async {
+  if (reason == null || reason.isEmpty) {
+    return;
+  }
+  await database.ref().child('Forums/$forumId/report').set(reason);
+}
+
+Future<void> deleteForum(MockDatabase database, String forumId, bool allowDelete) async {
+  if (allowDelete) {
+    await database.ref().child('Forums/$forumId').remove();
+  }
+  // Always return a Future<void>
+  return Future.value();
+}
+
+
+Future<void> cancelDelete(MockDatabase database, String forumId) async {
+  return Future.value();
+}
+
+Future<void> filterComments(MockDatabase database, String? filterType) async {
+  if (filterType == null || filterType.isEmpty) {
+    return;
+  }
+  await database.ref().child('Comments').orderByChild(filterType);
+}
+// Future<void> filterComments(MockDatabase database, String? filterType) async {
+//   if (filterType == null || filterType.isEmpty) {
+//     // Handle the null or empty case, maybe throw an error or return an empty query
+//     return;
+//   }
+//
+//   DatabaseReference commentsRef = database.ref().child('Comments');
+//
+//   switch (filterType) {
+//     case 'Most Liked':
+//     // Construct a query to order comments by the number of likes
+//       Query query = commentsRef.orderByChild('likes');
+//       // You can further process the query or execute it, depending on your requirements
+//       return query; // Return the constructed query
+//   // Add more cases for other filtering options if needed
+//   }
+//
+//   // Handle the case where the filterType is not recognized
+//   // Throw an error or return an empty query as appropriate
+//   return;
+// }

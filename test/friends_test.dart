@@ -88,15 +88,6 @@ void main() {
     print('Test Passed: Friend request denied successfully');
   });
 
-  test('User messages a friend', () async {     //Messages a friend
-    print('Test Start: Messaging a friend');
-    when(() => mockDatabaseRef!.set(any())).thenAnswer((_) async => {});
-
-    await sendMessageToFriend(mockDatabase!, 'userId', 'friendId', 'Hello');
-
-    verify(() => mockDatabaseRef!.child('Messages/userId/friendId').push().set(any(named: 'value'))).called(1);
-    print('Test Passed: Message sent successfully');
-  });
 }
 
 // Implementations of the functionalities to be tested

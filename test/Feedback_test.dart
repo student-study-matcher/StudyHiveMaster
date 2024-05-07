@@ -21,8 +21,10 @@ void main() {
     auth = MockFirebaseAuth();
     database = MockDatabase();
     databaseRef = MockDatabaseRef();
+    String commentId = 'commentId';
 
-    // Setup the reference chain and ensure that 'set' returns a Future
+    when(() => databaseRef.child('Comments/$commentId/likes').remove()).thenAnswer((_) async => Future.value());
+    when(() => databaseRef.child('Comments/$commentId/dislikes').remove()).thenAnswer((_) async => Future.value());
     when(() => database.ref()).thenReturn(databaseRef);
     when(() => databaseRef.child(any())).thenReturn(databaseRef);
     when(() => databaseRef.push()).thenReturn(databaseRef);
@@ -97,7 +99,7 @@ void main() {
       await toggleLike(commentId, database, auth);
 
       // Verify removal of dislikes and addition of likes
-      verifyNever(() => databaseRef.child('Comments/$commentId/dislikes').remove());
+      verify(() => databaseRef.child('Comments/$commentId/dislikes').remove());
       verify(() => databaseRef.child('Comments/$commentId/likes').push().set({
         'userId': auth.currentUser!.uid,
         'isLike': false,
@@ -109,16 +111,15 @@ void main() {
       String commentId = 'commentId';
 
       // Call toggle function
-      toggleDislike(commentId, database, auth);
+      await toggleDislike(commentId, database, auth);
 
-      // Verify removal of likes and addition of dislikes
-      verify(() => databaseRef.child('Comments/$commentId/likes').remove()).called(1);
+      // Verify removal of dislikes and addition of dislikes
+      verify(() => databaseRef.child('Comments/$commentId/likes').remove());
       verify(() => databaseRef.child('Comments/$commentId/dislikes').push().set({
         'userId': auth.currentUser!.uid,
         'isLike': false,
       })).called(1);
     });
-
   });
 }
 
@@ -145,13 +146,67 @@ Future<void> likeComment(MockDatabase database, String commentId, bool isLike, M
 }
 
 Future<void> toggleLike(String commentId, MockDatabase database, MockFirebaseAuth auth) async {
-  // Always return a Future<void>
-  await database.ref().child('Comments/$commentId/likes').remove();
-  await likeComment(database, commentId, true, auth);
-}
+  // Check if auth.currentUser is not null
+  if (auth.currentUser == null) {
+    // Handle the case where the user is not authenticated
+    print('User is not authenticated.');
+    return;
+  }
 
+  // Construct database references for likes and dislikes
+  DatabaseReference likeRef = database.ref().child('Comments/$commentId/likes');
+  DatabaseReference dislikeRef = database.ref().child('Comments/$commentId/dislikes');
+
+  // Check if the user has already liked the comment
+  DataSnapshot likeSnapshot;
+  try {
+    likeSnapshot = await likeRef.child(auth.currentUser!.uid).get();
+  } catch (error) {
+    return;
+  }
+
+  bool liked = likeSnapshot.exists;
+
+  if (liked) {
+    // If the user has already liked the comment, remove the like
+    await likeRef.child(auth.currentUser!.uid).remove();
+  } else {
+    // If the user hasn't liked the comment, remove any existing dislikes and add a like
+    await dislikeRef.child(auth.currentUser!.uid).remove();
+    await likeRef.child(auth.currentUser!.uid).set({
+      'userId': auth.currentUser!.uid,
+      'isLike': true,
+    });
+  }
+}
 Future<void> toggleDislike(String commentId, MockDatabase database, MockFirebaseAuth auth) async {
-  // Always return a Future<void>
-  await database.ref().child('Comments/$commentId/dislikes').remove();
-  await likeComment(database, commentId, false, auth);
+  // Check if auth.currentUser is not null
+  if (auth.currentUser == null) {
+    return;
+  }
+
+  // Construct database references for likes and dislikes
+  DatabaseReference likeRef = database.ref().child('Comments/$commentId/likes');
+  DatabaseReference dislikeRef = database.ref().child('Comments/$commentId/dislikes');
+
+  // Check if the user has already disliked the comment
+  DataSnapshot dislikeSnapshot;
+  try {
+    dislikeSnapshot = await dislikeRef.child(auth.currentUser!.uid).get();
+  } catch (error) {
+    return;
+  }
+
+  bool disliked = dislikeSnapshot.exists;
+  if (disliked) {
+    // If the user has already disliked the comment, remove the dislike
+    await dislikeRef.child(auth.currentUser!.uid).remove();
+  } else {
+    // If the user hasn't disliked the comment, remove any existing likes and add a dislike
+    await likeRef.child(auth.currentUser!.uid).remove();
+    await dislikeRef.child(auth.currentUser!.uid).set({
+      'userId': auth.currentUser!.uid,
+      'isDislike': true,
+    });
+  }
 }

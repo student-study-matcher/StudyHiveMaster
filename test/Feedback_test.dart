@@ -9,7 +9,7 @@ class MockDatabase extends Mock implements FirebaseDatabase {}
 class MockDatabaseRef extends Mock implements DatabaseReference {}
 class MockUser extends Mock implements User {
   @override
-  String get uid => '123';  // Consistently return a specific user ID
+  String get uid => '123';  
 }
 
 void main() {
@@ -92,13 +92,9 @@ void main() {
     });
 
     test('Toggle from dislike to like', () async {
-      // Set up
       String commentId = 'commentId';
-
-      // Call toggle function
       await toggleLike(commentId, database, auth);
 
-      // Verify removal of dislikes and addition of likes
       verify(() => databaseRef.child('Comments/$commentId/dislikes').remove());
       verify(() => databaseRef.child('Comments/$commentId/likes').push().set({
         'userId': auth.currentUser!.uid,
@@ -107,13 +103,9 @@ void main() {
     });
 
     test('Toggle from like to dislike', () async {
-      // Set up
       String commentId = 'commentId';
-
-      // Call toggle function
       await toggleDislike(commentId, database, auth);
 
-      // Verify removal of dislikes and addition of dislikes
       verify(() => databaseRef.child('Comments/$commentId/likes').remove());
       verify(() => databaseRef.child('Comments/$commentId/dislikes').push().set({
         'userId': auth.currentUser!.uid,
@@ -123,7 +115,6 @@ void main() {
   });
 }
 
-// Functions to interact with Firebase Database for sending comments and managing likes
 Future<void> sendComment(MockDatabase database, String commentId, String comment, MockFirebaseAuth auth) async {
   if (commentId.isEmpty || comment.isEmpty || auth.currentUser == null) {
     return;  // Early return if the inputs are invalid
@@ -146,18 +137,13 @@ Future<void> likeComment(MockDatabase database, String commentId, bool isLike, M
 }
 
 Future<void> toggleLike(String commentId, MockDatabase database, MockFirebaseAuth auth) async {
-  // Check if auth.currentUser is not null
   if (auth.currentUser == null) {
-    // Handle the case where the user is not authenticated
     print('User is not authenticated.');
     return;
   }
 
-  // Construct database references for likes and dislikes
   DatabaseReference likeRef = database.ref().child('Comments/$commentId/likes');
   DatabaseReference dislikeRef = database.ref().child('Comments/$commentId/dislikes');
-
-  // Check if the user has already liked the comment
   DataSnapshot likeSnapshot;
   try {
     likeSnapshot = await likeRef.child(auth.currentUser!.uid).get();
@@ -171,7 +157,6 @@ Future<void> toggleLike(String commentId, MockDatabase database, MockFirebaseAut
     // If the user has already liked the comment, remove the like
     await likeRef.child(auth.currentUser!.uid).remove();
   } else {
-    // If the user hasn't liked the comment, remove any existing dislikes and add a like
     await dislikeRef.child(auth.currentUser!.uid).remove();
     await likeRef.child(auth.currentUser!.uid).set({
       'userId': auth.currentUser!.uid,
@@ -180,16 +165,12 @@ Future<void> toggleLike(String commentId, MockDatabase database, MockFirebaseAut
   }
 }
 Future<void> toggleDislike(String commentId, MockDatabase database, MockFirebaseAuth auth) async {
-  // Check if auth.currentUser is not null
   if (auth.currentUser == null) {
     return;
   }
-
-  // Construct database references for likes and dislikes
   DatabaseReference likeRef = database.ref().child('Comments/$commentId/likes');
   DatabaseReference dislikeRef = database.ref().child('Comments/$commentId/dislikes');
 
-  // Check if the user has already disliked the comment
   DataSnapshot dislikeSnapshot;
   try {
     dislikeSnapshot = await dislikeRef.child(auth.currentUser!.uid).get();
@@ -199,10 +180,8 @@ Future<void> toggleDislike(String commentId, MockDatabase database, MockFirebase
 
   bool disliked = dislikeSnapshot.exists;
   if (disliked) {
-    // If the user has already disliked the comment, remove the dislike
     await dislikeRef.child(auth.currentUser!.uid).remove();
   } else {
-    // If the user hasn't disliked the comment, remove any existing likes and add a dislike
     await likeRef.child(auth.currentUser!.uid).remove();
     await dislikeRef.child(auth.currentUser!.uid).set({
       'userId': auth.currentUser!.uid,

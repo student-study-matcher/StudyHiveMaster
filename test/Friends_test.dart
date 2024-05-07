@@ -95,7 +95,6 @@ void main() {
   });
 }
 
-// Implementations of the functionalities to be tested
 Future<void> sendFriendRequest(FirebaseDatabase db, String? currentUserId, String? friendUserId) async {
   if (currentUserId == null || friendUserId == null) {
     return;

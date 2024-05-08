@@ -77,7 +77,7 @@ void main() {
     });
 
     test('Attempt to create forum with oversized file attachment', () async {
-      await createForum(database, auth, 'help with questions', 'heres content', true, 11);  // 11MB, exceeds limit
+      await createForum(database, auth, 'help with questions', 'heres content', true, 11);  
       verifyNever(() => databaseRef.child('Forums').push().set(any()));
     });
   });
@@ -163,7 +163,7 @@ Future<void> cancelDelete(MockDatabase database, String forumId) async {
 Future<Query> filterComments(MockDatabase database, String? filterType) async {
   DatabaseReference commentsRef = database.ref().child('Comments');
   if (filterType == null || filterType.isEmpty) {
-    return commentsRef; // Return DatabaseReference directly
+    return commentsRef; 
   } else if (filterType == 'Most Liked') {
     Query query = commentsRef.orderByChild('likes');
     return query;

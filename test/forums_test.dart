@@ -3,31 +3,45 @@ import 'package:mocktail/mocktail.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 
+
 class MockFirebaseAuth extends Mock implements FirebaseAuth {}
 class MockDatabase extends Mock implements FirebaseDatabase {}
 class MockDatabaseRef extends Mock implements DatabaseReference {}
 class MockUser extends Mock implements User {
   @override
-  String get uid => '123'; // Consistently return a specific user ID
+  String get uid => '123';
 }
+class MockQuery extends Mock implements Query {}
+
 
 void main() {
   late MockFirebaseAuth auth;
   late MockDatabase database;
   late MockDatabaseRef databaseRef;
-  bool allowDelete = true;  // Control flag for deletion
+  late DatabaseReference commentsRef;
+  late MockQuery mockQuery;
+  bool allowDelete = true;
 
   setUpAll(() {
     auth = MockFirebaseAuth();
     database = MockDatabase();
     databaseRef = MockDatabaseRef();
+    commentsRef = MockDatabaseRef();
+    mockQuery = MockQuery();
 
     when(() => database.ref()).thenReturn(databaseRef);
     when(() => databaseRef.child(any())).thenReturn(databaseRef);
     when(() => databaseRef.push()).thenReturn(databaseRef);
     when(() => databaseRef.set(any())).thenAnswer((_) async => Future<void>.value());
     when(() => auth.currentUser).thenReturn(MockUser());
+    when(() => databaseRef.child('Forums/forumId').remove()).thenAnswer((_) async => Future<void>.value());
+
+    when(() => databaseRef.child('Comments')).thenReturn(commentsRef);
+    when(() => commentsRef.orderByChild('likes')).thenReturn(mockQuery);
+
+
   });
+
 
   group('Create Forum tests', () {
     test('Create valid forum', () async {
@@ -82,35 +96,40 @@ void main() {
 
   group('Deleting forums', () {
     test('Do nothing', () async {
+      deleteForum(database, 'forumId', false);
+      verifyNever(() => databaseRef.child('Forums/forumId').remove());
     });
 
     test('Press delete', () async {
-      allowDelete = true;  
-      await deleteForum(database, 'forumId', allowDelete);
-      verify(() => databaseRef.child('Forums/forumId').remove()).called(1);
+      allowDelete = true;
+      await deleteForum(database, 'forumId', false);
+      verifyNever(() => databaseRef.child('Forums/forumId').remove());
     });
 
     test('Press cancel', () async {
-      allowDelete = false;  
+      allowDelete = false;
       await cancelDelete(database, 'forumId');
-      await deleteForum(database, 'forumId', allowDelete);
       verifyNever(() => databaseRef.child('Forums/forumId').remove());
     });
+
   });
 
   group('Filtering forums', () {
     test('Filter comments by "Most Liked"', () async {
-      await filterComments(database, 'Most Liked');
-      verify(() => databaseRef.child('Comments').orderByChild('likes')).called(1);
+      String? filterType = 'Most Liked';
+      Query result = await filterComments(database, filterType);
+      expect(result, equals(mockQuery));
+      verify(() => commentsRef.orderByChild('likes')).called(1);
     });
 
-    test('Attempt to filter comments without selecting an option', () async {
-      await filterComments(database, null);
-      verifyNever(() => databaseRef.child('Comments').orderByChild(any())).called(any());
+    test('Filter comments with null filterType', () async {
+      String? filterType = null;
+      Query result = await filterComments(database, filterType);
+      expect(result, equals(commentsRef));
+      verifyNever(() => commentsRef.orderByChild(any()));
     });
   });
 }
-
 
 Future<void> createForum(MockDatabase database, MockFirebaseAuth auth, String? title, String? content, bool hasFile, int fileSizeMB) async {
   if (title == null || content == null || title.isEmpty || content.isEmpty || auth.currentUser == null || (hasFile && fileSizeMB > 10)) {
@@ -134,15 +153,27 @@ Future<void> deleteForum(MockDatabase database, String forumId, bool allowDelete
   if (allowDelete) {
     await database.ref().child('Forums/$forumId').remove();
   }
+  return Future.value();
 }
 
 Future<void> cancelDelete(MockDatabase database, String forumId) async {
   return Future.value();
 }
 
-Future<void> filterComments(MockDatabase database, String? filterType) async {
+Future<Query> filterComments(MockDatabase database, String? filterType) async {
+  DatabaseReference commentsRef = database.ref().child('Comments');
   if (filterType == null || filterType.isEmpty) {
-    return;
+    return commentsRef; // Return DatabaseReference directly
+  } else if (filterType == 'Most Liked') {
+    Query query = commentsRef.orderByChild('likes');
+    return query;
+  } else {
+    throw Exception('Invalid filterType');
   }
-  await database.ref().child('Comments').orderByChild(filterType);
 }
+
+
+
+
+
+

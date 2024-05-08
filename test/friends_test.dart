@@ -66,7 +66,7 @@ void main() {
     print('Test Passed: Friend request received successfully');
   });
 
-  test('User accepts a friend request', () async {     //Accepts a friend request
+  test('User accepts a friend request', () async {
     print('Test Start: Accepting a friend request');
     when(() => mockDatabaseRef!.set(true)).thenAnswer((_) async => {});
 
@@ -79,7 +79,7 @@ void main() {
     print('Test Passed: Friend request accepted successfully');
   });
 
-  test('User denies a friend request', () async {     //Deny a friend request
+  test('User denies a friend request', () async {
     print('Test Start: Denying a friend request');
     await rejectFriendRequest(mockDatabase!, 'userId', 'friendId');
 
@@ -88,9 +88,18 @@ void main() {
     print('Test Passed: Friend request denied successfully');
   });
 
+  test('User messages a friend', () async {
+    print('Test Start: Messaging a friend');
+    when(() => mockDatabaseRef!.set(any())).thenAnswer((_) async => {});
+
+    await sendMessageToFriend(mockDatabase!, 'userId', 'friendId', 'Hello');
+
+    verify(() => mockDatabaseRef!.child('Messages/userId/friendId').push().set(any(named: 'value'))).called(1);
+    print('Test Passed: Message sent successfully');
+  });
 }
 
-// Implementations of the functionalities to be tested
+
 Future<void> sendFriendRequest(FirebaseDatabase db, String currentUserId, String friendUserId) async {
   DatabaseReference ref = db.ref();
   await ref.child('Users/$currentUserId/friendRequestsSent/$friendUserId').set(true);

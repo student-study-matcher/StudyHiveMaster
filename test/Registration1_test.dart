@@ -1,159 +1,186 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+// Mock FirebaseAuth and User classes
 class MockFirebaseAuth extends Mock implements FirebaseAuth {}
 
-class MockDatabase extends Mock implements FirebaseDatabase {}
+class MockUser extends Mock implements User {}
 
-class MockDatabaseRef extends Mock implements DatabaseReference {}
+// Mock FirebaseDatabase, DatabaseReference, and other database-related classes
+class MockFirebaseDatabase extends Mock implements FirebaseDatabase {}
 
-class MockNavigatorObserver extends Mock implements NavigatorObserver {}
+class MockDatabaseReference extends Mock implements DatabaseReference {}
 
-class MockUser extends Mock implements User {
-  @override
-  String get uid => '123';
-}
-
-class MockUserCredential extends Mock implements UserCredential {
-  @override
-  User get user => MockUser();
-}
-
-void main() async {
+void main() {
   late MockFirebaseAuth auth;
-  late MockDatabaseRef database;
+  late MockFirebaseDatabase database;
+  late MockDatabaseReference databaseRef;
 
-  setUp(() async {
+  setUp(() {
     auth = MockFirebaseAuth();
-    database = MockDatabaseRef();
+    database = MockFirebaseDatabase();
+    databaseRef = MockDatabaseReference();
+
+    // Configure mock database interactions
+    when(() => database.ref()).thenReturn(databaseRef);
+    when(() => databaseRef.child(any())).thenReturn(databaseRef);
   });
 
-  test('register user successfully', () async {
-    String email = 'ex@example.com';
+  test('Missing email', () async {
     String password = 'password123';
-
-    when(() => auth.createUserWithEmailAndPassword(
-        email: email, password: password))
-        .thenAnswer((invocation) => Future.value(MockUserCredential()));
-
-    when(() => database.child(any())).thenReturn(database);
-    when(() => database.child(any()).child(any())).thenReturn(database);
-
-    when(() => database.set(any())).thenAnswer((_) async => {});
-
-    await registerUser1(auth, database, email, password, password);
-
-    verify(() => auth.createUserWithEmailAndPassword(
-        email: email, password: password)).called(1);
-  });
-
-  test('register user with already used email', () async {
-    String email = 'wrong@email.com';
-    String password = 'password123';
-
-    when(() =>
-        auth.createUserWithEmailAndPassword(
-            email: email, password: password)).thenThrow(FirebaseAuthException(
-        code: 'email-already-in-use',
-        message: 'The email address is already in use by another account.'));
-
-    when(() => database.child(any())).thenReturn(database);
-    when(() => database.child(any()).child(any())).thenReturn(database);
-
-    when(() => database.set(any())).thenAnswer((_) async => {});
+    String confirmPassword = 'password123';
 
     expect(
-            () async =>
-        await registerUser1(auth, database, email, password, password),
-        throwsException);
+          () async => await registerUser1(auth, databaseRef, '', password, confirmPassword),
+      throwsA(isA<Exception>()),
+    );
+  });
+
+  test('Valid email format, email is not in database already', () async {
+    String email = 'testing@test.com';
+    String password = 'password123';
+    String confirmPassword = 'password123';
+
+    when(() => auth.createUserWithEmailAndPassword(email: email, password: password))
+        .thenAnswer((_) => Future.value(MockUserCredential()));
+
+    await registerUser1(auth, databaseRef, email, password, confirmPassword);
+  });
+
+  test('Valid email format, email is already in database', () async {
+    // Arrange
+    final email = 'test@test.com';
+    final password = 'password123';
+    final confirmPassword = 'password123';
+
+    // Mock FirebaseAuth to throw FirebaseAuthException when createUserWithEmailAndPassword is called
+    when(() => auth.createUserWithEmailAndPassword(email: email, password: password))
+        .thenThrow(Exception('The email address is already in use by another account.'));
+
+    // Act & Assert
+    await expectLater(
+          () async => await registerUser1(auth, databaseRef, email, password, confirmPassword),
+      throwsA(predicate<Exception>((e) => e.toString().contains('The email address is already in use by another account.'))),
+    );
+
+    // Verify that createUserWithEmailAndPassword method was called with the provided email and password
+    verify(() => auth.createUserWithEmailAndPassword(email: email, password: password)).called(1);
+  });
+
+  test('Invalid email format, msg "Enter a valid email address"', () async {
+    String email = 'invalidemail';
+    String password = 'password123';
+    String confirmPassword = 'password123';
+
+    expect(
+          () async => await registerUser1(auth, databaseRef, email, password, confirmPassword),
+      throwsA(isA<Exception>()),
+    );
+  });
+
+  test('Please enter a password', () async {
+    String email = 'testing@test.com';
+    String confirmPassword = 'password123';
+
+    expect(
+          () async => await registerUser1(auth, databaseRef, email, '', confirmPassword),
+      throwsA(isA<Exception>()),
+    );
+  });
+
+  test('Password must be at least 6 characters long', () async {
+    String email = 'testing@test.com';
+    String password = 'pass';
+    String confirmPassword = 'pass';
+
+    expect(
+          () async => await registerUser1(auth, databaseRef, email, password, confirmPassword),
+      throwsA(isA<Exception>()),
+    );
+  });
+
+  test('The password don\'t match', () async {
+    String email = 'testing@test.com';
+    String password = 'password123';
+    String confirmPassword = 'password1234';
+
+    expect(
+          () async => await registerUser1(auth, databaseRef, email, password, confirmPassword),
+      throwsA(isA<Exception>()),
+    );
+  });
+
+  test('Password match', () async {
+    String email = 'testing@test.com';
+    String password = 'password123';
+    String confirmPassword = 'password123';
+
+    when(() => auth.createUserWithEmailAndPassword(email: email, password: password))
+        .thenAnswer((_) => Future.value(MockUserCredential()));
+
+    await registerUser1(auth, databaseRef, email, password, confirmPassword);
+  });
+
+  test('Missing fields', () async {
+    String email = '';
+    String password = '';
+    String confirmPassword = '';
+
+    expect(
+          () async => await registerUser1(auth, databaseRef, email, password, confirmPassword),
+      throwsA(isA<Exception>()),
+    );
+  });
+
+  test('Valid input', () async {
+    String email = 'testing@test.com';
+    String password = 'password123';
+    String confirmPassword = 'password123';
+
+    when(() => auth.createUserWithEmailAndPassword(email: email, password: password))
+        .thenAnswer((_) => Future.value(MockUserCredential()));
+
+    await registerUser1(auth, databaseRef, email, password, confirmPassword);
   });
 }
 
-Future<void> registerUser1(MockFirebaseAuth auth, MockDatabaseRef database,
-    String email, String password, String confirmPassword) async {
-  if (password != confirmPassword) {
-    throw Exception('Passwords do not match.');
-  }
-  try {
-    final newUser = await auth.createUserWithEmailAndPassword(
-      email: email,
-      password: password,
-    );
-    if (newUser.user != null) {
-      database.child('Users').child(newUser.user!.uid).set({
-        'email': email,
-      });
+class MockUserCredential extends Mock implements UserCredential {}
 
-      print("registration successful");
+Future<void> registerUser1(FirebaseAuth auth, DatabaseReference databaseRef, String email, String password, String confirmPassword) async {
+  if (email.isEmpty) {
+    throw Exception('Missing email');
+  }
+
+  if (!isValidEmail(email)) {
+    throw Exception('Invalid email format');
+  }
+
+  if (password.isEmpty) {
+    throw Exception('Please enter a password');
+  }
+
+  if (password.length < 6) {
+    throw Exception('Password must be at least 6 characters long');
+  }
+
+  if (password != confirmPassword) {
+    throw Exception("The password don't match");
+  }
+
+  try {
+    final newUser = await auth.createUserWithEmailAndPassword(email: email, password: password);
+    if (newUser.user != null) {
+      // Save user data to database
+      await databaseRef.child('Users').child(newUser.user!.uid).set({'email': email});
     }
   } on FirebaseAuthException catch (e) {
     throw Exception(e.message ?? 'An unknown error occurred.');
   }
 }
 
-Future<void> registerUser2(
-    MockFirebaseAuth auth,
-    MockDatabase database,
-    String userFirstName,
-    String userLastName,
-    String userDOBString,
-    String username,
-    String userCourse,
-    String userUniversity) async {
-  if (userFirstName.isEmpty ||
-      userLastName.isEmpty ||
-      userDOBString.isEmpty ||
-      username.isEmpty) {
-    throw Exception('Please fill in all the required fields.');
-  }
-
-  DateTime userDOB = DateTime.parse(userDOBString);
-  DateTime now = DateTime.now();
-  int age = now.year - userDOB.year;
-
-  if (age < 18) {
-    // Check that the user is old enough to use the app
-    throw Exception("Users must be 18 or over");
-  }
-  if (userFirstName.length > 50 ||
-      userLastName.length > 50 ||
-      username.length > 15) {
-    throw Exception("Input too long!");
-  }
-//username unique or not
-  bool uniqueUsername = isUsernameUnique(username);
-  if (!uniqueUsername) {
-    throw Exception('Username is already taken. Please choose another one.');
-  }
-
-  try {
-    User? user = auth.currentUser;
-    if (user != null) {
-      //updates user tbl
-      await database.ref().child('Users').child(user.uid).update({
-        'firstName': userFirstName,
-        'lastName': userLastName,
-        'DOB': userDOB.toIso8601String(),
-        'course': userCourse,
-        'university': userUniversity,
-        'username': username,
-      });
-      // Update the Usernames table with the new username for quick lookup
-      await database.ref().child('Usernames').child(username).set(user.uid);
-
-      print('User data updated successfully!');
-    } else {
-      print('User not authenticated.');
-    }
-  } catch (e) {
-    print('Error updating user data: $e');
-    throw Exception('Failed to update user data.');
-  }
-}
-
-bool isUsernameUnique(String username) {
-  return true;
+bool isValidEmail(String email) {
+  final RegExp emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+  return emailRegex.hasMatch(email);
 }

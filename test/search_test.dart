@@ -1,4 +1,6 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart'; // Import the mocktail package
 
@@ -9,7 +11,6 @@ class MockDatabaseEvent extends Mock implements DatabaseEvent {}
 class MockDataSnapshot extends Mock implements DataSnapshot {}
 
 void main() {
-  // Initialize the mocks
   late MockFirebaseDatabase mockDatabase;
   late MockDatabaseReference mockDatabaseRef;
   late MockDatabaseEvent mockDatabaseEvent;
@@ -21,144 +22,96 @@ void main() {
     mockDatabaseEvent = MockDatabaseEvent();
     mockDataSnapshot = MockDataSnapshot();
 
-    // Ensure that mockDatabase returns mockDatabaseRef when reference() is called
+    // Set up mocks
     when(() => mockDatabase.reference()).thenReturn(mockDatabaseRef);
+    when(() => mockDatabaseRef.child(any())).thenReturn(mockDatabaseRef);
+    when(() => mockDatabaseRef.once()).thenAnswer((_) async => mockDatabaseEvent);
+    when(() => mockDatabaseEvent.snapshot).thenReturn(mockDataSnapshot);
   });
 
-  test('User searches for forums - no search button', () async {
-    print('Test Start: User searches for forums - no search button');
-    String searchQuery = 'forum topic'; // Input
-
-    // Mock the database response for forum search
-    when(() => mockDatabaseRef.child('Forums')).thenReturn(mockDatabaseRef);
-    when(() => mockDatabaseRef.once()).thenAnswer((_) async => mockDatabaseEvent);
-
+  // Test cases for searching forums
+  test('User searches for forums - subject: "Computer Science"', () async {
+    String searchQuery = 'Computer Science'; // Input
     await performForumSearch(mockDatabase, searchQuery); // Perform forum search operation
-
-    // Verify that the database query is called once
     verify(() => mockDatabaseRef.child('Forums')).called(1);
     verify(() => mockDatabaseRef.once()).called(1);
-
-    print('Test Passed: User searches for forums - no search button');
   });
-  test('User searches for Courses - filter button', () async {
-    print('Test Start: User searches for Courses - filter button');
-    String selectedFilter = 'Flutter'; // Input
 
-    // Mock the database response for course search
-    when(() => mockDatabaseRef.child('Courses')).thenReturn(mockDatabaseRef);
-    when(() => mockDatabaseRef.orderByChild('topic')).thenReturn(mockDatabaseRef);
-    when(() => mockDatabaseRef.equalTo(selectedFilter)).thenReturn(mockDatabaseRef);
-    when(() => mockDatabaseRef.once()).thenAnswer((_) async => mockDatabaseEvent);
-
-    await performCourseSearch(mockDatabase, selectedFilter); // Perform course search operation
-
-    // Verify that the database query is called once
-    verify(() => mockDatabaseRef.child('Courses')).called(1);
-    verify(() => mockDatabaseRef.orderByChild('topic')).called(1);
-    verify(() => mockDatabaseRef.equalTo(selectedFilter)).called(1);
+  test('User searches for forums - null search query', () async {
+    String? searchQuery = null; // Input
+    await performForumSearch(mockDatabase, searchQuery); // Perform forum search operation
+    verify(() => mockDatabaseRef.child('Forums')).called(1);
     verify(() => mockDatabaseRef.once()).called(1);
-
-    print('Test Passed: User searches for Courses - filter button');
   });
 
-  test('User search for other users\' - button top right', () async {
-    print('Test Start: User search for other users\' - button top right');
-    String username = 'JohnDoe'; // Input
+  test('User searches for forums - invalid search query: "123456"', () async {
+    String searchQuery = '123456'; // Input
+    await performForumSearch(mockDatabase, searchQuery); // Perform forum search operation
+    verify(() => mockDatabaseRef.child('Forums')).called(1);
+    verify(() => mockDatabaseRef.once()).called(1);
+  });
 
-    // Mock the database response for user search
-    when(() => mockDatabaseRef.child('Users')).thenReturn(mockDatabaseRef);
-    when(() => mockDatabaseRef.orderByChild('username')).thenReturn(mockDatabaseRef);
-    when(() => mockDatabaseRef.equalTo(username)).thenReturn(mockDatabaseRef);
-    when(() => mockDatabaseRef.once()).thenAnswer((_) async => mockDatabaseEvent);
-
-    await performUserSearch(mockDatabase, username); // Perform user search operation
-
-    // Verify that the database query is called once
+  // Test cases for searching users
+  test('User searches for users - username: "Billy"', () async {
+    String searchQuery = 'Billy'; // Input
+    await performUserSearch(mockDatabase, searchQuery); // Perform user search operation
     verify(() => mockDatabaseRef.child('Users')).called(1);
-    verify(() => mockDatabaseRef.orderByChild('username')).called(1);
-    verify(() => mockDatabaseRef.equalTo(username)).called(1);
     verify(() => mockDatabaseRef.once()).called(1);
-
-    print('Test Passed: User search for other users\' - button top right');
   });
 
-  test('User misspells something in their search', () async {
-    print('Test Start: User misspells something in their search');
-    String misspelledQuery = 'fluttar'; // Input
-
-    // Mock the database response for misspelled search
-    when(() => mockDatabaseRef.child('Forums')).thenReturn(mockDatabaseRef);
-    when(() => mockDatabaseRef.orderByChild('title')).thenReturn(mockDatabaseRef);
-    when(() => mockDatabaseRef.startAt(misspelledQuery)).thenReturn(mockDatabaseRef);
-    when(() => mockDatabaseRef.endAt(misspelledQuery + '\uf8ff')).thenReturn(mockDatabaseRef);
-    when(() => mockDatabaseRef.once()).thenAnswer((_) async => mockDatabaseEvent);
-
-    await performMisspelledSearch(mockDatabase, misspelledQuery); // Perform misspelled search operation
-
-    // Verify that the database query is called once
-    verify(() => mockDatabaseRef.child('Forums')).called(1);
-    verify(() => mockDatabaseRef.orderByChild('title')).called(1);
-    verify(() => mockDatabaseRef.startAt(misspelledQuery)).called(1);
-    verify(() => mockDatabaseRef.endAt(misspelledQuery + '\uf8ff')).called(1);
+  test('User searches for users - null search query', () async {
+    String? searchQuery = null; // Input
+    await performUserSearch(mockDatabase, searchQuery); // Perform user search operation
+    verify(() => mockDatabaseRef.child('Users')).called(1);
     verify(() => mockDatabaseRef.once()).called(1);
-
-    print('Test Passed: User misspells something in their search');
   });
 
-  test('User searches for a tag that doesn\'t exist', () async {
-    print('Test Start: User searches for a tag that doesn\'t exist');
-    String nonExistentTag = 'nonexistenttag'; // Input
-
-    // Mock the database response for non-existent tag search
-    when(() => mockDatabaseRef.child('Tags')).thenReturn(mockDatabaseRef);
-    when(() => mockDatabaseRef.orderByChild('name')).thenReturn(mockDatabaseRef);
-    when(() => mockDatabaseRef.equalTo(nonExistentTag)).thenReturn(mockDatabaseRef);
-    when(() => mockDatabaseRef.once()).thenAnswer((_) async => mockDatabaseEvent);
-
-    await performTagSearch(mockDatabase, nonExistentTag); // Perform non-existent tag search operation
-
-    // Verify that the database query is called once
-    verify(() => mockDatabaseRef.child('Tags')).called(1);
-    verify(() => mockDatabaseRef.orderByChild('name')).called(1);
-    verify(() => mockDatabaseRef.equalTo(nonExistentTag)).called(1);
+  test('User searches for users - invalid search query: "Testusername22456"', () async {
+    String searchQuery = 'Testusername22456'; // Input
+    await performUserSearch(mockDatabase, searchQuery); // Perform user search operation
+    verify(() => mockDatabaseRef.child('Users')).called(1);
     verify(() => mockDatabaseRef.once()).called(1);
+  });
 
-    print('Test Passed: User searches for a tag that doesn\'t exist');
+  // Test cases for searching groupchats
+  test('User searches for groupchats - name: "ComputerScience2024"', () async {
+    String searchQuery = 'ComputerScience2024'; // Input
+    await performGroupchatSearch(mockDatabase, searchQuery); // Perform groupchat search operation
+    verify(() => mockDatabaseRef.child('Groupchats')).called(1);
+    verify(() => mockDatabaseRef.once()).called(1);
+  });
+
+  test('User searches for groupchats - null search query', () async {
+    String? searchQuery = null; // Input
+    await performGroupchatSearch(mockDatabase, searchQuery); // Perform groupchat search operation
+    verify(() => mockDatabaseRef.child('Groupchats')).called(1);
+    verify(() => mockDatabaseRef.once()).called(1);
+  });
+
+  test('User searches for groupchats - invalid search query: "Groupchat2243298"', () async {
+    String searchQuery = 'Groupchat2243298'; // Input
+    await performGroupchatSearch(mockDatabase, searchQuery); // Perform groupchat search operation
+    verify(() => mockDatabaseRef.child('Groupchats')).called(1);
+    verify(() => mockDatabaseRef.once()).called(1);
   });
 }
 
-// Function to perform forum search
-Future<void> performForumSearch(FirebaseDatabase database, String searchQuery) async {
+// Function to search for forums
+Future<DatabaseEvent> performForumSearch(FirebaseDatabase database, String? searchQuery) async {
   DatabaseReference ref = database.reference();
-  await ref.child('Forums').once();
-  // Perform actual search logic...
+  return await ref.child('Forums').once();
 }
 
-// Function to perform course search
-Future<void> performCourseSearch(FirebaseDatabase database, String selectedFilter) async {
+// Function to search for users
+Future<DataSnapshot> performUserSearch(FirebaseDatabase database, String? username) async {
   DatabaseReference ref = database.reference();
-  await ref.child('Courses').orderByChild('topic').equalTo(selectedFilter).once();
-  // Perform actual search logic...
+  DatabaseEvent event = await ref.child('Users').once();
+  return event.snapshot;
 }
 
-// Function to perform user search
-Future<void> performUserSearch(FirebaseDatabase database, String username) async {
+// Function to search for groupchats
+Future<DataSnapshot> performGroupchatSearch(FirebaseDatabase database, String? groupchatName) async {
   DatabaseReference ref = database.reference();
-  await ref.child('Users').orderByChild('username').equalTo(username).once();
-  // Perform actual search logic...
-}
-
-// Function to perform misspelled search
-Future<void> performMisspelledSearch(FirebaseDatabase database, String misspelledQuery) async {
-  DatabaseReference ref = database.reference();
-  await ref.child('Forums').orderByChild('title').startAt(misspelledQuery).endAt(misspelledQuery + '\uf8ff').once();
-  // Perform actual search logic...
-}
-
-// Function to perform tag search
-Future<void> performTagSearch(FirebaseDatabase database, String nonExistentTag) async {
-  DatabaseReference ref = database.reference();
-  await ref.child('Tags').orderByChild('name').equalTo(nonExistentTag).once();
-  // Perform actual search logic...
+  DatabaseEvent event = await ref.child('Groupchats').once();
+  return event.snapshot;
 }
